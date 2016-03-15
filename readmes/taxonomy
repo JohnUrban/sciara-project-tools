@@ -1,0 +1,27 @@
+Example BLAST command used is this:
+blastn -db $NT -query $TEMPDIR/$PRE.${i}.fa -task blastn -dust no \
+  -max_target_seqs 10 -evalue 1e-15 -reward 2 -penalty -3 -gapopen 5 \
+  -gapextend 2 -word_size 15 -outfmt '6 qseqid qstart qend sgi sacc \
+  slen sseqid sstart send staxids sscinames scomnames sskingdoms evalue \
+  bitscore score length pident ppos qcovs qcovhsp'
+
+For each query, take all the blastn entries, find the taxonomy information.
+Then identify as either:
+- Insecta
+
+if not, then:
+- Metazoa
+
+if not, then
+- Eukatyota
+
+if not, then:
+- mark as likely contaminants
+
+Separate queries into separate files as above, providing taxonomy summary info with each CNV name.
+
+Examples:
+taxonomyFromTaxID.py -i example.blastn -nc 1 -tc 10 -no ~/data/ncbi/taxonomy/nodes.dmp -na ~/data/ncbi/taxonomy/names.dmp > example.taxonomy.out
+taxonomy-summarizer.py -i example.taxonomy.out -o example
+
+
