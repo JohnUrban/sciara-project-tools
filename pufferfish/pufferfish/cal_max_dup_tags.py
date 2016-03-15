@@ -1,6 +1,6 @@
 #!/usr/local/bin/python
 import sys
-import numpy as np
+##import numpy as np
 ## adapted from MACS2
 
 
@@ -80,19 +80,13 @@ def cal_max_dup_tags ( genome_size, tags_number, p=1e-5 ):
 
 
 
-if len(sys.argv) == 1:
-    print
-    print "Usage: pyscript genome_size numTags p-value"
-    print
-    print
-    quit()
+
 
 genome_size = float(sys.argv[1])
 tags_number = int(sys.argv[2])
 p = float(sys.argv[3])
 maxtags=cal_max_dup_tags (genome_size, tags_number, p)
 
-print maxtags
 
 
 ## idea...

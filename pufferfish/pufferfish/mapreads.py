@@ -8,36 +8,36 @@ logger = logging.getLogger('pufferfish')
 ##samtools index $prefix.bam 2>>$prefix.txt 
 
 
-def detect_fastx_type(fastx):
-    try:
-        assert os.path.exists(fastx)
-    except AssertionError as e:
-        e.args += (fastx, 'File does not exist')
-        raise
-    try:
-        connection = gzip.open(fastx)
-        line = connection.next()
-    except IOError:
-        connection.close()
-        connection = bz2.BZ2File(fastx)
-        try:
-            line = connection.readline()
-        except IOError:
-            connection.close()
-            connection = open(fastx,'r')
-            line = connection.next()
-    ans = fastx_check(line)
-    connection.close()
-    return ans
+##def detect_fastx_type(fastx):
+##    try:
+##        assert os.path.exists(fastx)
+##    except AssertionError as e:
+##        e.args += (fastx, 'File does not exist')
+##        raise
+##    try:
+##        connection = gzip.open(fastx)
+##        line = connection.next()
+##    except IOError:
+##        connection.close()
+##        connection = bz2.BZ2File(fastx)
+##        try:
+##            line = connection.readline()
+##        except IOError:
+##            connection.close()
+##            connection = open(fastx,'r')
+##            line = connection.next()
+##    ans = fastx_check(line)
+##    connection.close()
+##    return ans
+##
+##def fastx_check(line):
+##    if line[0] == ">":
+##        return "fa"
+##    elif line[0] == "@":
+##        return "fq"
+####        connection = open(args.fqFile)
 
-def fastx_check(line):
-    if line[0] == ">":
-        return "fa"
-    elif line[0] == "@":
-        return "fq"
-    
-            
-        connection = open(args.fqFile)
+        
 def make_bt2(fasta, prefix):
     cmd = 'bowtie2-build ' + fasta + ' ' + prefix
     return cmd, prefix
@@ -67,20 +67,6 @@ def samtools_index(bamfile, errfile):
     return 'samtools index %s 2>>%s' % (bamfile, errfile)
 
 
-def picard_mark_duplicates(jar, inbam, outbam, metricsfilename, mem='64g', rm_opt_dup=True, rmdup=False, presorted=True):
-    if rm_opt_dup:
-        RMOPTDUP="true"
-    else:
-        RMOPTDUP="false"
-    if rmdup:
-        RMDUP="true"
-    else:
-        RMDUP="false"
-    if presorted:
-        PRESORTED="true"
-    else:
-        PRESORTED="false"
-    return (" ").join(["java -Xmx" + str(mem), "-jar", jar, "MarkDuplicates INPUT="+inbam, "OUTPUT="+outbam, "METRICS_FILE="+metricsfilename, "REMOVE_SEQUENCING_DUPLICATE="+RMOPTDUP, "REMOVE_DUPLICATES="+RMDUP, "ASSUME_SORTED="+PRESORTED])
 
 
 def map_reads(fastx, bt2, f=sys.stderr, dry=False):
