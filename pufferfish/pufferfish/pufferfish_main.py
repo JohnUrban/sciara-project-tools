@@ -80,7 +80,29 @@ Maps reads to genome and filters out unmapped reads before sorting and indexing.
     parser_mapreads.set_defaults(func=run_subtool)
 
 
-
+##    ## Create a sub-command parser for filterdup
+##    parser_mapreads = subparsers.add_parser('filterdup',
+##                                            help='''Depends on Picard Tools 2.1.1, BEDtools, pybedtools, pysam.
+##Remove optical duplicates and marks PCR duplicates.
+##All PCR duplicates except K at a given site are removed.
+##K is determined by a binomial calculuation using a bin size and number of reads in a given bin.
+##Then any duplicates in that bin are subject to filtering down to K.
+##1. Remove optical duplicates and mark PCR duplicates.
+##2. Make bins
+##3. Get read count in those bins
+##4. For each bin, check if there are marked reads. If so, calculate K and filter.
+##5. write remaining reads as you go...
+##''')
+##    parser_filterdup.add_argument('bams', metavar='bams', nargs='+',
+##                               type=str,
+##                               help=''' Paths to BAM files that need duplicate filtering.''')
+##    parser_filterdup.add_argument('-g', '--genome', type=str,
+##                               help='''Path to BEDtools genome file describing reference reads were mapped to.''')
+##    parser_filterdup.add_argument()
+##    parser_filterdup.add_argument('--dry', action='store_true', default=False, help='''Only writes out the commands that will be used if set.''')
+##
+##    parser_filterdup.set_defaults(func=run_subtool)
+##    
 
     ## Create sub-command parser for getcov
     ## TODO add filterdup possibility from macs2... rm pcr dups
@@ -91,7 +113,8 @@ Maps reads to genome and filters out unmapped reads before sorting and indexing.
                                help=''' Paths to as many bam files as you need to get coverage for.
 Can include a file-of-filenames (FOFN) and tarballs as well.''')
     
-
+    parser_getcov.add_argument('-f','--filterdup', type=str,
+                               help='''Provide /path/to/picard.jar  (picard v2.1.1 or higher)''')
     parser_getcov.add_argument('-g', '--genome', type=str, required=True,
                                help='''Path to file.genome as needed and defined by BEDTools. See "bedtools makewindows" or "bedtools coverage"''')
     parser_getcov.add_argument('-w', '--window', type=str, default='500',
@@ -100,7 +123,13 @@ Can include a file-of-filenames (FOFN) and tarballs as well.''')
                                help='''Integer step size - will slide window over this much. Default: 500.''')
     parser_getcov.add_argument('-Q', '--mapq', type=str, default='0',
                                help='''Integer mapq cut-off - only include reads with mapping quality >= INT. Default: 0.''')
+    parser_getcov.add_argument('-m', '--picardmem', type=str, default='4g',
+                               help='''Provide memory needed/available to Picard MarkDuplicates as integer_letter string, such as 500m, 1g, 2g, 64g, etc. Default: 4g.''')
+    parser_getcov.add_argument('--keepopt',action='store_true', default=False, help='''Optical duplicates are removed by default. This flag says to mark them instead.''')
+    parser_getcov.add_argument('--rmdup',action='store_true', default=False, help='''PCR duplicates are marked by default. This flag will result in removing them (as well as optical duplicates).''')
     parser_getcov.add_argument('--dry',action='store_true', default=False, help='''Only writes out the commands that will be used if set.''')
+    parser_getcov.add_argument('--clean',action='store_true',default=False,help='''Remove intermediate files... Default: False.''')
+    parser_getcov.add_argument('--force',action='store_true',default=False,help='''Ignore assertions. Good for made-up filenames when debugging in dry-runs. Do not use this for real run. Default: False.''')
     parser_getcov.set_defaults(func=run_subtool)
 
 
