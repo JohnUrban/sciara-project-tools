@@ -16,7 +16,7 @@ def bedtools_makewindows(genome, window, step, outbed):
 def coverageBed(bam, windowbed, genome):
     #optionally give path to windowbed made with bedtools_makewindows
     #assumes BAM and windowBed are sorted
-    return "coverageBed -a " + windowbed + " -b " + bam + "-sorted -G " + genome + "-counts"
+    return "coverageBed -sorted -counts -a " + windowbed + " -b " + bam + " -g " + genome
 
 def sortBed():
     return "sortBed -i - "
@@ -58,7 +58,7 @@ def picard_mark_duplicates(jar, inbam, outbam, metricsfilename, mem='4g', rm_opt
         PRESORTED="true"
     else:
         PRESORTED="false"
-    return (" ").join(["java -Xmx" + str(mem), "-jar", jar, "MarkDuplicates INPUT="+inbam, "OUTPUT="+outbam, "METRICS_FILE="+metricsfilename, "REMOVE_SEQUENCING_DUPLICATE="+RMOPTDUP, "REMOVE_DUPLICATES="+RMDUP, "ASSUME_SORTED="+PRESORTED])
+    return (" ").join(["java -Xmx" + str(mem), "-jar", jar, "MarkDuplicates INPUT="+inbam, "OUTPUT="+outbam, "METRICS_FILE="+metricsfilename, "REMOVE_SEQUENCING_DUPLICATES="+RMOPTDUP, "REMOVE_DUPLICATES="+RMDUP, "ASSUME_SORTED="+PRESORTED])
 
 
 def report_commands(parser,args):
@@ -86,7 +86,7 @@ def run_commands(parser, args):
 
 def run_cmd(cmd, dry=True):
     if dry:
-        print cmd 
+        print cmd + "\n"
     else:
         os.system( cmd )
        
@@ -98,34 +98,35 @@ def run(parser, args):
 ##        run_commands(parser, args)
 ##        wininfo, windowbed = windowbed_name(args.window, args.step)
     ## Make windows
+    wininfo, windowbed = windowbed_name(args.window, args.step)
     cmd = bedtools_makewindows(args.genome, args.window, args.step, windowbed)
     run_cmd(cmd, args.dry)
     wininfo, windowbed = windowbed_name(args.window, args.step)
     for bam in FileList(args.bams, extension='.bam'):
         
         #filter based on mapq
-        if args.mapq > 0:
-            tmpbam = "pufferfish.getcov.tmp." + os.path.basename(bam).split(".bam")
-            cmd = samtools_view(bam, args.mapq) + " > " + tmpbam
+        if int(args.mapq) > 0:
+            filterqbam = os.path.basename(bam).split(".bam")[0] + ".mapqfiltered.bam"
+            cmd = samtools_view(bam, args.mapq) + " 2>>pufferfish.getcov.err > " + filterqbam
             run_cmd(cmd, args.dry)
-        
+
         #filter out optical and PCR duplicates
-        if args.mapq > 0:
-            inbam = tmpbam
+        if int(args.mapq) > 0:
+            inbam = filterqbam
         else:
             inbam = bam
         if args.filterdup:
-            outbam = os.path.basename(tmpbam).split(".bam")[0] + ".mkdup.bam"
-            metricsfile = os.path.basename(tmpbam).split(".bam")[0] + ".mkdup.metrics.txt"
+            outbam = os.path.basename(inbam).split(".bam")[0] + ".mkdup.bam"
+            metricsfile = os.path.basename(inbam).split(".bam")[0] + ".mkdup.metrics.txt"
             rm_opt_dup = not args.keepopt
-            cmd = picard_mark_duplicates(jar=args.filterdup, inbam=tmpbam, outbam=outbam, metricsfilename=metricsfile, mem=args.picardmem, rm_opt_dup=rm_opt_dup, rmdup=args.rmdup, presorted=True)
+            cmd = picard_mark_duplicates(jar=args.filterdup, inbam=inbam, outbam=outbam, metricsfilename=metricsfile, mem=args.picardmem, rm_opt_dup=rm_opt_dup, rmdup=args.rmdup, presorted=True) + " 2>>pufferfish.getcov.err"
             run_cmd(cmd, args.dry)
         else:
             outbam = inbam
         
         #get coverage counts in each bin
         bedGraph = bedgraph_name(bam, args.mapq, wininfo)
-        cmd = coverageBed(bam=outbam, windowbed=windowbed, genome=args.genome) + " > " + bedGraph
+        cmd = coverageBed(bam=outbam, windowbed=windowbed, genome=args.genome) + " 2>>pufferfish.getcov.err > " + bedGraph
         run_cmd(cmd, args.dry)
 ##        cov_cmd = cov_pipeline(bam, args.mapq, windowbed, args.genome, bedGraph)
 ##        os.system(cov_cmd)
@@ -133,5 +134,12 @@ def run(parser, args):
         #remove bin/window file
         cmd = "rm " + windowbed
         run_cmd(cmd, args.dry)
+        if int(args.mapq) > 0:
+            #remove filteredq file
+            cmd = "rm " + filterqbam
+            run_cmd(cmd, args.dry)
+        if args.filterdup:
+            cmd = "rm " + outbam
+            run_cmd(cmd, args.dry)
         
         

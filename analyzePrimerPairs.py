@@ -20,13 +20,37 @@ DESCRIPTION
     - some verbosity levels
 
     -TODO: product only still writes primer files... put a stop to that...
-    
+
+    Best score:
+    pairnum fwd rev 1 1 1 1 1 1 0 0 0 0 1
+
+    march 17,2016 note --
+    I think the columns are:
+        pairnum fed rev fwd-alone f-alone* rev-alone r-alone* pair pair* f-pair f-pair* r-pair r-pair* product
+        *less stringent
+        -- check this
     """, formatter_class= argparse.RawTextHelpFormatter)
 
 ##parser_input = parser.add_mutually_exclusive_group()
 parser.add_argument('-i', "--input",
                    type=str, required=False,
-                   help='''Path to primer blast file.''')
+                   help='''Path to primer blast file.
+A blast file is made by copy/pasting the primer blast results from http://www.ncbi.nlm.nih.gov/tools/primer-blast/primertool.cgi
+to a txt file. E.g:
+Primer pair 1
+Sequence (5'->3')       Template strand Length  Start   Stop    Tm      GC     Self complementarity    Self 3' complementarity
+Forward primer  CAGAACACTCGGCCATCCAC    Plus    20      69      88      61.02   60.00   4.00    0.00
+Reverse primer  CGGTAAGCAAACGAGCGAGT    Minus   20      132     113     61.01   55.00   2.00    2.00
+Product length  64
+.
+.
+.
+Primer pair N
+Sequence (5'->3')       Template strand Length  Start   Stop    Tm      GC     Self complementarity    Self 3' complementarity
+Forward primer  CTCGCTCGTTTGCTTACCGT    Plus    20      114     133     61.01   55.00   3.00    3.00
+Reverse primer  TGGCAATGCGGTTATTCGCT    Minus   20      229     210     61.03   50.00   5.00    2.00
+Product length  116
+''')
 
 parser.add_argument('-I', "--interleaved",
                    type=str, required=False,
@@ -88,6 +112,9 @@ is to check its specificity.
 Example use:
 analyzePrimerPairs.py -P products.fa -o ./ -bdb blast-index-prefix -ref ref.fa''')
 
+parser.add_argument('-qpcr', "--qpcr",
+                   action="store_true", default=False,
+                   help='''When looking for possible off-target priming sites, this restricts search for products <= 1kb. Normally it allows <= 10kb.''')
 
 parser.add_argument('-v', "--verbose",
                    action="store_true", default=False,
@@ -121,7 +148,7 @@ class Result(object):
         
 
 class Pairs(object):
-    def __init__(self,f,outdir,bt2,bdb=None,reference=None):
+    def __init__(self,f,outdir,bt2,bdb=None,reference=None, qpcr=False):
         '''f is Path to primer blast file.'''
         self.f = f
         if outdir[-1] != "/":
@@ -141,6 +168,7 @@ class Pairs(object):
         self.results = None
         self.primer_test = False
         self.product_test = False
+        self.qpcr = qpcr
         
 ##    def readPrimerPair(self):#primer_blast
 ##        pair = {}
@@ -356,7 +384,10 @@ class Pairs(object):
         return self.pairs[pair]["rev"]        
 
     def _ps_cmd(self, pair):
-        return ["primerSpecificity.sh",  self.bt2, pairs.get_primer_path(pair)[0], pairs.get_primer_path(pair)[1]]
+        if self.qpcr:
+            return ["qpcrPrimerSpecificity.sh",  self.bt2, pairs.get_primer_path(pair)[0], pairs.get_primer_path(pair)[1]]
+        else:
+            return ["primerSpecificity.sh",  self.bt2, pairs.get_primer_path(pair)[0], pairs.get_primer_path(pair)[1]]
 
     def _target_cmd(self, pair):
         return ["productSpecificity.sh",  self.bt2, pairs.get_primer_path(pair)[0], pairs.get_primer_path(pair)[1], self.blastdb, self.reference]
@@ -367,7 +398,7 @@ class Pairs(object):
 
 
 class PrimerBlastFile(Pairs):
-    def __init__(self,f,outdir,bt2,bdb=None,reference=None):
+    def __init__(self,f,outdir,bt2,bdb=None,reference=None, qpcr=False):
         '''f is Path to primer blast file.'''
         self.f = f
         if outdir[-1] != "/":
@@ -387,6 +418,7 @@ class PrimerBlastFile(Pairs):
         self.results = None
         self.primer_test = False
         self.product_test = False
+        self.qpcr = qpcr
         
     def readPrimerPair(self):#primer_blast
         pair = {}
@@ -426,7 +458,7 @@ class PrimerBlastFile(Pairs):
     
 
 class PairedFastaFiles(Pairs):
-    def __init__(self,f1,f2,outdir,bt2,bdb=None,reference=None):
+    def __init__(self,f1,f2,outdir,bt2,bdb=None,reference=None, qpcr=False):
         '''f is Path to primer blast file.'''
         self.f1 = f1
         self.f2 = f2
@@ -447,6 +479,7 @@ class PairedFastaFiles(Pairs):
         self.results = None
         self.primer_test = False
         self.product_test = False
+        self.qpcr = qpcr
         
     def readPrimerPair(self, j):#paired_fasta
         pair = {}
@@ -471,7 +504,7 @@ class PairedFastaFiles(Pairs):
 
 
 class InterleavedFastaFile(Pairs):
-    def __init__(self,f,outdir,bt2,bdb=None,reference=None):
+    def __init__(self,f,outdir,bt2,bdb=None,reference=None, qpcr=False):
         '''f is Path to primer blast file.'''
         self.f = f
         if outdir[-1] != "/":
@@ -491,6 +524,7 @@ class InterleavedFastaFile(Pairs):
         self.results = None
         self.primer_test = False
         self.product_test = False
+        self.qpcr = qpcr
         
     def readPrimerPair(self, j):#paired_fasta
         pair = {}
@@ -514,7 +548,7 @@ class InterleavedFastaFile(Pairs):
           
 
 class TSV(Pairs):
-    def __init__(self,f,fwd_col, rev_col, outdir,bt2,bdb=None,reference=None,name_col=False):
+    def __init__(self,f,fwd_col, rev_col, outdir,bt2,bdb=None,reference=None,name_col=False, qpcr=False):
         '''f is Path to primer blast file.'''
         self.f = f
         if outdir[-1] != "/":
@@ -540,6 +574,7 @@ class TSV(Pairs):
             self.name_col = name_col
         self.fwd_col = fwd_col-1 #pythonese
         self.rev_col = rev_col-1 #pythonese
+        self.qpcr = qpcr
         
     def readPrimerPair(self, j):#paired_fasta
         pair = {}
@@ -571,13 +606,13 @@ class TSV(Pairs):
 ##pairs = Pairs(args.input, args.outdir, args.bowtie2index, args.blastdb, args.reference)
 
 if args.input:
-    pairs = PrimerBlastFile(args.input, args.outdir, args.bowtie2index, args.blastdb, args.reference)
+    pairs = PrimerBlastFile(args.input, args.outdir, args.bowtie2index, args.blastdb, args.reference, args.qpcr)
 elif args.interleaved:
-    pairs = InterleavedFastaFile(args.interleaved, args.outdir, args.bowtie2index, args.blastdb, args.reference)
+    pairs = InterleavedFastaFile(args.interleaved, args.outdir, args.bowtie2index, args.blastdb, args.reference, args.qpcr)
 elif args.fwd and args.rev:
-    pairs = PairedFastaFiles(args.fwd, args.rev, args.outdir, args.bowtie2index, args.blastdb, args.reference)
+    pairs = PairedFastaFiles(args.fwd, args.rev, args.outdir, args.bowtie2index, args.blastdb, args.reference, args.qpcr)
 elif args.tsv and args.fwdcol and args.revcol:
-    pairs = TSV(args.tsv, args.fwdcol, args.revcol, args.outdir, args.bowtie2index, args.blastdb, args.reference, args.namecol)
+    pairs = TSV(args.tsv, args.fwdcol, args.revcol, args.outdir, args.bowtie2index, args.blastdb, args.reference, args.namecol, args.qpcr)
 elif args.product_spec_only:
     pass
 

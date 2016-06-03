@@ -8,34 +8,34 @@ logger = logging.getLogger('pufferfish')
 ##samtools index $prefix.bam 2>>$prefix.txt 
 
 
-##def detect_fastx_type(fastx):
-##    try:
-##        assert os.path.exists(fastx)
-##    except AssertionError as e:
-##        e.args += (fastx, 'File does not exist')
-##        raise
-##    try:
-##        connection = gzip.open(fastx)
-##        line = connection.next()
-##    except IOError:
-##        connection.close()
-##        connection = bz2.BZ2File(fastx)
-##        try:
-##            line = connection.readline()
-##        except IOError:
-##            connection.close()
-##            connection = open(fastx,'r')
-##            line = connection.next()
-##    ans = fastx_check(line)
-##    connection.close()
-##    return ans
-##
-##def fastx_check(line):
-##    if line[0] == ">":
-##        return "fa"
-##    elif line[0] == "@":
-##        return "fq"
-####        connection = open(args.fqFile)
+def detect_fastx_type(fastx):
+    try:
+        assert os.path.exists(fastx)
+    except AssertionError as e:
+        e.args += (fastx, 'File does not exist')
+        raise
+    try:
+        connection = gzip.open(fastx)
+        line = connection.next()
+    except IOError:
+        connection.close()
+        connection = bz2.BZ2File(fastx)
+        try:
+            line = connection.readline()
+        except IOError:
+            connection.close()
+            connection = open(fastx,'r')
+            line = connection.next()
+    ans = fastx_check(line)
+    connection.close()
+    return ans
+
+def fastx_check(line):
+    if line[0] == ">":
+        return "fa"
+    elif line[0] == "@":
+        return "fq"
+
 
         
 def make_bt2(fasta, prefix):
@@ -69,7 +69,7 @@ def samtools_index(bamfile, errfile):
 
 
 
-def map_reads(fastx, bt2, f=sys.stderr, dry=False):
+def map_reads(fastx, bt2, dry=False):
     prefix = os.path.basename(fastx).split(".")[0]
     errfile = prefix + ".err"
     mapreads = (" | ").join([bowtie2(bt2,fastx,errfile), samtools_view(errfile), samtools_sort(prefix,errfile)])
@@ -97,15 +97,17 @@ def run_cmd(cmd, dry=True):
 ##    for fastx in args.fastxfiles:
 ##        bt2, sort = map_reads(fastx, bt2prefix, dry_run=True)   
 ##        f.write(bt2 + "\n" + sort + "\n")
-    f.close()
+##    f.close()
         
 def run(parser, args):
-    report_commands(parser, args)
-    if not args.dry:
-        if args.ref_fasta:
-            cmd, args.bt2 = make_bt2(args.ref_fasta)
-            run_cmd( cmd, args.dry )
-        for fastx in args.fastxfiles:
-            map_reads(fastx, args.bt2)
+##    report_commands(parser, args)
+    
+##    if not args.dry:
+    if args.ref_fasta:
+        prefix = args.ref_fasta.split(".fa")[0]
+        cmd, args.bt2 = make_bt2(args.ref_fasta, prefix)
+        run_cmd( cmd, args.dry )
+    for fastx in args.fastxfiles:
+        map_reads(fastx, args.bt2, args.dry)
     
     

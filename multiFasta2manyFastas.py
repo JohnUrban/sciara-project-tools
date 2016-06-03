@@ -16,11 +16,23 @@ parser.add_argument('--fasta', '-f',
                    type= str,
                    help='''Input file in fasta format containing multiple sequences. ''',
                    required= True)
+parser.add_argument('--numnames', '-n', type=str, default=False,
+                    help=''' By default, fasta filenames are the fasta entry names.
+This option allows you to specify a word for the filename instead. Then each entry will be named WORD_N.fa
+numbered according to its position in the fastafile.''')
 
 
 args = parser.parse_args()
 
 
-for fa in SeqIO.parse(args.fasta, "fasta"):
-    SeqIO.write(fa, fa.name+".fa", "fasta")
+if args.numnames:
+    i=0
+    word = args.numnames+"_"
+    for fa in SeqIO.parse(args.fasta, "fasta"):
+        i+=1
+        SeqIO.write(fa, word+str(i)+".fa", "fasta")
+else:
+    for fa in SeqIO.parse(args.fasta, "fasta"):
+        SeqIO.write(fa, fa.name+".fa", "fasta")
+
 

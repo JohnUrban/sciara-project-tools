@@ -60,14 +60,18 @@ def NX(l, x=[25,50,75], G=False):
             l = l[:]
             x = x[:]
             nxsum = 0
+            L = 0
             nxvalues = {e:0 for e in x}
+            lxvalues = {e:0 for e in x}
             for e in x:
                     xpct = G*e/100.0
                     while nxsum < xpct and l:
                             nxsum += l[-1]
+                            L += 1
                             lastsize = l.pop()
                     nxvalues[e] = lastsize
-            return nxvalues
+                    lxvalues[e] = L
+            return nxvalues, lxvalues
 
 	else:
             return None
@@ -148,9 +152,11 @@ MEDIAN = np.median(l)
 print "Median contig size:", MEDIAN
 
 ## Get NX values
-nxvalues = NX(l,x,G=A)
+nxvalues, lxvalues = NX(l,x,G=A)
 for e in x:
     print "Contig N%s\t%d" % (str(e), nxvalues[e])
+for e in x:
+        print "Contig L%s\t%d" % (str(e), lxvalues[e])
 
 
 ## expected value given assembly size
@@ -159,9 +165,11 @@ print "E size (G=%d) = %d" % (A, E)
 
 ## Get NGX values
 for g in G:
-    nxvalues = NX(l,x,G=g)
+    nxvalues, lxvalues = NX(l,x,G=g)
     for e in x:
-        print "Contig N%s (G=%d)\t%d" % (str(e), g, nxvalues[e])
+        print "Contig NG%s (G=%d)\t%d" % (str(e), g, nxvalues[e])
+    for e in x:
+        print "Contig LG%s (G=%d)\t%d" % (str(e), g, lxvalues[e])
 
 ## get expected sizes given genome size values
 for g in G:

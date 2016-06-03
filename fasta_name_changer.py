@@ -41,22 +41,34 @@ parser.add_argument('--front', '-F',
 parser.add_argument('--back', '-B',
                    type=str, default=False,
                    help='''Add this info to back of name (operation occurs after -k)''')
-
-
+parser.add_argument('--replace', '-r',
+                   type=str, default=False,
+                   help='''replace name with given string -- often used with --number to append entry number to replacement word.''')
+parser.add_argument('--number', '-n',
+                   action='store_true', default=False,
+                   help='''Add entry number (e.g. _1) to end of name. Often sed with --replace.''')
 args = parser.parse_args()
 if args.keep:
     chunk = args.keep-1
+if args.fasta == "-" or args.fasta == "stdin":
+    args.fasta = sys.stdin
 ## SeqIO automatically takes ">name" from ">name other info" with entry.name
 ## entry.description gives whole name "name other info" -- removes ">" in front
+seq_n=0
 for entry in SeqIO.parse(args.fasta, "fasta"):
+    seq_n += 1
     name = entry.description 
     if args.keep:
-        i = args.keep-1
+##        i = args.keep-1
         name = name.split()[chunk]
     if args.front:
         name = args.front+name
     if args.back:
         name = name+args.back
+    if args.replace:
+        name = args.replace
+    if args.number:
+        name += "_"+str(seq_n)
     name = ">"+name
     sys.stdout.write(name + "\n")
     sys.stdout.write(str(entry.seq) + "\n")

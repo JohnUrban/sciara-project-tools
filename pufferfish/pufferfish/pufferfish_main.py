@@ -267,7 +267,8 @@ Default: 2500.''')
                                help=''' If imputing, specify bandwidth (int) for  kernel smoothing.
 This bandwidth is generally longer than the one you would provide for regular smoothing.
 Only bins with a count of 0 will take on smoothed (imputed) values.
-Try: 10000.''')
+Try: 10000.
+NOTE: In practice, this lead to its own set of problems and I do not recommend using it in its current form.''')
     parser_puffcn.add_argument('--counts', type=str, default=False,
                                help=''' Use this flag and specify an output prefix for the final normalized late stage bin counts bedGraph.''')
     parser_puffcn.set_defaults(func=run_subtool)

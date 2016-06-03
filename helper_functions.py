@@ -1,3 +1,11 @@
+from matplotlib import pyplot as plt
+
+def gc(x):
+    c=0
+    for b in x:
+        c += b.upper() in 'GC'
+    return 100.0*c/len(x)
+
 def complement(seq):
     ''' assumes uppercase '''
     c=""
@@ -13,3 +21,6 @@ def revcomp(seq):
 
 def case_counter(seq):
     return sum(1 for b in seq if b.islower())
+
+
+
