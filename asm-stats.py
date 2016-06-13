@@ -40,7 +40,12 @@ parser.add_argument('-G', "--genomesize",
                    type=str, default="210000000,275000000,350000000,360000000",
                    help='''Produce NG statistics and (if applicable) E-size with some specified genome size (default is G = assembly size = sum(contigs)). Supply comma-separated integer values for genome sizes to try.''')
 
-
+parser.add_argument('-t', '--table', action='store_true', default=False,
+                    help='''Instead of normal print out, print only a single line of comma-separated values. Use -H for header.''')
+parser.add_argument('-H', '--header', action='store_true', default=False,
+                    help='''Optionally used with -t/--table. Prints out header line first.''')
+parser.add_argument('-A', '--addword', type=str, default=False,
+                    help='''Print addword as first element (or after --filename) of output for either standard or table. e.g. add the filename.''')
 args = parser.parse_args()
 
 
@@ -116,7 +121,6 @@ elif args.cmdline:
     l = [float(e) for e in args.cmdline.split(",")]
 
 
-
 ## sort sizes
 l.sort()
 
@@ -129,52 +133,83 @@ G = [float(e) for e in args.genomesize.split(",")]
 G.sort()
 
 ## Get N contigs
-print "Number contigs:", len(l)
+N = len(l)
 
 ## Get assembly size
 A = sum(l)
-print "Assembly size:", A
 
 ## Get max contig size:
 MAX = max(l)
-print "Max contig size:", MAX
 
 ## Get min contig size:
 MIN = min(l)
-print "Min contig size:", MIN
 
 ## Get mean contig size
 MEAN = np.mean(l)
-print "Mean contig size:", MEAN
 
 ## Get median contig size
 MEDIAN = np.median(l)
-print "Median contig size:", MEDIAN
 
 ## Get NX values
 nxvalues, lxvalues = NX(l,x,G=A)
-for e in x:
-    print "Contig N%s\t%d" % (str(e), nxvalues[e])
-for e in x:
-        print "Contig L%s\t%d" % (str(e), lxvalues[e])
 
 
 ## expected value given assembly size
 E = e_size(l,G=A)
-print "E size (G=%d) = %d" % (A, E)
 
 ## Get NGX values
+gdict = {}
 for g in G:
-    nxvalues, lxvalues = NX(l,x,G=g)
-    for e in x:
-        print "Contig NG%s (G=%d)\t%d" % (str(e), g, nxvalues[e])
-    for e in x:
-        print "Contig LG%s (G=%d)\t%d" % (str(e), g, lxvalues[e])
+    gdict[g] = NX(l,x,G=g)
+##    ngxvalues, lgxvalues = NX(l,x,G=g)
 
 ## get expected sizes given genome size values
+egdict = {}
 for g in G:
-    E = e_size(l,G=g)
-    print "E size (G=%d) = %d" % (g, E)
+    egdict[g] = e_size(l,G=g)
+##    E = e_size(l,G=g)
+##    print "E size (G=%d) = %d" % (g, E)
+
+
+
+
+## PRINT
+if not args.table:
+    if args.addword:
+        print args.addword
+    print "Number contigs:", N
+    print "Assembly size:", A
+    print "Max contig size:", MAX
+    print "Min contig size:", MIN
+    print "Mean contig size:", MEAN
+    print "Median contig size:", MEDIAN
+    for e in x:
+        print "Contig N%s\t%d" % (str(e), int(round(nxvalues[e])))
+    for e in x:
+            print "Contig L%s\t%d" % (str(e), int(round(lxvalues[e])))
+    print "E size (G=%d) = %d" % (A, E)
+    for g in G:
+##        for e in x:
+##            print "Contig NG%s (G=%d)\t%d" % (str(e), g, ngxvalues[e])
+##        for e in x:
+##            print "Contig LG%s (G=%d)\t%d" % (str(e), g, lgxvalues[e])
+        for e in x:
+            print "Contig NG%s (G=%d)\t%d" % (str(e), g, int(round(gdict[g][0][e])))
+        for e in x:
+            print "Contig LG%s (G=%d)\t%d" % (str(e), g, int((gdict[g][1][e])))
+    for g in G:
+        print "E size (G=%d) = %d" % (g, int(round(egdict[g])))
+else:
+    if args.header:
+        header = ["N","ASM_SIZE","MAX","MIN","MEAN","MEDIAN"] + ["N"+str(int(round(e))) for e in x] + ["L"+str(int(round(e))) for e in x] + ["E"] + ["NG"+str(int(round(e)))+"_"+str(int(round(g/1e6)))+"M" for e in x for g in G] + ["LG"+str(int(round(e)))+"_"+str(int(round(g/1e6)))+"M" for e in x for g in G] + ["E_"+str(int(round(g/1e6)))+"M" for g in G]
+        if args.addword:
+            header = ["string"] + header
+        print (",").join(header)
+    metrics = [N, A, MAX, MIN, MEAN, MEDIAN] + [nxvalues[e] for e in x] + [lxvalues[e] for e in x] + [E] + [gdict[g][0][e] for e in x for g in G] + [gdict[g][1][e] for e in x for g in G] + [egdict[g] for g in G]
+    if args.addword:
+        print (",").join([args.addword] + [str(int(round(e))) for e in metrics])
+    else:
+        print (",").join([str(int(round(e))) for e in metrics])
 
 
 
