@@ -37,7 +37,7 @@ parser.add_argument('-x', "--x",
                    help='''Give comma-separated X values for NX function -- i.e. 50 for N50. Default=25,50,75''')
 
 parser.add_argument('-G', "--genomesize",
-                   type=str, default="210000000,350000000",
+                   type=str, default="210000000,275000000,350000000,360000000",
                    help='''Produce NG statistics and (if applicable) E-size with some specified genome size (default is G = assembly size = sum(contigs)). Supply comma-separated integer values for genome sizes to try.''')
 
 
