@@ -139,8 +139,8 @@ def downSampleReadsWithoutReplacement(fqFile, probability, outputFile=None):
 def downSamplePairsWithoutReplacement(fqFile1, fqFile2, probability, outputFile=None):
     if outputFile == None: ##not supporting stdout with pairs now, if I do in future, it would need to be interleaved.
         return
-    f1 = open(fqFile, 'r')
-    f2 = open(fqFile, 'r')
+    f1 = open(fqFile1, 'r')
+    f2 = open(fqFile2, 'r')
     outpre = (".").join(outputFile.split(".")[:-1])
     out1 = open(outpre+"1.fastq", 'w')
     out2 = open(outpre+"2.fastq", 'w')
