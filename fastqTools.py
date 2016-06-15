@@ -142,8 +142,8 @@ def downSamplePairsWithoutReplacement(fqFile1, fqFile2, probability, outputFile=
     f1 = open(fqFile1, 'r')
     f2 = open(fqFile2, 'r')
     outpre = (".").join(outputFile.split(".")[:-1])
-    out1 = open(outpre+"1.fastq", 'w')
-    out2 = open(outpre+"2.fastq", 'w')
+    out1 = open(outpre+".1.fastq", 'w')
+    out2 = open(outpre+".2.fastq", 'w')
     try:
         while f1 and f2:
             read1 = f1.next() + f1.next() + f1.next() + f1.next()

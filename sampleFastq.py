@@ -70,6 +70,10 @@ if args.proportion and args.with_replacement:
     print "For now: Use -n with -w"
     quit()
 
+# filter outprefix, if given, add .fastq
+if args.outprefix:
+    args.outprefix += ".fastq"
+
 ### Execute:
 if args.fastq:
     if args.with_replacement:
