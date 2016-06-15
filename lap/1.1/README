@@ -1,0 +1,1 @@
+Executables and scripts for calculating the LAP are available to download from http://sourceforge. net/p/assembly-eval/. Our framework is split up into the two categories, which contains the executables and scripts for computing the LAP using either alignment tools (aligner) or the dynamic programing methods (dynamic).

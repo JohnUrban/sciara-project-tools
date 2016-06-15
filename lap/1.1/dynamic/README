@@ -1,0 +1,13 @@
+*********
+mprobability : Takes a set of reads and an assembly and generates
+a list of probabilities representing the probability that a read
+came from the assembly.
+*********
+
+IMPORTANT: Binaries are for a linux 64bit operating system.
+
+TO RUN:
+
+    cat input.fast[aq] | ./mprobability −a reference.fasta -f fast[aq] > output.probs
+
+For more info: http://assembly-eval.sourceforge.net/manual.shtml
