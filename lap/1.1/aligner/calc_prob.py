@@ -101,7 +101,7 @@ def runBowtie2(options = None, output_sam = 'temp.sam'):
     bowtie_stderr = open(bowtie_stderr_name, 'w')
     
     # Using bowtie 2.
-    command = "$BT2/bowtie2 " + options + " -S " + output_sam
+    command = "bowtie2 " + options + " -S " + output_sam
     
     if debug_level > 0:
         sys.stderr.write(command + '\n')
