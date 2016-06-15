@@ -349,9 +349,7 @@ def getScoreFromMatePairs(first_mate_filename, second_mate_filename, assembly_fa
                 " -p " + threads + " --very-sensitive -k " + str(max_alignments) + " --reorder --no-mixed --" + orientation + " -I " + min_insert + \
                 " -X " + max_insert
         #--sam-no-hd
-        print 1
         bowtie_stats = runBowtie2(bowtie2_args, output_sam_file)
-        print 2, bowtie_stats
         if debug_level > 0:
             sys.stderr.write('Bowtie alignment results:\n' +  bowtie_stats + '\n')
     
