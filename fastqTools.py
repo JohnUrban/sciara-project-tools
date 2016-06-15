@@ -145,7 +145,7 @@ def downSamplePairsWithoutReplacement(fqFile1, fqFile2, probability, outputFile=
     out1 = open(outpre+"1.fastq", 'w')
     out2 = open(outpre+"2.fastq", 'w')
     try:
-        while f:
+        while f1 and f2:
             read1 = f1.next() + f1.next() + f1.next() + f1.next()
             read2 = f2.next() + f2.next() + f2.next() + f2.next()
             if bernoulli(probability):
