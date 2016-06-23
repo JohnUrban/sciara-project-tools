@@ -45,6 +45,11 @@ parser.add_argument("--maxlen",
                     type=int, default=30000000000,
                     help='''Use this to extract reads <= int given. Default: 30 billion.''')
 
+parser.add_argument('--separate', '-s',
+                   action='store_true',
+                   help='''Works with -n and -c. Puts each fasta record in its own fasta file called name.fasta (with given name). This overrides default behavior of printing to stdout.''', default=False)
+
+
 args = parser.parse_args()
 
 ############################################
@@ -144,7 +149,11 @@ if args.namesfile or args.names:
     gatepct=10
     for record in SeqIO.parse(fastxFile, fastx):
         if record.id in names:
-            SeqIO.write(record, out, fastx)
+            if args.separate:
+                with open(record.id+".fasta", 'w') as f:
+                    SeqIO.write(record, f, fastx)
+            else:
+                SeqIO.write(record, out, fastx)
             names.remove(record.id)
             pctdone += 100*1.0/setsize
             if pctdone >= gatepct and args.verbose:
