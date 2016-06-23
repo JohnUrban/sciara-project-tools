@@ -37,6 +37,10 @@ parser.add_argument('--samplesize', '-n',
 If 0, uniform probabilities are assumed.
 If -1, the entire file will be used.
 Default = 1 million. ''')
+parser.add_argument('--pseudocount', '-c',
+                   type=int, default=0, 
+                   help='''You may want to provide a pseudocount (e.g. 1) if doing a small sample size.
+Default is 0 to allow for correctly learning frequencies from sequences missing a certain base.''')
 parser.add_argument('--convertN', '-N', 
                    action='store_true', default=False,
                    help='''Convert Ns into ACGT. Default: False.''')
@@ -65,17 +69,22 @@ else:
 
 
 ctr = 0
-freq = {"A":0.0, "C":0.0, "G":0.0, "T":0.0}
-
-for fa in SeqIO.parse(args.fasta, 'fasta'):
-    for b in str(fa.seq):
-        if ctr <= args.samplesize:
-            ctr += 1
-            B = b.upper()
-            if B in "ACGT":
-                freq[B] += 1.0
-        else:
-            break
+pc = args.pseudocount
+if args.samplesize == 0:
+    freq = {"A":1.0, "C":1.0, "G":1.0, "T":1.0}
+else:
+    if args.samplesize < 0:
+        args.samplesize = float('inf')
+    freq = {"A":0.0+pc, "C":0.0+pc, "G":0.0+pc, "T":0.0+pc}
+    for fa in SeqIO.parse(args.fasta, 'fasta'):
+        for b in str(fa.seq):
+            if ctr <= args.samplesize:
+                ctr += 1
+                B = b.upper()
+                if B in "ACGT":
+                    freq[B] += 1.0
+            else:
+                break
 
 
 translate = {}
