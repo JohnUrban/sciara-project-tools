@@ -259,7 +259,7 @@ cov <- function(qPCRdata, numTechReps=3, task="Unknown", testSampFirst=TRUE, cov
     if (cv > covcutoff) {
       pass <- c(pass, 0) 
       removal.cand <- wells[which.max(abs(Ct-m))]
-      if(doremoval){qPCRdata$Ct[qPCRdata$Well == removal.cand] <- NA}
+      if(doremoval && sum(!(is.na(Ct))) >= 2){qPCRdata$Ct[qPCRdata$Well == removal.cand] <- NA}
     }
     else {pass <- c(pass, 1); removal.cand <- "-"}
     rmc <- c(rmc, removal.cand)
@@ -276,7 +276,7 @@ cov <- function(qPCRdata, numTechReps=3, task="Unknown", testSampFirst=TRUE, cov
     if (cv > covcutoff) {
       pass <- c(pass, 0) 
       removal.cand <- wells[which.max(abs(Ct-m))]
-      if(doremoval){qPCRdata$Ct[qPCRdata$Well == removal.cand] <- NA}
+      if(doremoval && sum(!(is.na(Ct))) >= 2){qPCRdata$Ct[qPCRdata$Well == removal.cand] <- NA}
     }
     else {pass <- c(pass, 1); removal.cand <- "-"}
     rmc <- c(rmc, removal.cand)
