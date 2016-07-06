@@ -226,6 +226,37 @@ allFE <- function(qPCRdata, normalizer, numTechReps=3, task="Unknown", method=dd
   feTable
 }
 
+
+allstats <- function(qPCRdata, normalizer, numTechReps=3, task="Unknown", method=ddCtFE, testSampFirst=TRUE){
+  ## include mean FE, sd FE
+  ## include p-values and corrected p-values for a couple tests (e.g. t-test and rank sum)
+  ## include mean Ct and sd Ct values -- for each site for each sample
+  ## these will be used in a future function that takes in stats tables for bioreps and computes stats from there...
+  primerPairs <- levels(qPCRdata$Detector)
+  if(testSampFirst){
+    testSample <- 1:numTechReps
+    calibratorSample <- (numTechReps+1):(2*numTechReps) 
+  } else {
+    calibratorSample <- 1:numTechReps
+    testSample <- (numTechReps+1):(2*numTechReps)
+  }
+  testNormalizerCt.mu <- mean(subset(qPCRdata, Detector == normalizer & Task == task)$Ct[testSample], na.rm=TRUE)
+  testNormalizerCt.sd <- sd(subset(qPCRdata, Detector == normalizer & Task == task)$Ct[testSample], na.rm=TRUE)  
+  calibratorNormalizerCt.mu <- mean(subset(qPCRdata, Detector == normalizer & Task == task)$Ct[calibratorSample], na.rm=TRUE)
+  calibratorNormalizerCt.sd <- sd(subset(qPCRdata, Detector == normalizer & Task == task)$Ct[calibratorSample], na.rm=TRUE)
+  statTable <- data.frame(primerPair = primerPairs, FE = 0)
+  for(primer in primerPairs){
+    primerdata <- subset(qPCRdata, Detector == primer & Task == task)
+    testTargetCt <- mean(primerdata$Ct[testSample], na.rm=TRUE) 
+    calibratorTargetCt <- mean(primerdata$Ct[calibratorSample], na.rm=TRUE)
+    FE <- method(sampleSOICt=testTargetCt, sampleNormCt=testNormalizerCt, calibratorSOICt=calibratorTargetCt, calibratorNormCt=calibratorNormalizerCt)
+    ##add to df
+    statsTable[feTable$primerPair == primer,]$FE <- FE
+  }
+  statsTable
+}
+
+
 cov <- function(qPCRdata, numTechReps=3, task="Unknown", testSampFirst=TRUE, covcutoff=1, doremoval=FALSE){
   primerPairs <- levels(qPCRdata$Detector)
   if(testSampFirst){
@@ -244,44 +275,58 @@ cov <- function(qPCRdata, numTechReps=3, task="Unknown", testSampFirst=TRUE, cov
   covs <- c()
   pass <- c()
   rmc <- c()
+  N <- c()
+  ctvals <- c()
   for(primer in primerPairs){
     primerdata <- subset(qPCRdata, Detector == primer & Task == task)
     Ct <- primerdata$Ct[testSample]
+    ctval <- paste(round(Ct, digits = 1), collapse=",")
+    ctvals <- c(ctvals, ctval)
     wells <- primerdata$Well[testSample]
     primerpair <- c(primerpair, primer)
     sampletype <- c(sampletype, "test")
+    n <- sum(!(is.na(Ct)))
+    N <- c(N, n)
     m <- mean(Ct, na.rm = TRUE)
     mu <- c(mu, m)
     s <- sd(Ct, na.rm = TRUE)
     sigma <- c(sigma, s)
     cv <- 100*s/m
+    if(n < 2){ cv <- 100} ##Cannot use only 1 data point, so assume large CV
     covs <- c(covs, cv)
     if (cv > covcutoff) {
       pass <- c(pass, 0) 
-      removal.cand <- wells[which.max(abs(Ct-m))]
-      if(doremoval && sum(!(is.na(Ct))) >= 2){qPCRdata$Ct[qPCRdata$Well == removal.cand] <- NA}
+      if(sum(!(is.na(Ct))) > 2){removal.cand <- wells[which.max(abs(Ct-m))]}
+      else {removal.cand <- "NA"}
+      if(doremoval && sum(!(is.na(Ct))) > 2){qPCRdata$Ct[qPCRdata$Well == removal.cand] <- NA} # only remove outlier if more than 2 datapoints -- if only 2, they are equally far from mean 
     }
     else {pass <- c(pass, 1); removal.cand <- "-"}
     rmc <- c(rmc, removal.cand)
     Ct <- primerdata$Ct[calibratorSample]
+    ctval <- paste(round(Ct, digits = 1), collapse=",")
+    ctvals <- c(ctvals, ctval)
     wells <- primerdata$Well[calibratorSample]
     primerpair <- c(primerpair, primer)
     sampletype <- c(sampletype, "calibrator")
+    n <- sum(!(is.na(Ct)))
+    N <- c(N, n)
     m <- mean(Ct, na.rm = TRUE)
     mu <- c(mu, m)
     s <- sd(Ct, na.rm = TRUE)
     sigma <- c(sigma, s)
     cv <- 100*s/m
+    if(n < 2){ cv <- 100} ##Cannot use only 1 data point, so assume large CV
     covs <- c(covs, cv)
     if (cv > covcutoff) {
       pass <- c(pass, 0) 
-      removal.cand <- wells[which.max(abs(Ct-m))]
-      if(doremoval && sum(!(is.na(Ct))) >= 2){qPCRdata$Ct[qPCRdata$Well == removal.cand] <- NA}
+      if(sum(!(is.na(Ct))) > 2){removal.cand <- wells[which.max(abs(Ct-m))]}
+      else {removal.cand <- "NA"}
+      if(doremoval && sum(!(is.na(Ct))) > 2){qPCRdata$Ct[qPCRdata$Well == removal.cand] <- NA} # only remove outlier if more than 2 datapoints -- if only 2, they are equally far from mean
     }
     else {pass <- c(pass, 1); removal.cand <- "-"}
     rmc <- c(rmc, removal.cand)
   }
-  covtable <- data.frame(primerPair = primerpair, sampleType = sampletype, mean = mu, stdev = sigma, cov = covs, pass = pass, rm.suggest = rmc)
+  covtable <- data.frame(primerPair = primerpair, sampleType = sampletype, N=N, ctvals=ctvals, mean = mu, stdev = sigma, cov = covs, pass = pass, rm.suggest = rmc)
   if(doremoval){qPCRdata}
   else {covtable}
 }
@@ -290,11 +335,14 @@ coefplot <- function(data, covcutoff=2){
   X <- round(dim(data)[1]/3)
   x <- 0:(X+1)
   y <- seq(10, 35, length.out = length(x))
-  plot(x,y,type="n", las=1,ylab="Ct values", xlab="samples")
+  plot(x,y,type="n", las=1,ylab="Ct values", xlab="", xaxt="n")
   abline(h=c(15,20,25,30), lty=3)
   for(i in seq(3,X*3,3)){
     d <- data$Ct[(i-2):i]
     wells <- data$Well[(i-2):i]
+    axis(side=1, at = i/3, labels = FALSE) 
+    lablist <- paste(data$Detector[i], wells[1],wells[2],wells[3])#, las=2, cex.axis=0.5)
+    text(i/3-1.5, par("usr")[3] - 2.5, labels = lablist, srt = 45, pos = 1, xpd = TRUE, cex=0.75)
     abline(v = i/3, lty=3)
     points(rep(i/3,3), c(d))
     #   
@@ -304,12 +352,24 @@ coefplot <- function(data, covcutoff=2){
     s <- sd(d, na.rm = TRUE)
     coef <- 100*s/m
     removal.cand <- wells[which.max(abs(d-m))]
+    if(sum(!(is.na(d))) < 2){coef<-100} ## cause it to FAIL
     if(coef > covcutoff){
       y <- 18+rnorm(1,0,2)
       col <- c("black","red","blue", "dark blue", "dark cyan")[i%%5+1]
       text(x = i/3, y, labels = data$Detector[i], cex=0.75, col=col)
-      text(x = i/3, y-2, labels = round(coef,digits = 3), cex=0.75, col=col)
-      text(x = i/3, y-4, labels = removal.cand, cex=0.75, col=col)
+      if(sum(!(is.na(d))) <= 2){
+        text(x = i/3, y-2, labels = "Too few data points", cex=0.75, col=col)
+        text(x = i/3, y-3, labels = "for automated removal.", cex=0.75, col=col)
+      }
+      else {
+        text(x = i/3, y-2, labels = round(coef,digits = 3), cex=0.75, col=col)
+        text(x = i/3, y-4, labels = removal.cand, cex=0.75, col=col)
+      }
+    }
+    if (sum(!(is.na(d))) < 2) {
+      text(x = i/3, y-6, labels = c(paste0("There is only ", sum(!(is.na(d)))," datapoint.")), cex=0.75, col=col)
+      text(x = i/3, y-7, labels = c(paste0("Consider discarding all")), cex=0.75, col=col)
+      text(x = i/3, y-8, labels = c(paste0("data for this site.")), cex=0.75, col=col)
     }
   }
 }
@@ -496,6 +556,28 @@ compactAvgCts <- function(fullRelTable){
 }
 
 
+
+##Currently working on....Jul 2016
+plotFE <- function(fetable, ord=NA, barcol="dark cyan", addh1=TRUE, addplot=FALSE, ylim=NA, bglines=c(5,10,15)){
+  #fetable is output of allFE
+  #ord is order to show genes or genomic sites in -- given ordered primer pair names
+  if (is.na(ord[1])){ord <- fetable$primerPair}
+  x <- 1:length(ord)
+  if (is.na(ylim[1])){ylim <- max(fetable$FE)+1}
+  if (!(addplot)){
+    plot(x, seq(0, ylim, length.out = length(x)), type="n", xlab="", ylab="FE", las=1, xaxt="n")
+    axis(side=1, at = x, labels = ord, las=2)
+    abline(h=bglines,lty=3)
+  }
+  for(i in x){
+    l = i-0.32
+    r = i+0.52
+    b = 0
+    t = fetable$FE[fetable$primerPair == ord[i]]
+    polygon(x = c(l,l,r,r,l), y = c(b,t,t,b,b), col = barcol)
+  }
+  if (addh1) {abline(h=1,lty=3,lwd=2)}
+}
 
 
 
