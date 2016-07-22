@@ -83,6 +83,8 @@ if args.stdin:
 else:
     fastxFile = open(args.fastx)
 
+
+
 # FASTA or FASTQ?
 if args.fa:
     fastx = "fasta"
@@ -137,7 +139,11 @@ if args.namesfile or args.names:
     ## Make set of record IDs (names)
     names = set()
     if args.namesfile:
-        for line in open(args.namesfile):
+        if args.namesfile == "-" or args.namesfile == "stdin":
+            nfile = sys.stdin
+        else:
+            nfile = open(args.namesfile)
+        for line in nfile:
             names.add(line.rstrip())
     elif args.names:
         for name in args.names.split(","):
