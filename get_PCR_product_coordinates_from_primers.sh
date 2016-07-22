@@ -6,7 +6,7 @@ P2=$3
 if [ $# -eq 0 ]; then
   echo 
   echo Usage: 
-  echo get_PCR_product_from_primers.sh    bt2index    primer1.fa   primer2.fa    genome_sequence.fa
+  echo get_PCR_product_from_primers.sh    bt2index    primer1.fa   primer2.fa
   echo
   exit 0
 fi

@@ -558,7 +558,7 @@ compactAvgCts <- function(fullRelTable){
 
 
 ##Currently working on....Jul 2016
-plotFE <- function(fetable, ord=NA, barcol="dark cyan", addh1=TRUE, addplot=FALSE, ylim=NA, bglines=c(5,10,15)){
+plotFE <- function(fetable, ord=NA, barcol="dark cyan", addh1=TRUE, addplot=FALSE, ylim=NA, bglines=c(5,10,15), plot_type="bar"){
   #fetable is output of allFE
   #ord is order to show genes or genomic sites in -- given ordered primer pair names
   if (is.na(ord[1])){ord <- fetable$primerPair}
@@ -570,11 +570,19 @@ plotFE <- function(fetable, ord=NA, barcol="dark cyan", addh1=TRUE, addplot=FALS
     abline(h=bglines,lty=3)
   }
   for(i in x){
-    l = i-0.32
-    r = i+0.52
-    b = 0
-    t = fetable$FE[fetable$primerPair == ord[i]]
-    polygon(x = c(l,l,r,r,l), y = c(b,t,t,b,b), col = barcol)
+    if (ord[i] %in% fetable$primerPair){
+      l = i-0.32
+      r = i+0.52
+      if(plot_type == "bar"){
+        t = fetable$FE[fetable$primerPair == ord[i]]
+        b = 0 
+      } else if (plot_type == "square"){
+        p = fetable$FE[fetable$primerPair == ord[i]]
+        t = p+1
+        b = p-1
+      }
+      polygon(x = c(l,l,r,r,l), y = c(b,t,t,b,b), col = barcol)
+    } 
   }
   if (addh1) {abline(h=1,lty=3,lwd=2)}
 }
