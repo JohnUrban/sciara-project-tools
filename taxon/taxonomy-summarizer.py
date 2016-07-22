@@ -23,14 +23,7 @@ DESCRIPTION
   (4) Other_hits
       Contains seq names that had xi < Xi, xm < Xm, and xe < Xe.
 
-  All output files contain seqname in column1 followed by:
-  column 2 = Insecta:xi
-  column 3 = Metazoa:xm
-  column 4 = Eukaryota:xe
-  column 5 = Archaea:xa
-  Column 6 = Bacteria:xb
-  Column 7 = Other:xo
-  Columns 8 to N = all colon-separated species:count found, "-" if None.
+  All output files contain seqname in column1 followed by taxon levels and numbers of hits....
     """, formatter_class= argparse.RawTextHelpFormatter)
 ##  Column 7 = comma-separated list of all colon-separated insecta_species:count found, "-" if None.
 ##  Column 8 = comma-separated list of all colon-separated Metazoa_species:count found, "-" if None.
@@ -41,6 +34,12 @@ DESCRIPTION
 parser.add_argument('--inputfile', '-i',
                    type=str, default=False, required=True,
                    help='''Provide tab-separated file output of cnv-taxonomyFromTaxID.py''')
+parser.add_argument('--allseqnames', '-a', default=False,
+                    help=''' Optional. Provide file with all seq names you are attempting to classify, 1 per line (e.g. all contig names in assembly).
+                    In a blast hits file (and therefore taxonomy output file use as input here), not all sequences you blasted necessarily have hits.
+                    Therefore, by default they will not be classified as anything and would not be part of the output here.
+                    This option just allows you to report any sequence name not in given list that was not classified -- reported in 'other' file.
+                    ''')
 parser.add_argument('--outprefix', '-o',
                    type=str, default=False, required=True,
                    help='''Provide output prefix.''')
@@ -147,6 +146,11 @@ for line in fh:
     species_counts[line[0]][line[2]] += 1
 fh.close()
 
+if args.allseqnames:
+    with open(args.allseqnames, 'r') as fh:
+        for line in fh:
+            proximity2insecta[line.strip().split()[0]] ## allows files with more than 1 col, but names must be first
+
 all_levels = 'species,genus,family,order,class,phylum,kingdom,superkingdom'.split(',')
 all_level_args = [args.species, args.genus, args.family, args.order, args.Class, args.phylum, args.kingdom, args.superkingdom]
 levels = []
@@ -175,6 +179,10 @@ for i in range(len(levels)):
 fname = args.outprefix + ".other.out"
 other = open(fname, 'w')
 fnames["Other"] = fname
+##fname = args.outprefix + ".unclassified.out"
+##other = open(fname, 'w')
+##fnames["unclassified"] = fname
+
 
 for seqname in proximity2insecta.keys():## keys are seq names
     ## get total number of hits
