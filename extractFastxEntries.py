@@ -5,7 +5,23 @@ from Bio import SeqIO
 
 parser = argparse.ArgumentParser(description="""
 
-Given a fasta/fastq file and a file of entry names, return from the fastx file only those entries.
+Given a fasta/fastq file and a file of entry names, return from the fastx file only those entries (or only other entries).
+
+Assumes each given name only occurs once in the file by default.
+
+For very large fastx files, if you are looking to get >50% of the entries with supplied names,
+it might be more efficient to supply the names of entries you do not want with "-e" option.
+
+Similarly, for very large fastx files, if you are looking to exclude >50% of the entries with -e,
+it might be more efficient to supply the names of entries you do want (without -e).
+
+It more realistically depends on your workflow though.
+
+"very large fastx files" are likely those with tens of millions of entries or more.
+On a macbook pro, for a fasta file with 87509 scaffolds:
+-- the approach of names to keep for 87256 names took 20 seconds
+-- the approach of names to exclude for the complementary 253 entry names took 17 seconds
+Not a big difference.
 
     """, formatter_class= argparse.RawTextHelpFormatter)
 
@@ -36,6 +52,13 @@ names.add_argument('--namesfile', '-n', type=str,
 
 names.add_argument('--names', '-c', type=str, help='Enter comma-separated names at command line with this flag')
 
+parser.add_argument('--exclude', '-e', action='store_true', default=False,
+                   help='''All sequences in fastx file EXCEPT names given will be returned.''')
+
+parser.add_argument('--multiple', '-m', action='store_true', default=False,
+                    help=''' Only use this if given names possibly occur multiple times in the file. This is unusual.
+By default, it is assumed that a given name only occurs once, so it is removed from the list when it is encountered.
+This flag will turn that off.''')
 
 parser.add_argument("--minlen",
                     type=int, default=0,
@@ -153,24 +176,41 @@ if args.namesfile or args.names:
 
     # Go through fasta file and return records that have IDs that match an element in set of names
     gatepct=10
-    for record in SeqIO.parse(fastxFile, fastx):
-        if record.id in names:
-            if args.separate:
-                with open(record.id+".fasta", 'w') as f:
-                    SeqIO.write(record, f, fastx)
-            else:
-                SeqIO.write(record, out, fastx)
-            names.remove(record.id)
-            pctdone += 100*1.0/setsize
-            if pctdone >= gatepct and args.verbose:
-                msg.write(str(pctdone)+"% complete...."+jobname+"\n")
-                gatepct += 10
+    if not args.exclude:
+        for record in SeqIO.parse(fastxFile, fastx):
+            if record.id in names:
+                if args.separate:
+                    with open(record.id+".fasta", 'w') as f:
+                        SeqIO.write(record, f, fastx)
+                else:
+                    SeqIO.write(record, out, fastx)
+                if not args.multiple:
+                    names.remove(record.id)
+                pctdone += 100*1.0/setsize
+                if pctdone >= gatepct and args.verbose:
+                    msg.write(str(pctdone)+"% complete...."+jobname+"\n")
+                    gatepct += 10
+    else:
+        for record in SeqIO.parse(fastxFile, fastx):
+            if record.id not in names:
+                if args.separate:
+                    with open(record.id+".fasta", 'w') as f:
+                        SeqIO.write(record, f, fastx)
+                else:
+                    SeqIO.write(record, out, fastx)
+                pctdone += 100*1.0/setsize
+                if pctdone >= gatepct and args.verbose:
+                    msg.write(str(pctdone)+"% complete...."+jobname+"\n")
+                    gatepct += 10
+            else: #it is in names, so no need to check for this one anymore
+                if not args.multiple:
+                    names.remove(record.id)
+
 
 elif args.minlen or args.maxlen:
     for record in SeqIO.parse(fastxFile, fastx):
         if len(record) >= args.minlen and len(record) <= args.maxlen:
             SeqIO.write(record, out, fastx)
-
 fastxFile.close()
 out.close()
 

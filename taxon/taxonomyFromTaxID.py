@@ -48,6 +48,9 @@ DESCRIPTION
 
   Could also include length of hit. Or coordinates along seq of hits to see if the seq is a missassembly...
   or for further experiments to see if it is HGT.
+
+  Allow TaxIDs to be used for levels.
+  Allow species TaxID to be submitted alone with option to define all other levels automatically using the TaxTree.
   
   John Urban (2015, 2016)
     """, formatter_class= argparse.RawTextHelpFormatter)
