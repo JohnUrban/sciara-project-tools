@@ -72,6 +72,14 @@ parser.add_argument('--separate', '-s',
                    action='store_true',
                    help='''Works with -n and -c. Puts each fasta record in its own fasta file called name.fasta (with given name). This overrides default behavior of printing to stdout.''', default=False)
 
+parser.add_argument('-i', '--indexes', type=str, default=False,
+                    help=''' Use this if you just want to extract specific entries according to their order of appearance.
+For example, you may want only the first entry (use -i 0), or first 2 (-i 0:2), or the first 5 and last 5 (-i 0:5,N-5:N).
+Or you can take every even numbered entry by -i 0:N:2, for example.
+In the latter 2 cases, you need to know the values of N and N-5 for now.
+In general, you can give comma-separated indexes and can give "slices" as colon-separated integers.
+Indexes are 0-based like Python. Slices will go up to but not include end of range.''')
+
 
 args = parser.parse_args()
 
@@ -206,11 +214,34 @@ if args.namesfile or args.names:
                 if not args.multiple:
                     names.remove(record.id)
 
+elif args.indexes:
+    extract = []
+    indexes = args.indexes.split(",")
+    for idx in indexes:
+        idxrange = idx.split(":")
+        if len(idxrange) == 2:
+            extract += range(int(idxrange[0]), int(idxrange[1]))
+        elif len(idxrange) == 3:
+            extract += range(int(idxrange[0]), int(idxrange[1]), int(idxrange[2]))
+        elif len(idxrange) == 1:
+            extract.append(int(idxrange[0]))
+    extract.sort()
+    i = 0
+    j = 0
+    nidx = len(extract)
+    for record in SeqIO.parse(fastxFile, fastx):
+        if j < nidx and i == extract[j]:
+            SeqIO.write(record, out, fastx)
+            j += 1
+        i += 1
 
+    
 elif args.minlen or args.maxlen:
     for record in SeqIO.parse(fastxFile, fastx):
         if len(record) >= args.minlen and len(record) <= args.maxlen:
             SeqIO.write(record, out, fastx)
+
+            
 fastxFile.close()
 out.close()
 
