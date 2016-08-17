@@ -126,7 +126,7 @@ for contig in SeqIO.parse(args.fastx, "fastq"):
     contig_qvs.append(qv_mean)
     if args.case:
         nlow = case_counter(str(contig.seq))
-        sys.stdout.write(("\t").join([contig.name, str(length), str(qv_mean), qv_median, qv_min, qv_max, str(nlow), str(100*nlow/length)]) +"\n")
+        sys.stdout.write(("\t").join([contig.name, str(length), str(qv_mean), qv_median, qv_min, qv_max, str(nlow), str(100.0*nlow/length)]) +"\n")
     else:
         sys.stdout.write(("\t").join([contig.name, str(length), str(qv_mean), qv_median, qv_min, qv_max]) +"\n")
 
