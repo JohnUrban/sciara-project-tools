@@ -80,7 +80,8 @@ In the latter 2 cases, you need to know the values of N and N-5 for now.
 In general, you can give comma-separated indexes and can give "slices" as colon-separated integers.
 Indexes are 0-based like Python. Slices will go up to but not include end of range.''')
 
-
+parser.add_argument('--head', type=int, default=False,
+                    help=''' Use this if you just want to extract the head (first N bases) of all sequences.''')
 args = parser.parse_args()
 
 ############################################
@@ -235,13 +236,16 @@ elif args.indexes:
             j += 1
         i += 1
 
+elif args.head:
+    for record in SeqIO.parse(fastxFile, fastx):
+        record.seq = record.seq[:args.head]
+        SeqIO.write(record, out, fastx)
     
 elif args.minlen or args.maxlen:
     for record in SeqIO.parse(fastxFile, fastx):
         if len(record) >= args.minlen and len(record) <= args.maxlen:
             SeqIO.write(record, out, fastx)
 
-            
 fastxFile.close()
 out.close()
 

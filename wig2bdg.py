@@ -11,7 +11,9 @@ parser = argparse.ArgumentParser(description="""
     Take in fixed step wig, return fixed step bdg.
     
     ...
-    
+
+    Wig is 1-based.
+    BedGraph is 0-based and excludes end.
     
     """, formatter_class= argparse.RawTextHelpFormatter)
 

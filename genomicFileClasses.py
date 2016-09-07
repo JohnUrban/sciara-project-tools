@@ -1,4 +1,5 @@
 import sys
+import numpy as np
 
 class Bdg(object):
     def __init__(self, bedgraph, collapse_and_exit=False, stdin=False):
@@ -152,12 +153,18 @@ class Bdg(object):
         print ("\t").join([chrom, curr_start, curr_end, curr_count])
 
 
+
+###############################################################################
+''' FIXED WIG '''
+###############################################################################
+
+
 class FixedWig(object):
     #Start is where the bars start (e.g. in IGV bar chart)
     #Step is where each next bar starts
     #Span is how wide each bar ... recommend keeping this <= step.
     #When Span = Step -- it will give typical appearance without white spaces..
-    def __init__(self, wig, wig2bdg=False, make_span_eq_step=False):
+    def __init__(self, wig, wig2bdg=False, make_span_eq_step=False, extractnames=False):
         self.fopen = False
         self.connection = None
         self.file = wig
@@ -168,6 +175,8 @@ class FixedWig(object):
         self.make_span_eq_step = make_span_eq_step
         if wig2bdg:
             self._wig2bdg()
+        elif extractnames:
+            self._extract_from_wig_and_exit(extractnames)
         else:
             self._extract_data()
         
@@ -188,6 +197,9 @@ class FixedWig(object):
         step = int(header[3].split("=")[1])
         span = int(header[4].split("=")[1])
         return name, start, step, span
+
+    def get_header(self, chrom):
+        return "fixedStep chrom=" + chrom + " start=" + str(self.headers[chrom][0]) + " step=" +  str(self.headers[chrom][1]) + " span=" +  str(self.headers[chrom][2])
 
     def _add_chromosome(self, line):
         chrom, start, step, span = self.parse_header(line)
@@ -223,7 +235,7 @@ class FixedWig(object):
         for line in self.connection:
             if self.is_header(line):
                 chrom = self._add_chromosome(line)
-                start = self.headers[chrom][0]
+                start = self.headers[chrom][0] - 1 ## to make 0-based
                 step = self.headers[chrom][1]
                 if self.make_span_eq_step:
                     span = step
@@ -270,4 +282,25 @@ class FixedWig(object):
         #other is another CovBed object with same bins from same genome
         for chrom in self.chromosomes:
             self.count[chrom] = (np.array(self.count[chrom])+pseudocount)/(np.array(other.count[chrom])+pseudocount)
+
+    def get_wig_for(self, chroms):
+        for chrom in chroms:
+            print self.get_header(chrom)
+            for count in self.count[chrom]:
+                print count
+
+    def _extract_from_wig_and_exit(self, names):
+        self.open()
+        extract=False
+        for line in self.connection:
+            if self.is_header(line):
+                chrom = self._add_chromosome(line)
+                extract = False
+                if chrom in names:
+                    print line.strip()
+                    extract=True
+            elif extract:
+                print line.strip()
+        self.close()
+            
 

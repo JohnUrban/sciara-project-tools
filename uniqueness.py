@@ -26,7 +26,6 @@ DESCRIPTION
     ..where |K| is the number of times kmer K appeared.
 
 
-    TODO:
     return in wig format option.
     In wig, for each sequence/chromosome/contig, one specifies a header followed by 1 score per line -- e.g.:
     fixedStep chrom=000000F|quiver|pilon	start=0	step=10000 span=20000
@@ -42,7 +41,10 @@ DESCRIPTION
     2
     1
     ...
-    
+
+    Wig is 1-based and inclusive of end.
+    BedGraph is 0-based and excludes end.
+
     
     """, formatter_class= argparse.RawTextHelpFormatter)
 
@@ -87,7 +89,7 @@ def wiggle(args, kmercounts,k):
         for fa in SeqIO.parse(f, "fasta"):
             seq = str(fa.seq).upper()
             name = str(fa.name)
-            print "fixedStep chrom=" + name + " start=0 step=" + step + " span=" + span
+            print "fixedStep chrom=" + name + " start=1 step=" + step + " span=" + span
             for i in range(len(seq)-k+1):
                 u = 1.0/kmercounts[seq[i:i+k]]
                 print str(u)
