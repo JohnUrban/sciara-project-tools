@@ -238,7 +238,7 @@ elif args.indexes:
 
 elif args.head:
     for record in SeqIO.parse(fastxFile, fastx):
-        record.seq = record.seq[:args.head]
+        record = record[:args.head]
         SeqIO.write(record, out, fastx)
     
 elif args.minlen or args.maxlen:
