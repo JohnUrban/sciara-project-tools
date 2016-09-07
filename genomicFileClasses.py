@@ -1,5 +1,7 @@
+import sys
+
 class Bdg(object):
-    def __init__(self, bedgraph):
+    def __init__(self, bedgraph, collapse_and_exit=False, stdin=False):
         self.fopen = False
         self.connection = None
         self.file = bedgraph
@@ -8,15 +10,22 @@ class Bdg(object):
         self.count = {}
         self.chromosomes = set([])
         self.median = None
-        self._extract_data()
+        if stdin:
+            self.connection = sys.stdin
+        else:
+            self.open()
+            
+        if collapse_and_exit:
+            self._collapse_and_exit()
+        else:
+            self._extract_data()
         
     def open(self):
         if self.fopen:
             self.close()        
         self.connection = open(self.file, 'r')
         self.fopen = True
-
-
+        
     def close(self):
         self.connection.close()
 
@@ -44,12 +53,12 @@ class Bdg(object):
 
                 
     def _extract_data(self):
-        self.open()
         for line in self.connection:
             chrom, start, end, count = line.strip().split()
             self._update_data(chrom, int(start), int(end), int(float(count)))
         self._finalize_data()
-        self.close()
+        if self.fopen:
+            self.close()
 
     def _get_median(self):
         counts = np.concatenate(self.count.values())
@@ -119,8 +128,28 @@ class Bdg(object):
         #other is another CovBed object with same bins from same genome
         for chrom in self.chromosomes:
             self.count[chrom] = (np.array(self.count[chrom])+pseudocount)/(np.array(other.count[chrom])+pseudocount)
-
-
+    def _collapse_and_exit(self):
+        prev_chrom = None
+        for line in self.connection:
+            chrom, start, end, count = line.strip().split()
+##            print count
+            if prev_chrom == None:
+                prev_chrom = chrom
+                curr_start = start
+                curr_end = end
+                curr_count = count
+            elif chrom != prev_chrom or float(count) != float(curr_count):
+                #chrom changed or count changed
+                print ("\t").join([chrom, curr_start, curr_end, curr_count])
+                prev_chrom = chrom
+                curr_start = start
+                curr_end = end
+                curr_count = count               
+            else: ## chrom and count stayed same.. adjust end only
+                curr_end = end
+        
+        #print w/e leftover
+        print ("\t").join([chrom, curr_start, curr_end, curr_count])
 
 
 class FixedWig(object):
