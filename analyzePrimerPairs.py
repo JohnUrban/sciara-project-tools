@@ -6,6 +6,8 @@ from Bio import SeqIO
 parser = argparse.ArgumentParser(description="""
 
 DESCRIPTION
+    Depends on BLAST, Bowtie2, BEDtools, and SAMtools.
+    Uses 'stringEdit' script in sciara-tools.
     
     Copy/paste Primer Blast results into text file.
     This goes through text file and separates primers into fasta file pairs.
@@ -26,9 +28,23 @@ DESCRIPTION
 
     march 17,2016 note --
     I think the columns are:
-        pairnum fed rev fwd-alone f-alone* rev-alone r-alone* pair pair* f-pair f-pair* r-pair r-pair* product
-        *less stringent
-        -- check this
+        1 = pairnum
+        2 = fwd sequence
+        3 = rev sequence
+        4 = fwd-alone -- how many times the fwd primer aligns independently
+        5 = f-alone* -- how many times the fwd primer aligns independently with less stringent parameters
+        6 = rev-alone -- how many times the rev primer aligns independently
+        7 = r-alone* -- how many times the rev primer aligns independently with less stringent parameters
+        8 = pair -- how many times the fwd and rev primers align concordantly in a pair <10kb (<1 kb if qpcr option used)
+        9 = pair* -- (less stringent paramters)
+        10 = f-pair -- how many times it forms a concordant pair with itself
+        11 = f-pair*
+        12 = r-pair -- how many times it forms a concordant pair with itself
+        13 = r-pair*
+        14 = product -- how many local alignments detected (not necessarily important for PCR/qPCR -- it is for FISH probes)
+
+        *less stringent parameters
+
     """, formatter_class= argparse.RawTextHelpFormatter)
 
 ##parser_input = parser.add_mutually_exclusive_group()
@@ -320,19 +336,23 @@ class Pairs(object):
             f = self.parse_primerSpecResult(pair)
             counts = []
             f.next() # burn off "FINAL REPORT:"
-            f.next() #
-            counts.append( f.next().split()[4] )
-            counts.append( f.next().split()[4] )
-            counts.append( f.next().split()[4] )
-            counts.append( f.next().split()[4] )
-            f.next()
-            f.next()
-            counts.append( f.next().split()[2] )
-            counts.append( f.next().split()[2] )
-            f.next()
-            f.next()
-            counts.append( f.next().split()[2] )
-            counts.append( f.next().split()[2] )
+            f.next() # burn off "INDEPENDENT STATS:..."
+            counts.append( f.next().split()[4] ) # Primer 1 maps to __ site(s) independently.
+            counts.append( f.next().split()[4] ) # Primer 1 maps to __ site(s) independently - when requiring less stringency.
+            counts.append( f.next().split()[4] ) # Primer 2 maps to __ site(s) independently.
+            counts.append( f.next().split()[4] ) # Primer 2 maps to __ site(s) independently - when requiring less stringency.
+            f.next() #burn empty line
+            f.next() # burn "PROPER PAIRING:"
+            counts.append( f.next().split()[2] ) # There is/are __ stringent site(s) with <10kb (<1kb for qpcr option) between them for this primer pair.
+            counts.append( f.next().split()[2] ) ## "" when requiring less stringent primer:template matching for this primer pair.
+            f.next() # burn empty
+            f.next() # SELF PAIRING - PRIMER 1:
+            counts.append( f.next().split()[2] ) # There is/are __ total low stringency site(s) with <10kb between them for this primer pair.
+            counts.append( f.next().split()[2] ) #"" less stringent
+            f.next() # burn empty
+            f.next() # SELF PAIRING - PRIMER 2:
+            counts.append( f.next().split()[2] ) # There is/are __ total low stringency site(s) with <10kb between them for this primer pair.
+            counts.append( f.next().split()[2] ) #"" less stringent
             return counts
 
     def analyze_productSpecResult(self,pair):
