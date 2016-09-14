@@ -1,0 +1,23 @@
+#!/bin/bash
+
+##Usage: scriptname string substring-to-remove
+## OR scriptname string substring-to-replace replacement
+## e.g. stringEdit file.txt .txt
+## returns "file" by removing ".txt"
+## good when used in a for loop and need to extract a prefix e.g. fileName from fileName.txt
+## can also pipe into using '-' 
+## This feature means that you can not use sub - with something else-- e.g. cannot do "stringEdit - - anything"
+
+
+if [ "$1" == "-" ]
+then if [ $# -lt 3 ]
+     then awk -v "SUB=$2" '{sub(SUB,""); print}' -
+     else awk -v "THIS=$2" -v "THAT=$3" '{sub(THIS, THAT); print}' -
+     fi
+exit
+fi
+
+if [ $# -lt 3 ]
+then echo $1 | awk -v "SUB=$2" '{sub(SUB,""); print}'
+else echo $1 | awk -v "THIS=$2" -v "THAT=$3" '{sub(THIS, THAT); print}'
+fi

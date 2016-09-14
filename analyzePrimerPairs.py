@@ -93,8 +93,8 @@ parser.add_argument('-bdb', "--blastdb",
                    help='''Path to blast db (up to prefix of db files).''')
 
 parser.add_argument('-ref', "--reference",
-                   type=str, default=None,
-                   help='''Path to reference.fasta file.''')
+                   type=str, default=None, 
+                   help='''Path to reference.fasta file. NOTE: This is typically required if will be predicting PCR products.''')
 
 parser.add_argument('-p', "--product_only",
                    action="store_true", default=False,
