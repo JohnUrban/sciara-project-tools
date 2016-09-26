@@ -2,6 +2,7 @@
 import gzip, sys, argparse
 import numpy as np
 from Bio import SeqIO
+from collections import defaultdict
 ##from fqEncoding import detectEncoding, rosettaStone, baseQC, baseQCmeans, baseQCquantile
 ##import matplotlib.pyplot as plt
 
@@ -10,6 +11,7 @@ parser = argparse.ArgumentParser(description="""
 DESCRIPTION
     
     Takes in fastq assembly file. Reports shit.
+
 
     q = -10 * log_{10} p_{error}
     p{error} = 10^{ q/-10 }
@@ -75,6 +77,11 @@ parser_input = parser.add_mutually_exclusive_group(required=True)
 parser_input.add_argument("-f", "--fastx",
                    type= str, default=False,
                    help='''Input fastq file.''')
+parser.add_argument("-o", "--outprefix",
+                   type= str, default=False,
+                   help='''By default, all output will be sent to stdout.
+This reports the output to files with given prefix if used.
+If --header is used -- that will still go to stdout.''')
 parser.add_argument("--case",
                     action="store_true", default=False,
                     help=''' For each contig, also count number of lower-case and upper-case letters. Reports percents as well. This is useful, since quiver makes bases without support lower-case.''')
@@ -88,7 +95,16 @@ parser.add_argument("-H", "--header",
 
 parser.add_argument("-g", "--genomestats",
                     action = "store_true", default=False,
-                    help=''' Also include genome stats at end...''')
+                    help=''' Also include genome stats at end... 
+You might have more control for caluclating the mean by leaving this option as false and doing something like:
+awk '{g+=$2; m+=$2*$3}END{print m/g}' contigQV.txt
+You can then filter out contigs prior to getting mean by:
+grep -v remove_contig_name contigQV.txt | awk '{g+=$2; m+=$2*$3}END{print m/g}'
+...and so on.''')
+
+parser.add_argument("-G", "--genomeonly",
+                    action = "store_true", default=False,
+                    help=''' ONLY report genome stats...''')
 
 parser.add_argument("-b", "--getlowercasebed", action='store_true', default=False,
                     help='''This option over-rides default output behavior and outputs BED coordinates of stretches of lower-case sequence.
@@ -97,12 +113,33 @@ parser.add_argument("-b", "--getlowercasebed", action='store_true', default=Fals
 parser.add_argument("-i", "--internalonly", action='store_true', default=False,
                     help='''This option is used with "-b"/"--getlowercasebed". Use it to only return internal stretches of lower-case letters,
                             i.e. not the stretches that usually occur at the beginning and end of a contig.''')
+parser.add_argument("-v", "--verbose", action='store_true', default=False,
+                    help='''Print a little bit extra information to stderr about where script currently is....''')
+
 args = parser.parse_args()
 
+
+if not args.outprefix:
+    contig_out = sys.stdout
+    genome_out = sys.stdout
+    bed_out = sys.stdout
+else:
+    if args.getlowercasebed:
+        if args.internalonly:
+            bed_out = open(args.outprefix + '.internal.lowercaseregions.bed', 'w')
+        else:
+            bed_out = open(args.outprefix + '.lowercaseregions.bed', 'w')
+    else:
+        contig_out = open(args.outprefix + '.contig.txt', 'w')
+        genome_out = open(args.outprefix + '.genome.txt', 'w')
 
 contig_qvs = []
 contig_lengths = []
 allqv = []
+ncase_total = 0
+gsize = 0
+qvsum = 0
+qvdict = defaultdict(int)
 
 def case_counter(seq):
     return sum(1 for b in seq if b.isupper())
@@ -126,12 +163,12 @@ def lowercase_regions(seqname, seq, internalonly=False):
                     s = None
                     e = None
                     continue
-                print ("\t").join([seqname, str(s), str(e)])
+                bed_out.write( ("\t").join([seqname, str(s), str(e)]) + "\n")
                 s = None
                 e = None
     ## process end of contig
     if s is not None and not internalonly:
-        print ("\t").join([seqname, str(s), str(lenseq)])
+        bed_out.write( ("\t").join([seqname, str(s), str(lenseq)]) +"\n")
         
 
 def get_length(contig):
@@ -144,6 +181,31 @@ def get_qv_info(contig):
     qv_max = np.max(contig.letter_annotations['phred_quality'])
     return [qv_mean, qv_median, qv_min, qv_max]
     
+def get_median_from_qvdict(qvdict):
+    total = sum(qvdict.values())
+    if total%2 == 1:
+        med_i = [(total+1)//2]
+    else:
+        med = (total)//2
+        med_i = [med, med+1]
+    s = 0
+    qvs = sorted(qvdict.keys())
+    for i in range(len(qvs)):
+        s += qvdict[qvs[i]]
+        if s > med_i[0]:
+            med_1 = qvs[i]
+            if len(med_i) > 1:
+                if s > med_i[1]:
+                    med_2 = qvs[i]
+                elif s+qvdict[qvs[i+1]] > med_i[1]:
+                    med_2 = qvs[i+1]
+                else:
+                    sys.stderr.write( "Nothing makes sense anymore....get_median_from_qvdict failed...\n")
+                    quit()
+                return (med_1+med_2)/2.0
+            else:
+                return float(med_1)
+
 
 if args.header and not args.getlowercasebed:
     if args.case:
@@ -156,27 +218,72 @@ if args.getlowercasebed:
         lowercase_regions(contig.description, str(contig.seq), args.internalonly)
         
 else:
+    if args.verbose:
+        sys.stderr.write("Processing sequences in given file....\n")
     for contig in SeqIO.parse(args.fastx, "fastq"):
         length = get_length(contig)
-        contig_lengths.append(length)
-        qv_mean = np.mean(contig.letter_annotations['phred_quality'])
-        qv_median = str(np.median(contig.letter_annotations['phred_quality']))
-        qv_min = str(np.min(contig.letter_annotations['phred_quality']))
-        qv_max = str(np.max(contig.letter_annotations['phred_quality']))
-        contig_qvs.append(qv_mean)
+        gsize += length
+        if args.genomestats or args.genomeonly:
+##            contig_lengths.append(length)
+            allqv += contig.letter_annotations['phred_quality']
+            qvsum += sum(contig.letter_annotations['phred_quality'])
+            for qv in contig.letter_annotations['phred_quality']:
+                qvdict[qv] += 1
+        if not args.genomeonly:
+            qv_mean = np.mean(contig.letter_annotations['phred_quality'])
+            qv_median = str(np.median(contig.letter_annotations['phred_quality']))
+            qv_min = str(np.min(contig.letter_annotations['phred_quality']))
+            qv_max = str(np.max(contig.letter_annotations['phred_quality']))
+            contig_qvs.append(qv_mean)
+
         if args.case:
-            nlow = case_counter(str(contig.seq))
-            sys.stdout.write(("\t").join([contig.name, str(length), str(qv_mean), qv_median, qv_min, qv_max, str(nlow), str(100.0*nlow/length)]) +"\n")
+            ncase = case_counter(str(contig.seq))
+            ncase_total += ncase
+            if not args.genomeonly:
+                contig_out.write(("\t").join([contig.name, str(length), str(qv_mean), qv_median, qv_min, qv_max, str(ncase), str(100.0*ncase/length)]) +"\n")
         else:
-            sys.stdout.write(("\t").join([contig.name, str(length), str(qv_mean), qv_median, qv_min, qv_max]) +"\n")
+            if not args.genomeonly:
+                contig_out.write(("\t").join([contig.name, str(length), str(qv_mean), qv_median, qv_min, qv_max]) +"\n")
 
-    if args.genomestats:
-        G=sum(contig_lengths)
-        sys.stdout.write(("\t").join(["contig_mean_qv\t" + str(G), str(np.mean(contig_qvs)), str(np.median(contig_qvs)),  str(np.min(contig_qvs)), str(np.max(contig_qvs))]) + "\n")
+    if args.genomestats or args.genomeonly:
+##        G=sum(contig_lengths)
+        G = gsize
+        
+        if not args.genomeonly:
+            genome_out.write(("\t").join(["contig_mean_qv\t" + str(G), str(np.mean(contig_qvs)), str(np.median(contig_qvs)),  str(np.min(contig_qvs)), str(np.max(contig_qvs))]) + "\n")
 
-        ##genome_qv = np.mean(allqv)
-        genome_qv = 0
-        for i in range(len(contig_qvs)):
-            genome_qv += contig_lengths[i]*contig_qvs[i]
-        genome_qv = float(genome_qv)/G
-        sys.stdout.write("genome_qv\t" + str(genome_qv) + "\n")
+## ALT METH 1 -- NUMPY
+##        if args.verbose:
+##            sys.stderr.write("np.mean....")
+##        genome_qv = np.mean(allqv)
+##        print genome_qv, 
+##        if args.verbose:
+##            sys.stderr.write("np.median....\n")
+##        genome_qv_med = np.median(allqv)
+##        print genome_qv_med, get_median_from_qvdict(qvdict)
+
+## ALT METH 2
+##        genome_qv = 0
+##        for i in range(len(contig_qvs)):
+##            genome_qv += contig_lengths[i]*contig_qvs[i]
+##        genome_qv = float(genome_qv)/G
+##        print genome_qv
+
+        gcase = ''
+        if args.case:
+            gcase = str(100.0*ncase_total/G)
+        genome_qv = qvsum/float(G)
+        genome_qv_med = get_median_from_qvdict(qvdict)
+        genome_out.write(("\t").join([str(e) for e in ["genome_qv", genome_qv, genome_qv_med, gcase] if e != '']) + "\n")
+
+
+
+
+## CLOSE UP
+if args.outprefix:
+    if args.getlowercasebed:
+        bed_out.close()
+    else:
+        contig_out.close()
+        genome_out.close()
+    bed_out = sys.stdout
