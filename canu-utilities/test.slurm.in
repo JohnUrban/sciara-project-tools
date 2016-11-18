@@ -1,0 +1,43 @@
+#!/bin/bash
+#SBATCH -J canu1.3_bogartloop
+#SBATCH -c 8
+#SBATCH --qos=biomed-sb-condo
+#SBATCH --mem=32g
+#SBATCH --time=24:00:00
+
+###########################
+
+
+THREADS=8
+bin=~/software/canu/canu/Linux-amd64/bin
+GKP=`readlink -f *.gkpStore`
+OVL=`readlink -f *.ovlStore`
+G=292000000
+
+echo $GKP
+echo $OVL
+
+
+DIRPRE=4-unitigger-test
+
+for DG in 10 20 30 40 50; do
+DIR=${DIRPRE}_${DG}
+mkdir $DIR && \
+cd $DIR && \
+echo `pwd` && \
+$bin/bogart -G $GKP -O $OVL -T asm.tigStore -o asm \
+-B 20000 -gs 292000000 \
+-eg 0.144 \
+-eM 0.144 \
+-el 500 \
+-dg $DG \
+-db $DG \
+-dr 5 \
+-ca 5000 \
+-cp 500 \
+-threads $THREADS -M 19 \
+-unassembled 2 1000 0.75 0.75 2 \
+&& cd ..
+$bin/tgStoreDump -contigs -bubbles -sizes -s $G -G $GKP -T ${DIR}/asm.tigStore 1 | awk -v "var=parameters::: DG:${DG}" '{print $0 "\t" var}'
+
+done

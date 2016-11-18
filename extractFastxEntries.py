@@ -82,6 +82,12 @@ Indexes are 0-based like Python. Slices will go up to but not include end of ran
 
 parser.add_argument('--head', type=int, default=False,
                     help=''' Use this if you just want to extract the head (first N bases) of all sequences.''')
+##
+##parser.add_argument('-U', '--touppercase', type=int, default=False,
+##                    help=''' Will ensure all letters in sequence returned are uppercase.''')
+##parser.add_argument('-L', '--tolowercase', type=int, default=False,
+##                    help=''' Will ensure all letters in sequence returned are lowercase.''')
+
 args = parser.parse_args()
 
 ############################################
