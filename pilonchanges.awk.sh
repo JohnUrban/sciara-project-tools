@@ -6,7 +6,7 @@ function msg {
 "
 }
 
-if [ $# -eq 0 ]; then msg; exit fi
+if [ $# -eq 0 ]; then msg; exit; fi
 
 
 
