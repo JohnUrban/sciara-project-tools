@@ -34,10 +34,10 @@ args = parser.parse_args()
 
 if args.sam:
     samfile = pysam.Samfile(args.sam, "r")
-    pre = args.sam.strip().split('.')[0]
+    pre = args.sam.strip().split('.')[:-1]
 elif args.bam:
     samfile = pysam.Samfile(args.bam, "rb")
-    pre = args.bam.strip().split('.')[0]
+    pre = args.bam.strip().split('.')[:-1]
 
 
 
