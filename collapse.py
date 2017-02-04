@@ -33,6 +33,9 @@ parser.add_argument('--operation', '-o', type=str, default='sum',
                     help=''' Operation to perform on column2. Default: sum.
 Options: max, min, mean, median, sum, list.''')
 
+parser.add_argument('--addcol', '-c3', type=str, default=False,
+                    help='''When using ONLY max or min, also report these columns -- provide comma-separated list.''')
+
 parser.add_argument('--skip', '-s', type=str, default='#',
                     help='''Skip lines that start with given string. ''')
 
@@ -46,6 +49,17 @@ c1 = args.column-1
 c2 = args.column2-1
 
 fxns = args.operation.split(",")
+
+if args.addcol and len(fxns) == 1 and (fxns[0] == 'max' or fxns[0] == 'min'):
+    addcol=True
+    cols = [int(e)-1 for e in args.addcol.strip().split(",")]
+    D = {}
+    for col in cols:
+        D[col] = defaultdict(list)
+##    if fxns[0] == 'max':
+##        addfxn = max
+##    elif fxns[0] == 'min':
+##        addfxn = min
 
 ops = []
 for e in fxns:
@@ -76,6 +90,9 @@ for line in f:
             continue
     line = line.strip().split(args.delimiter)
     d[line[c1]].append(float(line[c2]))
+    if addcol:
+        for col in cols:
+            D[col][line[c1]].append(line[col])
 
 if args.header:
     print (args.delimiter).join(["#c1_element", "number_found"] + fxns)
@@ -84,5 +101,13 @@ for e in sorted(d.keys()):
     for op in ops:
         ans.append( str(op(d[e])) )
     length = len(d[e])
-    
-    print (args.delimiter).join([ str(e), str(length) ] + ans)
+    if addcol:
+##        print d[e]
+##        print ans
+        idx = d[e].index(float(ans[0]))
+        addcols = []
+        for col in cols:
+            addcols.append( D[col][e][idx] )
+        print (args.delimiter).join([ str(e), str(length) ] + ans + addcols )                   
+    else:    
+        print (args.delimiter).join([ str(e), str(length) ] + ans)

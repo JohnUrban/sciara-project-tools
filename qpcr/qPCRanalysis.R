@@ -70,13 +70,13 @@ meanTm <- function(qPCRdata){
 }
 
 
-primerValidation <- function(qPCRdata, numTechReps=2, startingAmount=25, dilutionFactor=10, numPoints=4, highToLow=TRUE){
+primerValidation <- function(qPCRdata, numTechReps=2, startingAmount=2, dilutionFactor=4, numPoints=4, highToLow=TRUE, single=FALSE){
   ## determine slope, efficiency, and R^2 for all
   ## qPCRdata is a table with columns (class): Well (character); Detector(factor); Task (factor); Ct (numeric); Tm (numeric)
   
   # Grab a list of all detectors
   primerPairs <- levels(qPCRdata$Detector)
-  
+#   print(primerPairs)
   # initialize output dataframe
   primerStats <- data.frame(primerPair = primerPairs, slope = 0, efficiency = 0, Rsqr = 0, pass=0)
   
@@ -85,10 +85,14 @@ primerValidation <- function(qPCRdata, numTechReps=2, startingAmount=25, dilutio
   
   # For each detector/primerPair, calculate the primer stats and say whether it passes validation or not
   for(primer in primerPairs){
+#     print(primer)
     isNA <- is.na(subset(qPCRdata, Detector == primer & Task == "Standard")$Ct)
     Cts <- subset(qPCRdata, Detector == primer & Task == "Standard")$Ct[!isNA]
     dilSer <- logNg[!isNA]
+#     print(Cts)
+#     print(dilSer)
     linMod <- lm(Cts ~ dilSer)
+#     print(linMod)
     slope <- linMod$coeff[2]
     Rsqr <- (cor(dilSer, Cts))^2
     efficiency <- reactionEfficiency(slope)
@@ -99,9 +103,127 @@ primerValidation <- function(qPCRdata, numTechReps=2, startingAmount=25, dilutio
     primerStats[primerStats$primerPair == primer,]$Rsqr <- Rsqr
     primerStats[primerStats$primerPair == primer,]$pass <- pass
   }
-  return(primerStats)
+  if(single){return(list(stats=primerStats, model=linMod))}
+  else {return(primerStats)}
 }
 
+autoValidatePrimers <- function(data, controls=NA, numTechReps=2, startingAmount=2,dilutionFactor=4,numPoints=4,highToLow=TRUE){
+  if(is.na(controls[1])){print("Must add vector of control detectors for relative efficiency test -- e.g., c(C1) or c(C1,C2)"); return()}
+#   print(1)
+  primerVal <- primerValidation(data, numTechReps, startingAmount, dilutionFactor, numPoints, highToLow)
+  avgCtTable <- avgCTs(data)
+#   print(2)
+#   print(avgCtTable)
+  frt <- fullRelativeEfficiencyTable(avgCtTable=avgCtTable, normalizer=controls[1], startingAmount=2, dilutionFactor=4, numPoints=4, highToLow=TRUE)
+#   print(3)
+#   print(frt)
+  rett1 <- relativeEfficiencyTest(fullRelTable=frt)
+#   print(4)
+#   print(rett1)
+  all <- rett1[,c(1,3)]
+#   print(5)
+#   print(controls)
+  for (control in controls[2:length(controls)]){
+#     print(control)
+    frt <- fullRelativeEfficiencyTable(avgCtTable=avgCtTable, normalizer=control, startingAmount=startingAmount, dilutionFactor=dilutionFactor, numPoints=numPoints, highToLow=highToLow)
+    rett <- relativeEfficiencyTest(fullRelTable=frt)
+    all <- cbind(all, rett[,3])
+#     print(all)
+  }
+#   print(6)
+  colnames(all) <- c("pair",controls)
+  rownames(all) <- all[,1]
+#   print(7)
+#   print(all)
+  rtest1_controlscores <- apply(X = all[,2:dim(all)[2]], MARGIN = 2, FUN = sum)
+  #transform counts into percents
+  rtest1_controlscores <- rtest1_controlscores/length(primerVal$primerPair)
+  rtest1 <- apply(X = all[,2:dim(all)[2]], MARGIN = 1, FUN = sum)
+  rscores <- c()
+  # Be sure it is in same order
+  for(primer in primerVal$primerPair){rscores <- c(rscores, rtest1[primer])}
+#   print(8)
+  # transform counts into percents
+  rscores <- rscores/length(controls)
+  final1 <- cbind(primerVal,rscores)
+#   print(final1)
+#   cat("\n")
+#   print(rtest1)
+#   print(rscores)
+#   cat("\n")
+#   print(rtest1_controlscores)
+  list(scores=final1, controlscores=rtest1_controlscores)
+}
+
+autoCorrectPrimers <- function(data, scores, numTechReps=2, startingAmount=2, dilutionFactor=4, numPoints=4, highToLow=TRUE){
+  ## scores is from output of autoValidatePrimers -- ans$scores
+  n <- length(scores$primerPair)
+  notes <- ""
+  for(i in 1:n){
+    needsfixing <- scores$pass[i] == 0
+    if(needsfixing){
+      fix <- as.character(scores$primerPair[i])
+      notes <- paste0(notes, "Removed from ", fix, ": ")
+      cat("Fixing ", fix, "...\n")
+      cat("Observe data below and plot...\n")
+      print(subset(data, Detector == fix))
+      plotStdCurve(qPCRdata = data, sampleName = fix, numTechReps, startingAmount, dilutionFactor, ylim=c(15,33), xlim=c(-2,1), col="blue", lwd=3, main = paste0(fix, ", Initial condition")) ## std curve
+      del <- 0
+#       print(needsfixing)
+#       print(del <= 4)
+      while(needsfixing & del <= 4){
+        del <- del+1
+#         print(del)
+        subtable <- subset(data, subset = Detector == fix)
+        subtable$Detector <- factor(subtable$Detector) ## reset factor levels on new subtable to be only "fix"
+        ## Get model
+        fmod <- primerValidation(subtable, numTechReps, startingAmount, dilutionFactor, numPoints, highToLow, single=TRUE)
+        ## Get residuals
+        fres <- residuals(fmod$model)
+        ## find index of largest residual
+        fresmax <- which.max(fres)
+        ## NA the Ct
+        data$Ct[data$Detector == fix][fresmax] = NA
+        #NOTES
+        notes <- paste0(notes, data$Well[data$Detector == fix][fresmax], " ")
+        subtable <- subset(data, subset = Detector == fix)
+        subtable$Detector <- factor(subtable$Detector) ## reset factor levels on new subtable to be only "fix"
+        ## Get pass info
+        finfo <- primerValidation(subtable, numTechReps, startingAmount, dilutionFactor, numPoints, highToLow, single=TRUE)
+        ## REPLOT
+        cat(fix, "Fix", del,": Observe data below and plot...\n")
+        print(subset(data, Detector == fix))
+        plotStdCurve(qPCRdata = data, sampleName = fix, numTechReps, startingAmount, dilutionFactor, ylim=c(15,33), xlim=c(-2,1), col="blue", lwd=3, main = paste0(fix, ", Fix", del)) ## std curve
+        ## needs fixing ?
+        needsfixing <- finfo$stats$pass == 0
+#         cat("END",needsfixing,"\n")
+      }
+      notes <- paste0(notes, "\n")
+    }
+  }
+  cat("\n","Summary: \n", notes, "\n")
+  return(list(data=data, notes=notes))
+}
+
+validateMyPrimers <- function(filename, controls=NA, numTechReps=2, startingAmount=2,dilutionFactor=4,numPoints=4,highToLow=TRUE,conditional=FALSE){
+  ## read in data - ADD /path/to/clean-data.tsv to the double quotes below
+  data <- read.table(filename, header=T, colClasses=c("character", "factor", "factor", "character", "numeric"))
+  ## Make Ct variable numeric instead of character
+  data$Ct[data$Ct == "Undetermined"] = NA
+  class(data$Ct) = "numeric"
+  ## Get validation scores
+  final1 <- autoValidatePrimers(data,controls,numTechReps, startingAmount,dilutionFactor,numPoints,highToLow)
+  print(final1)
+  cordata <- autoCorrectPrimers(data, final1$scores, numTechReps, startingAmount, dilutionFactor, numPoints, highToLow)
+  final2 <- autoValidatePrimers(cordata$data,controls,numTechReps, startingAmount,dilutionFactor,numPoints,highToLow)
+  print(final2)
+  ## ALL TOGETHER NOW
+  prvalscores <- final1$scores$pass+final2$scores$pass
+  final3 <- cbind(final1$scores$pass,final2$scores$pass,prvalscores,final1$scores$rscores,final2$scores$rscores)
+  colnames(final3) <- c("test1","test2","testsum","rel1", "rel2")
+  final4 <- cbind(final1$controlscores, final2$controlscores)
+  return(list(eff=final3, rel=final4, notes=cordata$notes))
+}
 
 
 ## retired just use read.csv or read.table where relevant
@@ -404,9 +526,11 @@ avgCTs <- function(qPCRdata, numTechReps=2, startingAmount=25, dilutionFactor=10
     isNA <- is.na(subset(qPCRdata, Detector == primer & Task == task)$Ct)
     Cts <- subset(qPCRdata, Detector == primer & Task == task)$Ct[!isNA]
     dilSer <- logNg[!isNA]
+#     print(dilSer)
+#     print(logNgLevels)
     for(ngAmt in logNgLevels){
       relevantCts <- dilSer == ngAmt
-      avgCt <- mean(Cts[relevantCts])#, na.rm=TRUE)  <-- should not need that as NAs removed as a processing step
+      avgCt <- mean(Cts[relevantCts], na.rm=TRUE)  #<-- should not need that as NAs removed as a processing step
       sdCt <- sd(Cts[relevantCts], na.rm=TRUE)
       coeffVar <- sdCt/avgCt
       ctAvgs[ctAvgs$primerPair == primer & ctAvgs$logNg == ngAmt,]$avgCt <- avgCt
@@ -555,21 +679,59 @@ compactAvgCts <- function(fullRelTable){
   return(avgCtsCompact)
 }
 
+plotAvgCts <- function(avgCtTable, numPoints=4, label=c("1:1", "1:4", "1:16", "1:64"), highlight=c(NA)){
+  idx <- c(1:(numPoints-1),0)
+  abcd <- matrix(nrow = numPoints, ncol = length(levels(avgCtTable$primerPair)))
+#   print(abcd)
+  for(i in 1:numPoints){
+#     avgCtTable[(1:length(avgCtTable$avgCt))%%numPoints == i, c(1,3)]
+    a <- as.matrix(avgCtTable[(1:length(avgCtTable$avgCt))%%numPoints == idx[i], c(3)])
+    dim(a)
+#     print(dim(a))
+    abcd[i,] <- a
+#     print(abcd)
+  }
+#   print(abcd)
+  rand <- rnorm(length(d)*4, 0, 0.05)
+  x <- rep(1:numPoints, each=length(d))+rand
+  y <- as.vector(t(abcd))
+  l <- avgCtTable[(1:length(avgCtTable$avgCt))%%numPoints == 1, c(1)]
+  cex=0.6
+  plot(x, y, pch=1, cex=cex, xlab="Dilution", ylab="Average Ct", xaxt="n", yaxt="n", las=2, type="n", xlim=c(0.5,4.5))
+  text(x,y,labels = l, cex=cex)
+  axis(side=1, at=1:numPoints, label=label)
+  axis(side=2, at=21:31, label=21:31, las=2)
+  if(!(is.na(highlight[1]))){
+    sub <- (1:length(avgCtTable$avgCt))%%numPoints == 1
+    cols <- c("blue", "red", "green", "orange", "purple", "dark cyan", "pink", "dark blue", "dark green", "dark red", "gold", "silver", "bronze")
+    colcnt <- 0
+    for (high in highlight){
+      colcnt <- colcnt+1
+      bools <- avgCtTable$primerPair[sub] %in% c(high)
+      text(x[bools], y[bools], labels=high, col=cols[colcnt], cex=cex) 
+    }
+  }
+}
 
 
 ##Currently working on....Jul 2016
-plotFE <- function(fetable, ord=NA, barcol="dark cyan", addh1=TRUE, addplot=FALSE, ylim=NA, bglines=c(5,10,15), plot_type="bar"){
+plotFE <- function(fetable, ord=NA, barcol="dark cyan", addh1=TRUE, addplot=FALSE, ylim=NA, bglines=c(5,10,15), plot_type="bar", sqsub=c(1), ylab="FE"){
   #fetable is output of allFE
   #ord is order to show genes or genomic sites in -- given ordered primer pair names
+  if(is.character(barcol)){barcol <- c(barcol)}
+  if(length(barcol) == 1){barcol <- rep(barcol[1], length(fetable$primerPair))}
+  if(length(sqsub) == 1){sqsub <- rep(sqsub[1], length(fetable$primerPair))}
   if (is.na(ord[1])){ord <- fetable$primerPair}
   x <- 1:length(ord)
   if (is.na(ylim[1])){ylim <- max(fetable$FE)+1}
   if (!(addplot)){
-    plot(x, seq(0, ylim, length.out = length(x)), type="n", xlab="", ylab="FE", las=1, xaxt="n")
+    plot(x, seq(0, ylim, length.out = length(x)), type="n", xlab="", ylab=ylab, las=1, xaxt="n")
     axis(side=1, at = x, labels = ord, las=2)
     abline(h=bglines,lty=3)
   }
+  j<-0
   for(i in x){
+    j <- j+1
     if (ord[i] %in% fetable$primerPair){
       l = i-0.32
       r = i+0.52
@@ -578,10 +740,10 @@ plotFE <- function(fetable, ord=NA, barcol="dark cyan", addh1=TRUE, addplot=FALS
         b = 0 
       } else if (plot_type == "square"){
         p = fetable$FE[fetable$primerPair == ord[i]]
-        t = p+1
-        b = p-1
+        t = p+sqsub[j]
+        b = p-sqsub[j]
       }
-      polygon(x = c(l,l,r,r,l), y = c(b,t,t,b,b), col = barcol)
+      polygon(x = c(l,l,r,r,l), y = c(b,t,t,b,b), col = barcol[j])
     } 
   }
   if (addh1) {abline(h=1,lty=3,lwd=2)}

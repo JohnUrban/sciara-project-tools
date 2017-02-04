@@ -26,9 +26,12 @@ strand = cols [3]
 others = []
 if args.othercolumns:
     others = [int(e) - 1 for e in args.othercolumns.split(",")]
+if args.blastfile == "-" or args.blastfile =="stdin":
+    blastfile = sys.stdin
+else:
+    blastfile = open(args.blastfile, 'r')
 
-
-for entry in open(args.blastfile, 'r'):
+for entry in blastfile:
     entry = entry.strip().split()
     if entry[strand] == "plus":
         print ("\t").join([entry[name], str(int(entry[start])-1), entry[end]] + [entry[e] for e in others])
