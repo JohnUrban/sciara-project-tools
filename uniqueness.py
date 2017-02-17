@@ -63,6 +63,8 @@ parser.add_argument('-c', '--counts', type=str, default=False,
                     help='''Also write two-column, tab-separated file containing kmers and counts -- with name "arg.counts".txt
 Note that this is not giving reverse-complement counts.''')
 
+parser.add_argument('-C', '--countsonly', action='store_true',
+                    help='''Only return counts file. This flag only has an effect if --counts is used correctly.''')
 
 parser.add_argument('-v', '--verbose', action='store_true')
 
@@ -118,6 +120,8 @@ if args.counts:
     with open(args.counts + ".txt",'w') as out:
         for kmer in sorted(kmercouns.keys()):
             out.write(kmer + "\t" + str(kmercounts[kmer]) + "\n")
+    if args.countsonly:
+        quit()
 if args.bdg:           
     bedgraph(args,kmercounts,k)
 else: ##wiggle
