@@ -118,7 +118,7 @@ if args.verbose:
     sys.stderr.write("Returning output....\n")
 if args.counts:
     with open(args.counts + ".txt",'w') as out:
-        for kmer in sorted(kmercouns.keys()):
+        for kmer in sorted(kmercounts.keys()):
             out.write(kmer + "\t" + str(kmercounts[kmer]) + "\n")
     if args.countsonly:
         quit()
