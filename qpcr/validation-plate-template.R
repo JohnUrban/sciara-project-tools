@@ -19,6 +19,7 @@ setwd("")
 qpcrscripts <- "qPCRanalysis.R"  ## EXAMPLE -- change as needed
 source(qpcrscripts)
 ## ADD control Detector names into the vector
+## Best to include at least two control names here (if you only have target and control loci, then just add both)
 controls <- c("JU-control-1", "JU-control-2", "JU-control-3", "JU-control-5") ## EXAMPLE -- change as needed
 ## ADD /path/to/clean-data.tsv to the double quotes below
 filename <- "example-validation-clean-data.tsv" ## EXAMPLE -- change as needed

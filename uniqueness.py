@@ -59,6 +59,11 @@ parser.add_argument('-k', '--kmersize', type=int, default=50,
 parser.add_argument('-b', '--bdg', action='store_true',
                     help='''Default output is wig. This outputs bedGraph''')
 
+parser.add_argument('-c', '--counts', type=str, default=False,
+                    help='''Also write two-column, tab-separated file containing kmers and counts -- with name "arg.counts".txt
+Note that this is not giving reverse-complement counts.''')
+
+
 parser.add_argument('-v', '--verbose', action='store_true')
 
 ##parser.add_argument('--step', type=str, default='1',
@@ -109,6 +114,10 @@ for f in args.fasta:
 
 if args.verbose:
     sys.stderr.write("Returning output....\n")
+if args.counts:
+    with open(args.counts + ".txt",'w') as out:
+        for kmer in sorted(kmercouns.keys()):
+            out.write(kmer + "\t" + str(kmercounts[kmer]) + "\n")
 if args.bdg:           
     bedgraph(args,kmercounts,k)
 else: ##wiggle

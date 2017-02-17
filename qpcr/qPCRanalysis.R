@@ -123,35 +123,43 @@ autoValidatePrimers <- function(data, controls=NA, numTechReps=2, startingAmount
   all <- rett1[,c(1,3)]
 #   print(5)
 #   print(controls)
-  for (control in controls[2:length(controls)]){
-#     print(control)
-    frt <- fullRelativeEfficiencyTable(avgCtTable=avgCtTable, normalizer=control, startingAmount=startingAmount, dilutionFactor=dilutionFactor, numPoints=numPoints, highToLow=highToLow)
-    rett <- relativeEfficiencyTest(fullRelTable=frt)
-    all <- cbind(all, rett[,3])
-#     print(all)
+  if(length(controls) > 1){
+    for (control in controls[2:length(controls)]){
+      #     print(control)
+      frt <- fullRelativeEfficiencyTable(avgCtTable=avgCtTable, normalizer=control, startingAmount=startingAmount, dilutionFactor=dilutionFactor, numPoints=numPoints, highToLow=highToLow)
+      rett <- relativeEfficiencyTest(fullRelTable=frt)
+      all <- cbind(all, rett[,3])
+      #     print(all)
+      #   print(6)
+      colnames(all) <- c("pair",controls)
+      rownames(all) <- all[,1]
+      #   print(7)
+      #   print(all)
+      rtest1_controlscores <- apply(X = all[,2:dim(all)[2]], MARGIN = 2, FUN = sum)
+      #transform counts into percents
+      rtest1_controlscores <- rtest1_controlscores/length(primerVal$primerPair)
+      rtest1 <- apply(X = all[,2:dim(all)[2]], MARGIN = 1, FUN = sum)
+      rscores <- c()
+      # Be sure it is in same order
+      for(primer in primerVal$primerPair){rscores <- c(rscores, rtest1[primer])}
+      #   print(8)
+      # transform counts into percents
+      rscores <- rscores/length(controls)
+      final1 <- cbind(primerVal,rscores)
+    } 
+  } else {
+    ## for now it assumes 2 or more
+    rscores <- rett1[,3]
+    final1 <- cbind(primerVal,rscores)
+    rtest1_controlscores <- rep(1, length(controls))
   }
-#   print(6)
-  colnames(all) <- c("pair",controls)
-  rownames(all) <- all[,1]
-#   print(7)
-#   print(all)
-  rtest1_controlscores <- apply(X = all[,2:dim(all)[2]], MARGIN = 2, FUN = sum)
-  #transform counts into percents
-  rtest1_controlscores <- rtest1_controlscores/length(primerVal$primerPair)
-  rtest1 <- apply(X = all[,2:dim(all)[2]], MARGIN = 1, FUN = sum)
-  rscores <- c()
-  # Be sure it is in same order
-  for(primer in primerVal$primerPair){rscores <- c(rscores, rtest1[primer])}
-#   print(8)
-  # transform counts into percents
-  rscores <- rscores/length(controls)
-  final1 <- cbind(primerVal,rscores)
 #   print(final1)
 #   cat("\n")
 #   print(rtest1)
 #   print(rscores)
 #   cat("\n")
 #   print(rtest1_controlscores)
+
   list(scores=final1, controlscores=rtest1_controlscores)
 }
 
@@ -219,6 +227,9 @@ validateMyPrimers <- function(filename, controls=NA, numTechReps=2, startingAmou
   print(final2)
   ## ALL TOGETHER NOW
   prvalscores <- final1$scores$pass+final2$scores$pass
+#   print("ass")
+#   print(final1$scores$rscores)
+#   print(final2$scores$rscores)
   final3 <- cbind(final1$scores$pass,final2$scores$pass,prvalscores,final1$scores$rscores,final2$scores$rscores)
   colnames(final3) <- c("test1","test2","testsum","rel1", "rel2")
   final4 <- cbind(final1$controlscores, final2$controlscores)
