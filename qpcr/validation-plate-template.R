@@ -89,7 +89,7 @@ DF = 4 ## EXAMPLE - change as needed
 num = 4 ## EXAMPLE - change as needed
 
 # Calculate average CT values, their std devs, and coeff of Variations (plot later)
-avgCtTable <- avgCTs(data)
+avgCtTable <- avgCTs(data, numTechReps = 2, startingAmount = startingAmount, dilutionFactor = DF, numPoints = num, task = "Unknown")
 
 ## BEFORE calculating this -- FILL IN ABOVE VALUES
 frt <- fullRelativeEfficiencyTable(avgCtTable=avgCtTable, normalizer=norm, startingAmount=startingAmount, dilutionFactor=DF, numPoints=num, highToLow=TRUE)
@@ -171,7 +171,7 @@ primerVal2
 
 ## Get average CTs ... etc... 
 # Calculate average CT values, their std devs, and coeff of Variations (plot later)
-avgCtTable2 <- avgCTs(data)
+avgCtTable2 <- avgCTs(data, numTechReps = 2, startingAmount = startingAmount, dilutionFactor = DF, numPoints = num, task = "Unknown")
 avgCtTable2  ## MAY SEE NAs in STDDEV and COV columns -- if only 1 data point, there is no stdev. If no std dev, then no COV.
 
 ## BEFORE calculating this -- FILL IN ABOVE VALUES
