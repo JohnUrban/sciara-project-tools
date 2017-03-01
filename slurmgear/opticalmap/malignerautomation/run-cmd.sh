@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# copy this script into your working dir
 # Make sure variables below work for you.
 # Make sure to have the ASMFOFN (usually input.fofn) in working dir.
 
