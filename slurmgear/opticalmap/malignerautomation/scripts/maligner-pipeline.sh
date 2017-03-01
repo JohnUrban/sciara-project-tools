@@ -9,6 +9,7 @@ Arg4=Logical(true/false) should directories be cleaned up...
 ARG5=config file
 Arg6=Rec_ENz == eg BssSI
 Arg7=Rec_Seq == eg CACGAG
+Arg8=scripts dir
 "; exit; fi
 
 MAIN=$PWD
@@ -21,6 +22,7 @@ CLEAN=$4
 CONFIG=$5
 REC_ENZ=$6
 REC_SEQ=$7
+SCRIPTS=$8
 
 source $CONFIG
 
