@@ -4,81 +4,46 @@
 if [ $# -eq 0 ]; then echo "
 Arg1=/Path/To/Reference.fasta 
 Arg2=QOS
+Arg3=scripts dir path
+Arg4=lap reads 1
+Arg5=lap reads 2
+Arg6=all reads 1
+Arg7=all reads 2
+Arg8=ConfigFile
 "; exit; fi
 
 #FILL THESE IN
-SCRIPTS=/users/jurban/scratch/male-ilmn/long_read_evals/scripts/
-LAPR1=/gpfs/scratch/jurban/lap/sample-1.5m/downsampled.1.fastq
-LAPR2=/gpfs/scratch/jurban/lap/sample-1.5m/downsampled.2.fastq
-R1=/gpfs/scratch/jurban/male-ilmn/data/ilmnraw/R1.fastq
-R2=/gpfs/scratch/jurban/male-ilmn/data/ilmnraw/R2.fastq
+#SCRIPTS=/users/jurban/scratch/male-ilmn/long_read_evals/scripts/
+#LAPR1=/gpfs/scratch/jurban/lap/sample-1.5m/downsampled.1.fastq
+#LAPR2=/gpfs/scratch/jurban/lap/sample-1.5m/downsampled.2.fastq
+#R1=/gpfs/scratch/jurban/male-ilmn/data/ilmnraw/R1.fastq
+#R2=/gpfs/scratch/jurban/male-ilmn/data/ilmnraw/R2.fastq
 
 ## READ IN ARGS
 ##REF=$1
 REF=`readlink -f $1`
+QOS=$2
+SCRIPTS=$3
+LAPR1=$4
+LAPR2=$5
+R1=$6
+R2=$7
+CONFIG=$8
+
+source $CONFIG
+
 BASE=`basename $REF .fasta`
 JOBSFX=""
-QOS=$2
 ALTQOS=$QOS
 
 MAIN=$PWD
 
-## FEEL FREE TO SPECFY WHAT TO DO AND WHAT NOT TO DO
-BUILDBT2=true
-RUNLAP=true
-MAPREADS=true
-RUNALE=true
-RUNFRC=true
-RUNREAPR=true
-FACHECK=true     ##REAPR
-PERFECTMAP=true  ##REAPR
-SMALTMAP=true    ##REAPR
-PIPELINE=true    ##REAPR
-RUNBUSCO=true
-# CLEANUPS
-CLEANLAP=true
-CLEANALE=true
-CLEANFRC=true
-CLEANREAPR=true
-CLEANBUSCO=true
-CLEANMREADS=true
-CLEANBT2=true
-
-## Full Erase LAP
-FULLERASELAP=false ## set to true if want it to start completely over. Otherwise, the lap script can detect what needs tobe done still and do it...
-
-## FEEL FREE TO CHANGE THREADS/MEM/TIME FOR EACH JOB TYPE
-B2THREADS=1
-B2MEM=12g
-B2TIME=06:00:00
-
-LTHREADS=12
-LMEM=122g
-LTIME=48:00:00
-
-MTHREADS=8
-MMEM=23g
-MTIME=16:00:00
-
-ATHREADS=4
-AMEM=12g
-ATIME=06:00:00
-
-FTHREADS=4
-FMEM=8g
-FTIME=06:00:00
-
-RTHREADS=16
-RMEM=60g
-RTIME=72:00:00
-
-BTHREADS=16
-BMEM=24g
-BTIME=24:00:00
 
 SLURMOUTDIR=slurmout
 if [ ! -d $SLURMOUTDIR ]; then mkdir $SLURMOUTDIR; fi
 OUT=`readlink -f $MAIN`/$SLURMOUTDIR
+
+
 
 ##############################################################################
 ## MAKE BOWTIE2 INDEX
