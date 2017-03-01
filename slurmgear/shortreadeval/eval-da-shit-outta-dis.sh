@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# specify paths to lap read sample (LR1,LR2) and all reads (R1,R2)
+# specify paths to lap read sample (LR1,LR2) and all reads (R1,R2)-- give dummy answers if will not be using (that will serve as place-holders)
 LR1=
 LR2=
 R1=
