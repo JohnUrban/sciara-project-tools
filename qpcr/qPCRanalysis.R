@@ -228,15 +228,15 @@ validateMyPrimers <- function(filename, controls=NA, numTechReps=2, startingAmou
   data$Ct[data$Ct == "Undetermined"] = NA
   class(data$Ct) = "numeric"
   ## Get validation scores
-  print("Begin")
+  print("Begin Auto-validation")
   final1 <- autoValidatePrimers(data,controls,numTechReps, startingAmount,dilutionFactor,numPoints,highToLow, qpcrtask=qpcrtask)
   print(final1)
-  print("Begin2")
+  print("Begin Auto-Correction")
   cordata <- autoCorrectPrimers(data, final1$scores, numTechReps, startingAmount, dilutionFactor, numPoints, highToLow, qpcrtask=qpcrtask)
   print("A")
   final2 <- autoValidatePrimers(cordata$data,controls,numTechReps, startingAmount,dilutionFactor,numPoints,highToLow, qpcrtask=qpcrtask)
   print(final2)
-  print("Begin3")
+  print("Finishing up....")
   ## ALL TOGETHER NOW
   prvalscores <- final1$scores$pass+final2$scores$pass
 #   print("ass")
@@ -245,7 +245,7 @@ validateMyPrimers <- function(filename, controls=NA, numTechReps=2, startingAmou
   final3 <- cbind(final1$scores$pass,final2$scores$pass,prvalscores,final1$scores$rscores,final2$scores$rscores)
   colnames(final3) <- c("test1","test2","testsum","rel1", "rel2")
   final4 <- cbind(final1$controlscores, final2$controlscores)
-print("Begin4")
+print("Finished...")
   return(list(eff=final3, rel=final4, notes=cordata$notes))
 }
 
@@ -628,9 +628,9 @@ fullRelativeEfficiencyTable <- function(avgCtTable, normalizer, startingAmount=2
 #     print(targetCts)
     primerPair <- rep(primer, numPoints)
 #     print(primerPair)
-print(normCts)
+# print(normCts)
     newTable <- relativeEfficiencyTable(normalizerAvgCts=normCts, targetAvgCts=targetCts, dilSeries=dilSer)
-    print(newTable)
+#     print(newTable)
     newTable <- cbind(primerPair, newTable)
     fullRelTable <- rbind(fullRelTable, newTable)
   }

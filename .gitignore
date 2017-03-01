@@ -1,0 +1,3 @@
+*.pyc
+pufferfish/test/
+qpcr/.Rhistory
