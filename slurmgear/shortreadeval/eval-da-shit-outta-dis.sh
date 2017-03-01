@@ -24,7 +24,7 @@ EvalThese=$ALL
 ASMDIR=asms
 SCRIPTS=/gpfs_home/jurban/software/sciaratools/sciara-project-tools/slurmgear/shortreadeval/scripts/
 EVAL=${SCRIPTS}/eval.ARGS.sh
-CONFIG=${SCRIPTS}/${EvalThese}
+CONFIG=${SCRIPTS}/configs/${EvalThese}
 
 
 # eval.ARGS.sh
