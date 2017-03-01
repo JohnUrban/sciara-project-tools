@@ -3,8 +3,7 @@
 
 ASMDIR=asms
 
-###EVAL=/gpfs/scratch/jurban/male-ilmn/long_read_evals/scripts/eval.ARGS.sh
-EVAL=/gpfs/scratch/jurban/male-ilmn/long_read_evals/scripts/eval.ARGS.laponly.sh 
+EVAL=/gpfs_home/jurban/software/sciaratools/sciara-project-tools/slurmgear/shortreadeval/scripts/eval.ARGS.laponly.sh
 
 
 SUBSET="falcon.seed25.relaxed.pbfilt.ont2d.quiver7x"

@@ -3,7 +3,7 @@
 
 ASMDIR=asms
 
-EVAL=/gpfs/scratch/jurban/male-ilmn/long_read_evals/scripts/eval.ARGS.sh
+EVAL=/gpfs_home/jurban/software/sciaratools/sciara-project-tools/slurmgear/shortreadeval/scripts/eval.ARGS.sh
 
 
 i=0

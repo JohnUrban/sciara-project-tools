@@ -3,8 +3,7 @@
 
 ASMDIR=asms
 
-###EVAL=/gpfs/scratch/jurban/male-ilmn/long_read_evals/scripts/eval.ARGS.sh
-EVAL=/gpfs/scratch/jurban/male-ilmn/long_read_evals/scripts/eval.ARGS.aleonly.sh 
+EVAL=/gpfs_home/jurban/software/sciaratools/sciara-project-tools/slurmgear/shortreadeval/scripts/eval.ARGS.aleonly.sh
 
 SUBSET="canu.corcov500.pbfilt.ont2d.quiver3x canu.corcov500.pbfilt.quiver3x"
 

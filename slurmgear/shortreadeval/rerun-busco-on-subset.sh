@@ -3,8 +3,7 @@
 
 ASMDIR=asms
 
-###EVAL=/gpfs/scratch/jurban/male-ilmn/long_read_evals/scripts/eval.ARGS.sh
-EVAL=/gpfs/scratch/jurban/male-ilmn/long_read_evals/scripts/eval.ARGS.buscoOnly.sh 
+EVAL=/gpfs_home/jurban/software/sciaratools/sciara-project-tools/slurmgear/shortreadeval/scripts/eval.ARGS.buscoOnly.sh
 
 SUBSET="platanus.dbg2olc.pball.ontmol.quiver7x platanus.dbg2olc.pball.quiver7x platanus.dbg2olc.pbfilt.ont2d.quiver7x platanus.dbg2olc.pbfilt.quiver7x"
 
