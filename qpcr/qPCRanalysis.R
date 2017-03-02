@@ -591,7 +591,7 @@ relativeEfficiencyTable <- function(normalizerAvgCts, targetAvgCts, dilSeries){
   return(RelEffTable)
 }
 
-relativeEfficiencyPlot <- function(RelEffTable, ...){
+relativeEfficiencyPlot <- function(RelEffTable, rounddigits=4, ...){
   ## takes output of relativeEfficiencyTable
   xVals <- 1:length(RelEffTable$inputNg)
   plot(xVals, RelEffTable$dCt, ylab="dCt", xlab="Input Amount (ng)", col="red", type="p", pch=19, cex=1.5, lwd=2, xaxt="n", xlim=c(0,(length(RelEffTable$inputNg)+1)), ylim=c((min(RelEffTable$dCt)-2), (max(RelEffTable$dCt)+2)), ...)
@@ -599,12 +599,12 @@ relativeEfficiencyPlot <- function(RelEffTable, ...){
   grid()
   fit <- lm(RelEffTable$dCt ~ xVals)
   lines(xVals, fit$fitted, col="black", type="l", lwd=2) # type="b"
-  slope <- fit$coeff[2] 
+  slope <- round(fit$coeff[2], digits = rounddigits)
   ## Note that it is not strictly ng vs. dCt -- they are all equally spaced (mapped to integers) despite not really being equally spaced
   ##  This is exactly how done in Life Tech book and produces same results with same data
   ## ideally slope = 0 if both have identical efficiencies 
   ## but anything < 0.1 is acceptable for the ddCt method --- currently this puts out negative slopes though so > -0.1 to 0
-  yint <- fit$coeff[1]
+  yint <- round(fit$coeff[1], digits = rounddigits)
   line <- paste0("Y = ", slope, "x + ", yint)
   legend("topright", legend=c("dCt",line), fill=c("red", "black"))
   if(slope <= 0.1 & slope >= 0){
