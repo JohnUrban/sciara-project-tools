@@ -631,7 +631,7 @@ fullRelativeEfficiencyTable <- function(avgCtTable, normalizer, startingAmount=2
 # print(normCts)
     newTable <- relativeEfficiencyTable(normalizerAvgCts=normCts, targetAvgCts=targetCts, dilSeries=dilSer)
 #     print(newTable)
-    if(plottables){relativeEfficiencyPlot(newTable, main=primerPair[1])}
+    if(plottables){relativeEfficiencyPlot(newTable, main=paste0(primerPair[1]," vs. ",normalizer))}
     newTable <- cbind(primerPair, newTable)
     fullRelTable <- rbind(fullRelTable, newTable)
   }
