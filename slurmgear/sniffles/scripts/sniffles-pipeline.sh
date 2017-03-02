@@ -7,6 +7,8 @@ Arg2=QOS
 Arg3=Logical(true/false) should directories be cleaned up when Pilon is done?
 ARG4=config file
 Arg5=Scripts dir
+Arg6=Ont fastq loc
+Arg7=PacBio fastq loc
 "; exit; fi
 
 
@@ -18,7 +20,8 @@ QOS=$2
 CLEAN=$3
 CONFIG=$4
 SCRIPTS=$5
-
+ONT=$6
+PACBIO=$7
 
 source $CONFIG
 source ~/software/bwa/source.sh 
