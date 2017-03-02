@@ -27,8 +27,25 @@ filename <- "example-validation-clean-data.tsv" ## EXAMPLE -- change as needed
 
 
 
+## MAKE SURE THESE VARIABLES ARE CORRECT FOR YOUR EXPT
+## How many technical replicates?
+numTechReps <- 2
+## What is the highest ng amount in your series? 
+startingAmount <- 2
+## What was your dilution factor in the series?
+DF <- 4
+## How many concentrations are there in the series (typically 4)?
+numPoints <- 4
+## What is the qPCR task -- slightly arbitrary for most we do -- just make sure this matches the file.
+qpcrtask <- "Standard"     ## may need to be: "Unknown"
+
+
+
+
 ### COMPLETELY AUTOMATED VERSION ####
-validateMyPrimers(filename, controls)
+validateMyPrimers(filename, controls, numTechReps = numTechReps, startingAmount = startingAmount, dilutionFactor = DF, numPoints = numPoints, qpcrtask = qpcrtask)
+
+
 
 ## IMPORTANT NOTE:
 ## Autocorrecting for conditional passing is still only lightly tested.
@@ -74,25 +91,19 @@ sort(h1$mids[order(h1$counts, decreasing = TRUE)][1:4])
 
 
 ## determine slope, efficiency, and R^2 for all
-primerVal <- primerValidation(data, numTechReps=2, startingAmount=2, dilutionFactor=4, numPoints=4, highToLow=TRUE)
+primerVal <- primerValidation(data, numTechReps=numTechReps, startingAmount=startingAmount, dilutionFactor=DF, numPoints=numPoints, highToLow=TRUE)
 primerVal
 
 
 ## RELATIVE EFFICIENCIES
 ## pick your favorite normalizer Detector for norm variable - put inside quotes
 norm = controls[1] ## EXAMPLE - change as needed
-## What is the highest ng amount in your series? 
-startingAmount=2 ## EXAMPLE - change as needed
-## What was your dilution factor in the series?
-DF = 4 ## EXAMPLE - change as needed
-## How many concentrations are there in the series (typically 4)?
-num = 4 ## EXAMPLE - change as needed
 
 # Calculate average CT values, their std devs, and coeff of Variations (plot later)
-avgCtTable <- avgCTs(data, numTechReps = 2, startingAmount = startingAmount, dilutionFactor = DF, numPoints = num, task = "Unknown")
+avgCtTable <- avgCTs(data, numTechReps = numTechReps, startingAmount = startingAmount, dilutionFactor = DF, numPoints = numPoints, qpcrtask = qpcrtask)
 
 ## BEFORE calculating this -- FILL IN ABOVE VALUES
-frt <- fullRelativeEfficiencyTable(avgCtTable=avgCtTable, normalizer=norm, startingAmount=startingAmount, dilutionFactor=DF, numPoints=num, highToLow=TRUE)
+frt <- fullRelativeEfficiencyTable(avgCtTable=avgCtTable, normalizer=norm, startingAmount=startingAmount, dilutionFactor=DF, numPoints=numPoints, highToLow=TRUE)
 frt
 
 ## What is the range of the copy numbers relative to the normalizer?
@@ -118,7 +129,7 @@ compactAvgCts(frt)
 ## GET VALUES FOR ALL POSSIBLE NORMALIZERS
 all <- rett1[,c(1,3)]
 for (control in controls[2:length(controls)]){
-  frt <- fullRelativeEfficiencyTable(avgCtTable=avgCtTable, normalizer=control, startingAmount=2, dilutionFactor=4, numPoints=4, highToLow=TRUE)
+  frt <- fullRelativeEfficiencyTable(avgCtTable=avgCtTable, normalizer=control, startingAmount=startingAmount, dilutionFactor=DF, numPoints=numPoints, highToLow=TRUE)
   rett <- relativeEfficiencyTest(fullRelTable=frt)
   all <- cbind(all, rett[,3])
 }
@@ -155,27 +166,29 @@ sort(normpassp, decreasing = TRUE)
 fix <- "JU-target-9"
 ## Identify the offending well by looking at data and plotting 
 subset(data, Detector == fix)
-plotStdCurve(qPCRdata = data, sampleName = fix, numberTechReps = 2, startingAmount = 1, dilutionFactor = 4, ylim=c(15,33), xlim=c(-2,1), col="blue", lwd=3) ## std curve
+ylim <- c(15,33) 
+xlim <- c(-2,1)
+plotStdCurve(qPCRdata = data, sampleName = fix, numberTechReps = numTechReps, startingAmount = startingAmount, dilutionFactor = DF, ylim=ylim, xlim=xlim, col="blue", lwd=3) ## std curve
 offender <- "G2"
 ## NA the offending well
 data[data$Detector == fix & data$Well == offender,]$Ct = NA
 ## Review by looking at the data and plotting again
 subset(data, Detector == fix)
-plotStdCurve(qPCRdata = data, sampleName = fix, numberTechReps = 2, startingAmount = 1, dilutionFactor = 4, ylim=c(15,33), xlim=c(-2,1), col="blue", lwd=3) ## std curve
+plotStdCurve(qPCRdata = data, sampleName = fix, numberTechReps = numTechReps, startingAmount = startingAmount, dilutionFactor = DF, ylim=c(15,33), xlim=c(-2,1), col="blue", lwd=3) ## std curve
 
 
 
 ## CHECK ALL AGAIN
-primerVal2 <- primerValidation(data, numTechReps=2, startingAmount=2, dilutionFactor=4, numPoints=4, highToLow=TRUE)
+primerVal2 <- primerValidation(data, numTechReps = numTechReps, startingAmount = startingAmount, dilutionFactor = DF, numPoints=numPoints, highToLow=TRUE)
 primerVal2
 
 ## Get average CTs ... etc... 
 # Calculate average CT values, their std devs, and coeff of Variations (plot later)
-avgCtTable2 <- avgCTs(data, numTechReps = 2, startingAmount = startingAmount, dilutionFactor = DF, numPoints = num, task = "Unknown")
+avgCtTable2 <- avgCTs(data, numTechReps = numTechReps, startingAmount = startingAmount, dilutionFactor = DF, numPoints = numPoints, qpcrtask = qpcrtask)
 avgCtTable2  ## MAY SEE NAs in STDDEV and COV columns -- if only 1 data point, there is no stdev. If no std dev, then no COV.
 
 ## BEFORE calculating this -- FILL IN ABOVE VALUES
-frt2 <- fullRelativeEfficiencyTable(avgCtTable=avgCtTable2, normalizer=norm, startingAmount=startingAmount, dilutionFactor=DF, numPoints=num, highToLow=TRUE)
+frt2 <- fullRelativeEfficiencyTable(avgCtTable=avgCtTable2, normalizer=norm, startingAmount=startingAmount, dilutionFactor=DF, numPoints=numPoints, highToLow=TRUE)
 frt2
 
 ## What is the range of the copy numbers relative to the normalizer?
@@ -200,7 +213,7 @@ compactAvgCts(frt2)
 ## Check as many more detectors as possible normalizers as you'd like
 all2 <- rett2[,c(1,3)]
 for (control in controls[2:length(controls)]){
-  frt2 <- fullRelativeEfficiencyTable(avgCtTable=avgCtTable2, normalizer=control, startingAmount=2, dilutionFactor=4, numPoints=4, highToLow=TRUE)
+  frt2 <- fullRelativeEfficiencyTable(avgCtTable=avgCtTable2, normalizer=control, startingAmount=startingAmount, dilutionFactor=DF, numPoints=numPoints, highToLow=TRUE)
   rett <- relativeEfficiencyTest(fullRelTable=frt2)
   all2 <- cbind(all2, rett[,3])
 }

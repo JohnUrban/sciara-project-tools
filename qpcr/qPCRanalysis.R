@@ -233,7 +233,7 @@ validateMyPrimers <- function(filename, controls=NA, numTechReps=2, startingAmou
   print(final1)
   print("Begin Auto-Correction")
   cordata <- autoCorrectPrimers(data, final1$scores, numTechReps, startingAmount, dilutionFactor, numPoints, highToLow, qpcrtask=qpcrtask)
-  print("A")
+#   print("A")
   final2 <- autoValidatePrimers(cordata$data,controls,numTechReps, startingAmount,dilutionFactor,numPoints,highToLow, qpcrtask=qpcrtask)
   print(final2)
   print("Finishing up....")
