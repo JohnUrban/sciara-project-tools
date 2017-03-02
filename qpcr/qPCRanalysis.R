@@ -594,11 +594,11 @@ relativeEfficiencyTable <- function(normalizerAvgCts, targetAvgCts, dilSeries){
 relativeEfficiencyPlot <- function(RelEffTable, ...){
   ## takes output of relativeEfficiencyTable
   xVals <- 1:length(RelEffTable$inputNg)
-  plot(xVals, RelEffTable$dCt, ylab="dCt", xlab="Input Amount (ng)", col="red", type="b", xaxt="n", xlim=c(0,(length(RelEffTable$inputNg)+1)), ylim=c((min(RelEffTable$dCt)-2), (max(RelEffTable$dCt)+2)), ...)
+  plot(xVals, RelEffTable$dCt, ylab="dCt", xlab="Input Amount (ng)", col="red", type="p", pch=19, cex=1.5, lwd=2, xaxt="n", xlim=c(0,(length(RelEffTable$inputNg)+1)), ylim=c((min(RelEffTable$dCt)-2), (max(RelEffTable$dCt)+2)), ...)
   axis(side=1, at=xVals, labels=RelEffTable$inputNg)
   grid()
   fit <- lm(RelEffTable$dCt ~ xVals)
-  lines(xVals, fit$fitted, col="black", type="b")
+  lines(xVals, fit$fitted, col="black", type="l", lwd=2) # type="b"
   slope <- fit$coeff[2] 
   ## Note that it is not strictly ng vs. dCt -- they are all equally spaced (mapped to integers) despite not really being equally spaced
   ##  This is exactly how done in Life Tech book and produces same results with same data
@@ -615,7 +615,7 @@ relativeEfficiencyPlot <- function(RelEffTable, ...){
 
 
 
-fullRelativeEfficiencyTable <- function(avgCtTable, normalizer, startingAmount=25, dilutionFactor=10, numPoints=4, highToLow=TRUE){
+fullRelativeEfficiencyTable <- function(avgCtTable, normalizer, startingAmount=2, dilutionFactor=4, numPoints=4, highToLow=TRUE, returnfrt=TRUE, plottables=FALSE){
   ## takes in avgCtTable, the output of avgCTs() -- mutliple avgCTs() outputs may even be bound together with rbind() beforehand
   ## normalizer can be any primerPair name (i.e. Detector) -- typical for MYC locus is MSF1-1 or JU-9-1 (e.g. normalizer="JU-9-1")
   primerPairs <- levels(avgCtTable$primerPair)
@@ -631,10 +631,15 @@ fullRelativeEfficiencyTable <- function(avgCtTable, normalizer, startingAmount=2
 # print(normCts)
     newTable <- relativeEfficiencyTable(normalizerAvgCts=normCts, targetAvgCts=targetCts, dilSeries=dilSer)
 #     print(newTable)
+    if(plottables){relativeEfficiencyPlot(newTable, main=primerPair[1])}
     newTable <- cbind(primerPair, newTable)
     fullRelTable <- rbind(fullRelTable, newTable)
   }
-  return(fullRelTable)
+  if(returnfrt){return(fullRelTable)}
+}
+
+allRelativeEfficiencyPlots <- function(avgCtTable, normalizer, startingAmount=2, dilutionFactor=4, numPoints=4, highToLow=TRUE, returnfrt=TRUE, plottables=FALSE){
+  fullRelativeEfficiencyTable(avgCtTable, normalizer, startingAmount, dilutionFactor, numPoints, highToLow, returnfrt=FALSE, plottables=TRUE)
 }
 
 relativeEfficiencyTest <- function(fullRelTable){

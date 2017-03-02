@@ -97,14 +97,26 @@ primerVal
 
 ## RELATIVE EFFICIENCIES
 ## pick your favorite normalizer Detector for norm variable - put inside quotes
-norm = controls[1] ## EXAMPLE - change as needed
+norm <- controls[1] ## EXAMPLE - change as needed
 
 # Calculate average CT values, their std devs, and coeff of Variations (plot later)
 avgCtTable <- avgCTs(data, numTechReps = numTechReps, startingAmount = startingAmount, dilutionFactor = DF, numPoints = numPoints, qpcrtask = qpcrtask)
 
+## Will look at rel eff of all pairs NEXT in frt, BUT here is how to look at relative efficiency table for single target locus vs norm locus:
+target1 <- "ARS1625"
+norm1 <- "surr1"
+rt1 <- relativeEfficiencyTable(normalizerAvgCts = subset(avgCtTable, primerPair == norm1)$avgCt, targetAvgCts = subset(avgCtTable, primerPair == target1)$avgCt, dilSeries = dilutionSeries(startingAmount, DF, numPoints, TRUE))
+rt1
+## Plot the dCTs over the dilSeries to see how it does in the rel eff test
+relativeEfficiencyPlot(rt1, main="My favorite target and norm")
+
 ## BEFORE calculating this -- FILL IN ABOVE VALUES
 frt <- fullRelativeEfficiencyTable(avgCtTable=avgCtTable, normalizer=norm, startingAmount=startingAmount, dilutionFactor=DF, numPoints=numPoints, highToLow=TRUE)
 frt
+## To see all rel eff plots, make plottables=TRUE; can suppress FRT output with returnfrt=FALSE
+fullRelativeEfficiencyTable(avgCtTable=avgCtTable, normalizer=norm, startingAmount=startingAmount, dilutionFactor=DF, numPoints=numPoints, highToLow=TRUE, returnfrt=FALSE, plottables=TRUE)
+## ALSO: A Wrapper Function was made that does exactly the above without needing to specify the extra options:
+allRelativeEfficiencyPlots(avgCtTable=avgCtTable, normalizer=norm, startingAmount=startingAmount, dilutionFactor=DF, numPoints=numPoints, highToLow=TRUE)
 
 ## What is the range of the copy numbers relative to the normalizer?
 range(frt$relCopyNum)
