@@ -1,14 +1,20 @@
 #!/bin/bash
 
+# copy this script into your working dir
+# Make sure variables below work for you.
+# Make sure to have the ASMFOFN (usually input.fofn) in working dir.
 
-FOFN=input.fofn
+## ASM FOFN
+ASMFOFN=input.fofn
 
+## LONG READ LOCATIONS
+ONTFQ=~/data/scratch/minion2016/fast5fastqs/allReadsFromAllONTlibsCombined.fastq
+PBFQ=~/data/scratch/pac_bio_data/filt/all_subreads.fastq
 
-##FOFN=debug.fofn
+## RUN INFO LOCATIONS
+BASE=/users/jurban/software/sciaratools/sciara-project-tools/slurmgear/sniffles
+SCRIPTS=${BASE}/scripts/
 
-SCRIPTS=~/software/sniffles/scripts
-ONTFQ=/users/jurban/scratch/minion2016/fast5fastqs/allReadsFromAllONTlibsCombined.fastq
-PBFQ=/gpfs/scratch/jurban/pac_bio_data/filt/all_subreads.fastq
 
 i=0
 while read ASM; do 
@@ -20,5 +26,5 @@ while read ASM; do
   ONTBAM=`readlink -f mreads/ont2d.bam`
   sbatch -J ${b}_snifflestats -o ${OUT}/snifflestats.slurm.%A.out --mem=32g --time=72:00:00 -c 4 --qos=$QOS --export=ASM=${ASM},PBBAM=${PBBAM},PBFQ=${PBFQ},ONTBAM=${ONTBAM},ONTFQ=${ONTFQ} ${SCRIPTS}/do-stuff.sh | awk '{print $4}'
   cd ../
-done < $FOFN
+done < $ASMFOFN
   
