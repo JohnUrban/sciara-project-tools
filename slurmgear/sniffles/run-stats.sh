@@ -24,7 +24,11 @@ while read ASM; do
   OUT=`readlink -f slurmout/`
   PBBAM=`readlink -f mreads/pacbio.bam`
   ONTBAM=`readlink -f mreads/ont2d.bam`
-  sbatch -J ${b}_snifflestats -o ${OUT}/snifflestats.slurm.%A.out --mem=32g --time=72:00:00 -c 4 --qos=$QOS --export=ASM=${ASM},PBBAM=${PBBAM},PBFQ=${PBFQ},ONTBAM=${ONTBAM},ONTFQ=${ONTFQ} ${SCRIPTS}/do-stuff.sh | awk '{print $4}'
+  COMBBAM=`readlink -f mreads/combined.bam`
+  PBSNIFF=`readlink -f sniffles_pb/*_pacbio.bedpe`
+  ONTSNIFF=`readlink -f sniffles_ont/*_ont.bedpe`
+  COMBSNIFF=`readlink -f sniffles_combined/*_combined.bedpe`
+  sbatch -J ${b}_snifflestats -o ${OUT}/snifflestats.slurm.%A.out --mem=32g --time=72:00:00 -c 4 --qos=$QOS --export=ASM=${ASM},PBBAM=${PBBAM},PBFQ=${PBFQ},ONTBAM=${ONTBAM},ONTFQ=${ONTFQ},COMBBAM=${COMBBAM},PBSNIFF=${PBSNIFF},ONTSNIFF=${ONTSNIFF},COMBSNIFF=${COMBSNIFF} ${SCRIPTS}/snifflestats.sh | awk '{print $4}'
   cd ../
 done < $ASMFOFN
   

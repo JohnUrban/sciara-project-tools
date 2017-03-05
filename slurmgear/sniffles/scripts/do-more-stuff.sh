@@ -1,5 +1,8 @@
 #!/bin/bash
 
+## this can be abandoned for now
+## it is not fully developed (see only ONTBAM variables used) -- and focused on 2d vs temp vs comp
+
 echo PBBAM, $PBBAM
 echo ONTBAM, $ONTBAM
 echo PBFQ, $PBFQ
@@ -36,6 +39,8 @@ samtools view $ONTBAM | grep ^template | awk '{s+=$5}END{print s}' > ont.templat
 samtools view $ONTBAM | grep ^complement | awk '{s+=$5}END{print s}' > ont.complement.sum.mapq &
 
 wait
+
+##
 
 
 cd ../

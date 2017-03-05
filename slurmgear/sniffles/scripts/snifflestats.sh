@@ -46,5 +46,32 @@ samtools view $ONTBAM | awk '{s+=$5}END{print s}' > ont.sum.mapq &
 
 wait
 
+## PCTs and RATIOs
+for e in ont pacbio; do
+ ## PCTs\
+ nualn=`cat ${e}.numuniqaln`
+ nuent=`cat ${e}.numuniqentries`
+ pctaln=`echo $nualn/$nuent | bc -l`
+ echo $pctaln > ${e}.pctaln
+ ## RATIO
+ naln=`cat ${e}.numaln`
+ alnratio=`echo $naln/$nualn | bc -l`
+ echo $alnratio > ${e}.alnratio
+done
+
+## SVs from Sniffles
+## NUM
+grep -c -v ^# $PBSNIFF > pbnumsv
+grep -c -v ^# $ONTSNIFF > ontnumsv
+grep -c -v ^# $COMBSNIFF > combnumsv
+## SUM PREDICTED LENGTHS
+awk '{print $NF}' $PBSNIFF | grep -v pred | awkSum > pbsumsv
+awk '{print $NF}' $ONTSNIFF | grep -v pred | awkSum > ontsumsv
+awk '{print $NF}' $PBSNIFF | grep -v pred | awkSum > combnumsv
+
+## PUT ALL IN ONE FILE
+for f in *; do
+  echo -e $f"\t"`cat $f`
+done > all-metrics.txt
 
 cd ../
