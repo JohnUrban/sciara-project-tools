@@ -38,6 +38,7 @@ wait
 ## Sums MAPQ regardless of everything
 samtools view $PBBAM | awk '{s+=$5}END{print s}' > pacbio.sum.mapq &
 samtools view $ONTBAM | awk '{s+=$5}END{print s}' > ont.sum.mapq &
+wait
 
 
 ##Gets all stats....
@@ -46,7 +47,7 @@ samtools view $ONTBAM | awk '{s+=$5}END{print s}' > ont.sum.mapq &
 
 wait
 
-## PCTs and RATIOs
+## PCTs and RATIOs and Avg MAPQ
 for e in ont pacbio; do
  ## PCTs\
  nualn=`cat ${e}.numuniqaln`
@@ -57,6 +58,10 @@ for e in ont pacbio; do
  naln=`cat ${e}.numaln`
  alnratio=`echo $naln/$nualn | bc -l`
  echo $alnratio > ${e}.alnratio
+ ## Avg MAPQ
+ mapqsum=`cat ${e}.sum.mapq`
+ mapqavg=`echo $mapqsum/$naln | bc -l`
+ echo $mapqavg > ${e}.avg.mapq
 done
 
 ## SVs from Sniffles
