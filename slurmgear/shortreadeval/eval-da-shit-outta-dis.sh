@@ -14,6 +14,7 @@ OnlyBusco=eval.buscoOnly.cfg
 OnlyLap=eval.laponly.cfg
 OnlyReapr=eval.reapronly.cfg
 OnlyReaprNoClean=eval.reapronly.noclean.cfg
+OnlyReaprNoCleanAggressive=eval.reapronly.noclean.aggressive.cfg
 
 ## FILL IN WITH CORRECT VARIABLE
 EvalThese=$ALL
