@@ -17,7 +17,7 @@ Arg13=NOSTRAYS logical
 Arg14=Pilon pipeline location
 Arg15=R1 location
 Arg16=R2 location
-
+Arg17 scripts loc
 Example:
 bash $AUTO $SFX2RM $SFX2ADD $CLEAN $CONFIG $ASMFOFN $BUILDBT2 $MAPREADS $FLAG1 $FLAG2 $MARK $PILON $FIX $NOSTRAYS $PILONPIPE $R1 $R2
 "; exit; fi
@@ -44,6 +44,7 @@ NOSTRAYS=${13}
 PILONPIPE=${14}
 R1=${15}
 R2=${16}
+SCRIPTS=${17}
 
 ## DEBUG CODE
 #for v in SUFFIX NEWSUFFIX CLEAN FOFN BUILDBT2 MAPREADS FLAG1 FLAG2 MARK PILON FIX NOSTRAYS PILONPIPE R1 R2; do
@@ -61,7 +62,7 @@ while read f; do
   if [ ! -d $b ]; then mkdir $b; fi
   cd $b;
   asmout=${b}${NEWSUFFIX}
-  $PILONPIPE $ref $asmout $QOS $CLEAN $CONFIG $BUILDBT2 $MAPREADS $FLAG1 $FLAG2 $MARK $PILON $FIX $NOSTRAYS $R1 $R2
+  $PILONPIPE $ref $asmout $QOS $CLEAN $CONFIG $BUILDBT2 $MAPREADS $FLAG1 $FLAG2 $MARK $PILON $FIX $NOSTRAYS $R1 $R2 $SCRIPTS
 #  echo $f $ref $b 
   cd ../
 done < $FOFN

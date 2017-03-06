@@ -17,6 +17,7 @@ Arg12=FIX bases,all,local etc
 Arg13=NOSTRAYS logical
 Arg14=R1
 Arg15=R2
+Arg16=scripts loc
 Note: nothing will be appended to AsmOutPrefix.
 So if you want '.pilon1x.fasta' (for example), then AsmOutPrefix needs to include '.pilon1x'
 
@@ -42,6 +43,7 @@ FIX=${12}
 NOSTRAYS=${13}
 R1=${14}
 R2=${15}
+SCRIPTS=${16}
 
 source $CONFIG
 
