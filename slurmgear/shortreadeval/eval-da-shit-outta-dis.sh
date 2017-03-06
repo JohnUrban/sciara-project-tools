@@ -1,11 +1,10 @@
 #!/bin/bash
 
 # specify paths to lap read sample (LR1,LR2) and all reads (R1,R2)-- give dummy answers if will not be using (that will serve as place-holders)
-LR1=
-LR2=
-R1=
-R2=
-
+LR1=/users/jurban/data/scratch/lap/sample-1.5m/downsampled.1.fastq
+LR2=/users/jurban/data/scratch/lap/sample-1.5m/downsampled.2.fastq
+R1=~/data/scratch/male-ilmn/data/ilmnraw/R1.fastq
+R2=~/data/scratch/male-ilmn/data/ilmnraw/R2.fastq
 
 
 ## What programs to use? FILL IN BELOW
@@ -14,6 +13,7 @@ OnlyAle=eval.aleonly.cfg
 OnlyBusco=eval.buscoOnly.cfg
 OnlyLap=eval.laponly.cfg
 OnlyReapr=eval.reapronly.cfg
+OnlyReaprNoClean=eval.reapronly.noclean.cfg
 
 ## FILL IN WITH CORRECT VARIABLE
 EvalThese=$ALL

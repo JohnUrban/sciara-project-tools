@@ -2,7 +2,7 @@
 
 PATH=~/software/reapr/Reapr_1.0.18/:$PATH
 
-## Need: REF, BASE, P, FACHECK, PERFECTMAP, SMALTMAP, PIPELINE
+## Need: REF, BASE, P, FACHECK, PERFECTMAP, SMALTMAP, PIPELINE, AGGRESSIVE (t/f)
 
 if $FACHECK; then
  echo facheck
@@ -21,5 +21,6 @@ fi
 
 if $PIPELINE; then
  echo pipeline
- reapr pipeline ${BASE}_renamed.fa mapped.bam output_directory perfect
+ if $AGRESSIVE ; then A="-break a=1"; else A=""; fi
+ reapr pipeline ${BASE}_renamed.fa mapped.bam output_directory perfect ${A}
 fi

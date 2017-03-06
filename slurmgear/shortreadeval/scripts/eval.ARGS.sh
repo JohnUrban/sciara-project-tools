@@ -169,7 +169,7 @@ if $RUNREAPR; then
  MEM=$RMEM
  TIME=$RTIME
  THREADS=$RTHREADS
- REAPRDONE=`sbatch -J ${BASE}_reapr${JOBSFX} -o ${OUT}/reapr.slurm.%A.out --mem=$MEM --time=$TIME -c $THREADS --qos=$QOS --export=REF=${REF},BASE=${BASE},R1=${R1},R2=${R2},P=${RTHREADS},FACHECK=${FACHECK},PERFECTMAP=${PERFECTMAP},SMALTMAP=${SMALTMAP},PIPELINE=${PIPELINE} ${SCRIPTS}/reapr.eval.sh | awk '{print $4}'`
+ REAPRDONE=`sbatch -J ${BASE}_reapr${JOBSFX} -o ${OUT}/reapr.slurm.%A.out --mem=$MEM --time=$TIME -c $THREADS --qos=$QOS --export=REF=${REF},BASE=${BASE},R1=${R1},R2=${R2},P=${RTHREADS},FACHECK=${FACHECK},PERFECTMAP=${PERFECTMAP},SMALTMAP=${SMALTMAP},PIPELINE=${PIPELINE},AGGRESSIVE=${AGGRESSIVE} ${SCRIPTS}/reapr.eval.sh | awk '{print $4}'`
  cd ../
 fi
 
