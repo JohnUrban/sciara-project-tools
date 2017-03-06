@@ -5,7 +5,6 @@ ASMFOFN=input.fofn
 
 SFX2RM="" ## Leave "" if none
 SFX2ADD="" ## Leave "" if none
-CLEAN=true
 
 ##READS
 R1=/gpfs/data/sgerbi/jurban/illumina/sciara/male_hiseq_130721/MSF0007_TGACCA_L004_R1_001.fastq.gz
@@ -25,6 +24,7 @@ FLAG1=true
 FLAG2=true
 MARK=true
 PILON=true
+CLEAN=true
 
 ## RUN INFO LOCATIONS
 BASE=/users/jurban/software/sciaratools/sciara-project-tools/slurmgear/pilon
