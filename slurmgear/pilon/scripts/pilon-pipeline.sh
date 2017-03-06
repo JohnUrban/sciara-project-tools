@@ -22,7 +22,7 @@ Note: nothing will be appended to AsmOutPrefix.
 So if you want '.pilon1x.fasta' (for example), then AsmOutPrefix needs to include '.pilon1x'
 
 Exmaple:
-$PILONPIPE $ref $asmout $QOS $CLEAN $CONFIG $BUILDBT2 $MAPREADS $FLAG1 $FLAG2 $MARK $PILON $FIX $NOSTRAYS $R1 $R2
+$PILONPIPE $ref $asmout $QOS $CLEAN $CONFIG $BUILDBT2 $MAPREADS $FLAG1 $FLAG2 $MARK $PILON $FIX $NOSTRAYS $R1 $R2 $SCRIPTS
 "; exit; fi
 
 MAIN=$PWD
