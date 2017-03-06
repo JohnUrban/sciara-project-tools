@@ -155,9 +155,9 @@ if $PILON; then
  if [ ! -d $DIR ]; then mkdir $DIR; fi
  cd $DIR
  if $MARK; then
-  PDONE=`sbatch -J ${BASE}_pilon --dependency=afterok:${MKDONE} -o ${OUT}/pilon.slurm.%A.out --mem=$PMEM --time=$PTIME -c $PTHREADS --qos=$QOS --export=NOSTRAYS=${NOSTRAYS},JX=${PILJX},PILONJAR=${PILONJAR},ASM=${ASM},READS=${BAM},PRE=${OUTPRE} ${SCRIPTS}/pilon.sh | awk '{print $4}'`
+  PDONE=`sbatch -J ${BASE}_pilon --dependency=afterok:${MKDONE} -o ${OUT}/pilon.slurm.%A.out --mem=$PMEM --time=$PTIME -c $PTHREADS --qos=$QOS --export=NOSTRAYS=${NOSTRAYS},JX=${PILJX},PILONJAR=${PILONJAR},ASM=${ASM},READS=${BAM},PRE=${OUTPRE},FIX=${FIX} ${SCRIPTS}/pilon.sh | awk '{print $4}'`
  else
-  PDONE=`sbatch -J ${BASE}_pilon -o ${OUT}/pilon.slurm.%A.out --mem=$PMEM --time=$PTIME -c $PTHREADS --qos=$QOS --export=NOSTRAYS=${NOSTRAYS},JX=${PILJX},PILONJAR=${PILONJAR},ASM=${ASM},READS=${BAM},PRE=${OUTPRE} ${SCRIPTS}/pilon.sh | awk '{print $4}'`
+  PDONE=`sbatch -J ${BASE}_pilon -o ${OUT}/pilon.slurm.%A.out --mem=$PMEM --time=$PTIME -c $PTHREADS --qos=$QOS --export=NOSTRAYS=${NOSTRAYS},JX=${PILJX},PILONJAR=${PILONJAR},ASM=${ASM},READS=${BAM},PRE=${OUTPRE},FIX=${FIX} ${SCRIPTS}/pilon.sh | awk '{print $4}'`
   ##same but not --dep
  fi
  cd ../

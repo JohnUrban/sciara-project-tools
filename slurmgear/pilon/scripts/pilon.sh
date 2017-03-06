@@ -4,10 +4,15 @@
 ##--export=NOSTRAYS=${NOSTRAYS},JX2=${JX2},PILONJAR=${PILONJAR},ASM=${ASM},READS=${}
 
 echo NOSTRAYS, $NOSTRAYS
-echo "java -Xmx${JX} -jar $PILONJAR --genome $ASM --output $PRE --changes --frags ${READS} --diploid --fix bases --nostrays"
+if $NOSTRAYS; then NO="--nostrays"; else NO=""; fi
+
+echo "java -Xmx${JX} -jar $PILONJAR --genome $ASM --output $PRE --changes --frags ${READS} --diploid --fix ${FIX} ${NO}"
+
 
 if $NOSTRAYS; then
-    java -Xmx${JX} -jar $PILONJAR --genome $ASM --output $PRE --changes --frags ${READS} --diploid --fix bases --nostrays
+    echo "Path1: nostrays=true, fix=$FIX"
+    java -Xmx${JX} -jar $PILONJAR --genome $ASM --output $PRE --changes --frags ${READS} --diploid --fix $FIX --nostrays
 else
-    java -Xmx${JX} -jar $PILONJAR --genome $ASM --output $PRE --changes --frags ${READS} --diploid --fix bases
+    echo "Path2: nostrays=false, fix=$FIX"
+    java -Xmx${JX} -jar $PILONJAR --genome $ASM --output $PRE --changes --frags ${READS} --diploid --fix $FIX
 fi
