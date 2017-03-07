@@ -150,6 +150,20 @@ fi
 
 
 ##############################################################################
+## STATS
+##NOTE: Will need to come re-visit the entire stats section to allow independence of pb and ont...
+##############################################################################
+
+STATDEP=${SNIFFLESPBDONE}:${SNIFFLESONTDONE}:${SNIFFLESCOMBDONE}
+PBSNIFF=`readlink -f sniffles_pb/*_pacbio.bedpe`
+ONTSNIFF=`readlink -f sniffles_ont/*_ont.bedpe`
+COMBSNIFF=`readlink -f sniffles_combined/*_combined.bedpe`
+STATSDONE=`sbatch -J ${BASE}_snifflestats --dependency=afterok:${STATDEP} -o ${OUT}/snifflestats.slurm.%A.out --mem=32g --time=72:00:00 -c 4 --qos=$QOS --export=ASM=${ASM},PBBAM=${PBBAM},PBFQ=${PACBIO},ONTBAM=${ONTBAM},ONTFQ=${ONT},COMBBAM=${COMBBAM},PBSNIFF=${PBSNIFF},ONTSNIFF=${ONTSNIFF},COMBSNIFF=${COMBSNIFF} ${SCRIPTS}/snifflestats.sh | awk '{print $4}'`
+
+CLEANONTDEP=${CLEANONTDEP}:${STATSDONE}
+CLEANPBDEP=${CLEANPBDEP}:${STATSDONE}
+
+##############################################################################
 ## CLEAN UP
 ##############################################################################
 if $CLEAN; then
@@ -166,7 +180,7 @@ if $CLEAN; then
  if $SNIFFLESCOMBINED; then
   GATEFILE="sniffles_combined/${BASE}_combined.bedpe"
   DELFILE=$COMBBAM
-  CLEANCOMBINEDONE=`sbatch -J ${BASE}_clean_combined --dependency=afterok:${SNIFFLESCOMBDONE} -o ${OUT}/cleanCombined.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'` 
+  CLEANCOMBINEDONE=`sbatch -J ${BASE}_clean_combined --dependency=afterok:${SNIFFLESCOMBDONE}:${STATSDONE} -o ${OUT}/cleanCombined.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'` 
  fi
 fi
 

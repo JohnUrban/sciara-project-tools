@@ -1,0 +1,2 @@
+3/7/17
+run-stats.sh is basically deprecated now -- snifflestats.sh automatically run with regular run-cmd.sh pipeline.
