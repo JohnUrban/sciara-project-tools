@@ -72,10 +72,17 @@ grep -c -v ^# $COMBSNIFF > combnumsv
 ## SUM PREDICTED LENGTHS
 awk '{print $NF}' $PBSNIFF | grep -v pred | awkSum > pbsumsv
 awk '{print $NF}' $ONTSNIFF | grep -v pred | awkSum > ontsumsv
-awk '{print $NF}' $PBSNIFF | grep -v pred | awkSum > combnumsv
+awk '{print $NF}' $PBSNIFF | grep -v pred | awkSum > combsumsv
 
 ## PUT ALL IN ONE FILE
-for f in *; do
+PRE=ont
+ORDEREDONT="${PRE}.numaln  ${PRE}.numentries ${PRE}.numuniqaln ${PRE}.numuniqentries ${PRE}.sum.mapq ${PRE}.pctaln ${PRE}.alnratio ${PRE}.avg.mapq"
+PRE=pacbio
+ORDEREDPB="${PRE}.numaln  ${PRE}.numentries ${PRE}.numuniqaln ${PRE}.numuniqentries ${PRE}.sum.mapq ${PRE}.pctaln ${PRE}.alnratio ${PRE}.avg.mapq"
+ORDEREDSV="ontnumsv pbnumsv combnumsv ontsumsv pbsumsv combsumsv"
+ORDEREDFILES="$ORDEREDONT $ORDEREDPB $ORDEREDSV"
+
+for f in ${ORDEREDFILES}; do
   echo -e $f"\t"`cat $f`
 done > all-metrics.txt
 

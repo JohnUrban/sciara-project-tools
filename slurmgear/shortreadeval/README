@@ -1,0 +1,14 @@
+1. eval-da-shit-outta-dis.sh
+The original -- just need to populate wd with a subdir called asms with the asm fastas (.fasta)
+In wd, do: bash eval-da-shit-outta-dis.sh
+
+2. eval-da-shit-outta-dis.fofn.sh
+Made this more recently to be more similar to other automated scripts in slurmgear with while loop and input.fofn instead of asms subdir.
+Just need input.fofn in wd pointing to assemblies anywhere. Run by: bash eval-da-shit-outta-dis.fofn.sh
+
+3. shortread-run.sh and scripts/auto-shortreadeval.sh
+Made this even more recently to more closely mimic others by separating the while loop fron the "setting up" file.
+Note: I have been considering just merging config files with the run files.
+--> That way the config file would have all "setting up" and just have the "run" cmd at the bottom.
+Need input.fofn in wd.
+Run by: bash shortread-run.sh
