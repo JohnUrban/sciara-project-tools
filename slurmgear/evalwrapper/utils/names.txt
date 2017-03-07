@@ -1,0 +1,118 @@
+Num Contigs
+Asm Size
+Max Contig Size
+NG50
+LG50
+E_G
+Complete BUSCOs
+Complete and single-copy BUSCOs
+Complete and duplicated BUSCOs
+Fragmented BUSCOs
+Missing BUSCOs
+Bowtie2 Ilmn Pct
+Bowtie2 Num Paired
+Bowtie2 Aligned Concordantly Once
+Bowtie2 Aligned Concordantly Multiple
+Bowtie2 Did NOT Align Concordantly
+Bowtie2 Percent DNAC that align Discordantly
+Bowtie2 Number and Percent Total that align discordantly
+Bowtie2 Pairs didnt align Concord nor Discord
+Bowtie2 Num SE reads in those pairs
+Bowtie2 Num SE reads in those that did not align
+Bowtie2 Num SE reads in those that aligned once
+Bowtie2 Num SE reads in those that aligned multiple
+ALE Score
+ALE Place Avg
+ALE Insert Avg
+ALE kmer Avg
+ALE Depth Score Avg
+ALE Depth Avg
+ALE Total Reads
+ALE Total Mapped Reads
+ALE Total UnMapped Reads
+ALE Total Placed Reads
+LAP
+REAPR MBS
+REAPR Pct EF
+REAPR Num Errors
+REAPR FCD Errors within a contig
+REAPR FCD Errors over a gap
+REAPR Low frag cov within a contig
+REAPR Low frag cov over a gap
+REAPR Num Warnings
+REAPR Low Score Regions
+REAPR Links
+REAPR Soft Clip
+REAPR Collapsed repeats
+REAPR Low Read Coverage
+REAPR Low Perfect Coverage
+REAPR Wrong Orientation
+REAPR Original Asm Length
+REAPR Broken Asm Length
+REAPR Original Num Contigs
+REAPR Broken Num Contigs
+REAPR Original Mean Contig Length
+REAPR Broken Mean Contig Length
+REAPR Original Max Contig Length
+REAPR Broken Max Contig Length
+REAPR Original N50
+REAPR Broken N50
+REAPR Original NG50
+REAPR Broken NG50
+REAPR Original LG50
+REAPR Broken LG50
+REAPR Original EG
+REAPR Broken EG
+REAPR Broken Num Gaps
+REAPR Broken Total Gap Len
+FRC Num Features
+FRC Norm Num Features (per Mb)
+FRC Insert Size Mean
+FRC Insert Size Std Dev
+FRC Reads
+FRC Mapped
+FRC Unmapped
+FRC Proper
+FRC Wrong Dist
+FRC Zero Qual
+FRC Wrong Orientation
+FRC Wrong Contig
+FRC Singleton
+FRC Mean Cov
+FRC Spanning Cov
+FRC Proper Pairs Cov
+FRC Wrong Mate Cov
+FRC Singleton Mate Cov
+FRC Different Contig Cov
+BNG Score
+BNG Span
+BNG Cov
+BNG Num
+BNG 1e4*Score/Cov
+BNG Score/Num
+BNG Span/AsmSize
+BNG Cov/AsmSize
+BNG Cov/Span
+BNG Cov/Num
+ONT num align
+ONT num entries
+ONT num uniq align
+ONT num uniq entries
+ONT sum mapq
+ONT pct aln
+ONT ratio
+ONT avg mapq
+PacBio num align 
+PacBio num entries
+PacBio num uniq align
+PacBio num uniq entries
+PacBio sum mapq
+PacBio Pct aln
+PacBio ratio
+PacBio avg mapq
+Sniffles ONT Num SV
+Sniffles PacBio Num SV
+Sniffles Combined Num SV
+Sniffles ONT Sum SV
+Sniffles PacBio Sum SV
+Sniffles Combined Sum SV
