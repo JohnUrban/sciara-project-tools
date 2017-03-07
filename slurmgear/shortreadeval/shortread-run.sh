@@ -1,7 +1,31 @@
 #!/bin/bash
 
-## Input Assemblies FOFN
+function help {
+    echo "
+    Usage1: bash $0 FOFN
+    Usage2: bash $0  ((FOFN filled in manually inside script -- defaults to input.fofn))
+
+    ...where FOFN has list of all assemblies used in the assembly evaluations in subdirs you are trying to evaluate and summarize.
+    (( typically called input.fofn ))
+    "
+}
+
+## NEED HELP?
+if [ $# -eq 1 ]; then
+    if [ $1 == "-h" ] || [ $1 == "-help" ] || [ $1 == "--help" ]; then
+        help; exit
+    fi
+fi
+
+## DEFAULT ASMFOFN
 ASMFOFN=input.fofn
+
+## OPTIONAL ASMFOFN
+if [ $# -eq 1 ]; then ASMFOFN=$1; fi
+
+## IF NEITHER ASMFOFN WORKED -- THEN REPORT ERROR AND EXIT
+if [ ! -f $ASMFOFN ]; then echo; echo "    ASMFOFN ERROR: FILE NOT FOUND"; echo "    YOU GAVE:"; echo "    $ASMFOFN"; help; exit; fi
+
 
 # specify paths to lap read sample (LR1,LR2) and all reads (R1,R2)-- give dummy answers if will not be using (that will serve as place-holders)
 LR1=/users/jurban/data/scratch/lap/sample-1.5m/downsampled.1.fastq
