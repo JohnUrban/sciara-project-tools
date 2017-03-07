@@ -1,6 +1,21 @@
 #!/bin/bash
 
-FOFN=input.fofn
+
+if [ $# -eq 0 ] || [ $1 == "-h" ] || [ $1 == "-help" ] || [ $1 == "--help" ]; then
+    echo "
+    Usage: bash $0 FOFN
+
+    ...where FOFN has list of all assemblies used in the assembly evaluations in subdirs you are trying to summarize.
+    (( typically called input.fofn ))
+    "
+    exit
+fi
+
+##FOFN=input.fofn
+FOFN=$1
+
+
+## ASSUMES FOLLOWING DIRS
 SHORT=shortread
 BIONANO=bionano
 LONG=longread
@@ -139,17 +154,30 @@ function getsniffles {
     done
 }
 
-while read line; do
-  b=`basename $line .fasta`
-  echo $b
-  getsizestats $line
-  getbusco $b
-  getbowtie2 $b  
-  getale $b
-  getlap $b
-  getreapr $b
-  getfrc $b
-  getmaligner $b
-  getsniffles $b
-  echo
-done < $FOFN
+
+function getall {
+    line=$1
+    b=$2
+    getsizestats $line
+    getbusco $b
+    getbowtie2 $b  
+    getale $b
+    getlap $b
+    getreapr $b
+    getfrc $b
+    getmaligner $b
+    getsniffles $b
+}
+
+function main {
+    LONGTABLE=longtables
+    if [ ! -d $LONGTABLE ]; then mkdir $LONGTABLE; fi
+    while read line; do
+      b=`basename $line .fasta`
+      getall $line $b > $LONGTABLE/$b
+    done < $FOFN
+}
+
+
+### EXECUTE
+main

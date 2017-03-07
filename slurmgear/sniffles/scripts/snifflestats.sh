@@ -70,9 +70,13 @@ grep -c -v ^# $PBSNIFF > pbnumsv
 grep -c -v ^# $ONTSNIFF > ontnumsv
 grep -c -v ^# $COMBSNIFF > combnumsv
 ## SUM PREDICTED LENGTHS
-awk '{print $NF}' $PBSNIFF | grep -v pred | awkSum > pbsumsv
-awk '{print $NF}' $ONTSNIFF | grep -v pred | awkSum > ontsumsv
-awk '{print $NF}' $PBSNIFF | grep -v pred | awkSum > combsumsv
+###awk '{print $NF}' $PBSNIFF | grep -v pred | awkSum > pbsumsv
+###awk '{print $NF}' $ONTSNIFF | grep -v pred | awkSum > ontsumsv
+###awk '{print $NF}' $COMBSNIFF | grep -v pred | awkSum > combsumsv
+grep -v ^# $PBSNIFF | awk '{s+=$NF}END{print s}' > pbsumsv
+grep -v ^# $ONTSNIFF | awk '{s+=$NF}END{print s}' > ontsumsv
+grep -v ^# $COMBSNIFF | awk '{s+=$NF}END{print s}' > combsumsv
+
 
 ## PUT ALL IN ONE FILE
 PRE=ont
