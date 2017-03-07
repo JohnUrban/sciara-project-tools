@@ -3,6 +3,9 @@
 ## Input Assemblies FOFN
 ASMFOFN=input.fofn
 
+## GETTING ABS PATH OF ASMFOFN
+ASMFOFN=`readlink -f $ASMFOFN`
+
 ###################  SHORT READ  ###########################
 # specify paths to lap read sample (LR1,LR2) and all reads (R1,R2)-- give dummy answers if will not be using (that will serve as place-holders)
 LR1=/users/jurban/data/scratch/lap/sample-1.5m/downsampled.1.fastq
