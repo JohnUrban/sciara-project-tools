@@ -9,7 +9,14 @@ if [ $# -eq 0 ] || [ $1 == "-h" ] || [ $1 == "-help" ] || [ $1 == "--help" ]; th
     (( typically called input.fofn ))
 
     Alt Usage: bash $0 FOFN debug
-    ...writing the word 'debug' as the second argument will create files that have more information.
+    ...writing the word 'debug' as the second argument will create files that count the number of metrics from each function in 2-col tab-delim file.
+
+    Alt Usage: bash $0 FOFN vizmat
+    ...writing the word 'vizmat' as the second argument will create longtable files that have been pruned compared to default and are strictly numeric.
+    ...this one may ultimately be used for LaTeX table conversion instead of default if desired as well....
+
+    Alt Usage: bash $0 FOFN all
+    ...writing the word 'all' as the second argument will create the default longtables, the vizmat longtables, and the debug files in one pass.
     "
     exit
 fi
@@ -33,6 +40,15 @@ function getsizestats { ##takes fasta
     awk 'NR==1 || NR==2 || NR==3 || NR==10 || NR==11 || NR==12 {print $1}' $F
 }
 
+function getsizestats_vizmat { ##takes fasta
+    b=`basename $1 .fasta`
+    F=sizestats/${b}.tsv
+    if [ ! -d sizestats ]; then mkdir sizestats; fi
+    if [ ! -f $F ]; then faSize -detailed $1 | asm-stats.py -t | awk '{gsub(/,/,"\n"); print}' > $F ; fi
+    ## asmsize taken out b/c not meaningful in terms of an asm getting better or worse (Except in terms of going further away from expected size)
+    awk 'NR==1 || NR==3 || NR==10 || NR==11 || NR==12 {print $1}' $F
+}
+
 function getbusco {
     F=$SHORT/${1}/busco/*/short*
     for l in "Complete BUSCOs" "Complete and single-copy BUSCOs" "Complete and duplicated BUSCOs" "Fragmented BUSCOs" "Missing BUSCOs"; do
@@ -48,10 +64,10 @@ function getbowtie2 {
     grep "aligned concordantly exactly 1 time" $F | awk '{print $1,$2}' | awk '{sub(/\ /,"_"); sub(/%/,"\\%"); print}'
     grep "aligned concordantly >1 times" $F | awk '{print $1,$2}' | awk '{sub(/\ /,"_"); sub(/%/,"\\%"); print}'
     grep "aligned concordantly 0 times" $F | grep -v "of these" | awk '{print $1,$2}' | awk '{sub(/\ /,"_"); sub(/%/,"\\%"); print}'
-    grep "aligned discordantly 1 time" $F | awk '{print $2}' | awk '{sub(/\ /,"_"); sub(/%/,"\\%"); print}'
+    grep "aligned discordantly 1 time" $F | awk '{print $2}' | awk '{sub(/\ /,"_"); sub(/%/,"\\%"); print}' #pct of pairs that aln conc 0 times that aln disc
     disc1=`grep "aligned discordantly 1 time" $F | awk '{print $1}'`
     pctdisc1=`echo $disc1 $pair | awk '{print 100.0*$1/$2}'`
-    echo "${disc1}_(${pctdisc1}\%)"
+    echo "${disc1}_(${pctdisc1}\%)" ## pct of all pairs that aln disc
     grep "pairs aligned 0 times concordantly or discordantly; of these:" $F | awk '{print $1}'
     grep "mates make up the pairs; of these:" $F | awk '{print $1}'
     grep "aligned 0 times" $F | awk '{print $1}'
@@ -59,9 +75,33 @@ function getbowtie2 {
     grep "aligned >1 times" $F | awk '{print $1}'
 }
 
+function getbowtie2_vizmat {
+    F=$SHORT/${1}/mreads/*.err
+    grep "overall alignment rate" $F | awk '{sub(/%/,""); print $1}'
+    pair=`grep "were paired; of these:" $F | awk '{print $1}'`
+    grep "aligned concordantly exactly 1 time" $F | awk '{print $2}' | awk '{sub(/%/,""); sub(/\(/,""); sub(/\)/,""); print}'
+    grep "aligned concordantly >1 times" $F | awk '{print $2}' | awk '{sub(/%/,""); sub(/\(/,""); sub(/\)/,""); print}'
+    grep "aligned concordantly 0 times" $F | grep -v "of these" | awk '{print $2}' | awk '{sub(/%/,""); sub(/\(/,""); sub(/\)/,""); print}'
+    grep "aligned discordantly 1 time" $F | awk '{print $2}' | awk '{sub(/\ /,"_"); sub(/%/,""); sub(/\(/,""); sub(/\)/,""); print}' #pct of reads aln conc 0 times that aln disc
+    disc1=`grep "aligned discordantly 1 time" $F | awk '{print $1}'`
+    pctdisc1=`echo $disc1 $pair | awk '{print 100.0*$1/$2}'`
+    echo ${pctdisc1} #pct of total pairs that aln disc
+    unmap=`grep "pairs aligned 0 times concordantly or discordantly; of these:" $F | awk '{print $1}'`
+    pctunmap=`echo $unmap $pair | awk '{print 100.0*$1/$2}'`
+    echo $pctunmap
+    grep "aligned 0 times" $F | awk '{print $2}' | awk '{sub(/%/,""); sub(/\(/,""); sub(/\)/,""); print}'
+    grep "aligned exactly 1 time" $F | awk '{print $2}' | awk '{sub(/%/,""); sub(/\(/,""); sub(/\)/,""); print}'
+    grep "aligned >1 times" $F | awk '{print $2}' | awk '{sub(/%/,""); sub(/\(/,""); sub(/\)/,""); print}'
+}
+
 function getale {
     F=$SHORT/${1}/ale/*ALE.txt
     awk 'NR==1 || NR==4 || NR==5 || NR==6 || NR==7 || NR==8 || NR==9 || NR==10 || NR==11 || NR==12 {print $3}' $F
+}
+
+function getale_vizmat {
+    F=$SHORT/${1}/ale/*ALE.txt
+    awk 'NR==1 || NR==4 || NR==5 || NR==6 || NR==7 || NR==10 || NR==11 || NR==12 {print $3}' $F
 }
 
 function getlap {
@@ -78,17 +118,36 @@ function getasmstats {
 function getreapr {
     D=$SHORT/${1}/reapr/output_directory/
     head -n 1 $D/per-base-mean-score.txt
-    awk 'NR==2 {OFS="\t"; print 100*$38/$2, $39+$40+$41+$42, $39, $40, $41, $42, $43+$44+$45+$46+$47+$48+$49, $43, $44, $45, $46, $47, $48, $49, $2, $20, $3, $21, $4, $22, $5, $23, $6, $24}' ${D}/05.summary.report.tsv | awk '{gsub(/\t/,"\n"); print}'    
+    ## pctEF, numErrors, FCD, FCD_gap, frag_cov, frag_cov_gap, num warnings, lowscore, link, softclip, collapsed repeat, readcov, low perfect cov, readorientation
+    awk 'NR==2 {OFS="\t"; print 100*$38/$2, $39+$40+$41+$42, $39, $40, $41, $42, $43+$44+$45+$46+$47+$48+$49, $43, $44, $45, $46, $47, $48, $49}' ${D}/05.summary.report.tsv | awk '{gsub(/\t/,"\n"); print}'
+    ## asm bases, brasm bases, nseqs, br nseqs, mean len, br meanlen, longest, br longest, n50, br n50
+    awk 'NR==2 {$2, $20, $3, $21, $4, $22, $5, $23, $6, $24}' ${D}/05.summary.report.tsv | awk '{gsub(/\t/,"\n"); print}'    
     stats=`getasmstats $1`
     bstats=`awk '{gsub(/,/,"\t"); print }' ${D}/broken_assembly.sizestats.csv`
-    echo $stats | awk '{print $10}'
-    echo $bstats | awk '{print $10}'
-    echo $stats | awk '{print $11}'
-    echo $bstats | awk '{print $11}'
-    echo $stats | awk '{print $12}'
-    echo $bstats | awk '{print $12}'
+    echo $stats | awk '{print $10}' ##ng50
+    echo $bstats | awk '{print $10}' ##broken ng50
+    echo $stats | awk '{print $11}' ## lg50
+    echo $bstats | awk '{print $11}' ##broken lg50
+    echo $stats | awk '{print $12}' ##eg
+    echo $bstats | awk '{print $12}' ## broken eg
+    ## ngaps, gaplen
     awk 'NR==2 {OFS="\t"; print $36, $37}' ${D}/05.summary.report.tsv | awk '{gsub(/\t/,"\n"); print}'    
-  
+}
+
+function getreapr_vizmat {
+    D=$SHORT/${1}/reapr/output_directory/
+    head -n 1 $D/per-base-mean-score.txt
+    ## pctEF, numErrors, FCD, FCD_gap, frag_cov, frag_cov_gap, num warnings, lowscore, link, softclip, collapsed repeat, readcov, low perfect cov, readorientation
+    awk 'NR==2 {OFS="\t"; print 100*$38/$2, $39+$40+$41+$42, $39, $40, $41, $42, $43+$44+$45+$46+$47+$48+$49, $43, $44, $45, $46, $47, $48, $49}' ${D}/05.summary.report.tsv | awk '{gsub(/\t/,"\n"); print}'
+    ## br nseqs,  br longest, 
+    awk 'NR==2 {$21, $23}' ${D}/05.summary.report.tsv | awk '{gsub(/\t/,"\n"); print}'    
+    stats=`getasmstats $1`
+    bstats=`awk '{gsub(/,/,"\t"); print }' ${D}/broken_assembly.sizestats.csv`
+    echo $bstats | awk '{print $10}' ##broken ng50
+    echo $bstats | awk '{print $11}' ##broken lg50
+    echo $bstats | awk '{print $12}' ## broken eg
+    ## in broken asm: ngaps, gaplen
+    awk 'NR==2 {OFS="\t"; print $36, $37}' ${D}/05.summary.report.tsv | awk '{gsub(/\t/,"\n"); print}'    
 }
 
 
@@ -96,7 +155,20 @@ function getfrc {
     F1=$SHORT/${1}/frc/*gff
     F2=$SHORT/${1}/frc/*frc_assemblyTable.csv
     grep -c -v ^# $F1
+    ##InsertSizeMean,InsertSizeStd,READS,MAPPED,UNMAPPED,PROPER,WRONG_DIST,ZERO_QUAL,WRONG_ORIENTATION,WRONG_CONTIG,SINGLETON,MEAN_COVERAGE,SPANNING_COVERAGE,PROPER_PAIRS_COVERAGE,WRONG_MATE_COVERAGE,SINGLETON_MATE_COV,DIFFERENT_CONTIG_COV
     tail -n 1 $F2 | awk '{gsub(/,/,"\n"); print}' | tail -n +3
+}
+
+function getfrc_vizmat {
+    F1=$SHORT/${1}/frc/*gff
+    F2=$SHORT/${1}/frc/*frc_assemblyTable.csv
+    grep -c -v ^# $F1
+    ## 1=BAM,2=LIB_TYPE,
+    ##3=InsertSizeMean,4=InsertSizeStd,5=READS,
+    ## 6=MAPPED,7=UNMAPPED,8=PROPER,9=WRONG_DIST,    --> 10=ZERO_QUAL, <--- excluding b/c usually 0
+    ## 11=WRONG_ORIENTATION,12=WRONG_CONTIG,13=SINGLETON,    14=MEAN_COVERAGE, 
+    ## 15=SPANNING_COVERAGE,16=PROPER_PAIRS_COVERAGE,17=WRONG_MATE_COVERAGE,18=SINGLETON_MATE_COV,19=DIFFERENT_CONTIG_COV
+    tail -n 1 $F2 | awk 'OFS="\t" {gsub(/,/,"\t"); print $6,$7,$8,$9,$11,$12,$13,$14,$15,$16,$17,$18,$19}' | awk '{gsub(/\t/,"\n"); print}'
 }
 
 
@@ -174,6 +246,20 @@ function getall {
     getsniffles $b
 }
 
+function getall_vizmat {
+    line=$1
+    b=$2
+    getsizestats_vizmat $line
+    getbusco $b
+    getbowtie2_vizmat $b  
+    getale_vizmat $b
+    getlap $b
+    getreapr_vizmat $b
+    getfrc_vizmat $b
+    getmaligner $b
+    getsniffles $b
+}
+
 
 function debugmode {
     line=$1
@@ -201,8 +287,22 @@ function main {
             b=`basename $line .fasta`
             debugmode $line $b > $LONGTABLE/$b.longtable.debugmode
         done < $FOFN
+    elif [ $NARG -eq 2 ] && [ $DEBUG == "vizmat" ]; then
+        ##echo VIZMAT
+        while read line; do
+            b=`basename $line .fasta`
+            getall_vizmat $line $b > $LONGTABLE/$b.longtable.vizmat
+        done < $FOFN
+    elif [ $NARG -eq 2 ] && [ $DEBUG == "all" ]; then
+        ##echo ALL
+        while read line; do
+            b=`basename $line .fasta`
+            getall $line $b > $LONGTABLE/$b.longtable
+            getall_vizmat $line $b > $LONGTABLE/$b.longtable.vizmat
+            debugmode $line $b > $LONGTABLE/$b.longtable.debugmode
+        done < $FOFN
     else
-        ##echo NO DEBUG 
+        ##echo LONGTABLE (LaTeX) 
         while read line; do
             b=`basename $line .fasta`
             getall $line $b > $LONGTABLE/$b.longtable
