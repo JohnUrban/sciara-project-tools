@@ -16,7 +16,9 @@ fi
 
 ##FOFN=input.fofn
 FOFN=$1
-
+NARG=$#
+DEBUG=''
+if [ $NARG -eq 2 ]; then DEBUG=$2; fi
 
 ## ASSUMES FOLLOWING DIRS
 SHORT=shortread
@@ -184,7 +186,7 @@ function debugmode {
     REAP=`getreapr $b | wc -l`
     FRC=`getfrc $b | wc -l`
     BNG=`getmaligner $b | wc -l`
-    SNIF=`getsniffles $b | wc `
+    SNIF=`getsniffles $b | wc -l`
     for var in SIZE BUSCO BT2 ALE LAP REAP FRC BNG SNIF; do
         echo -e $var"\t"${!var}
     done
@@ -193,15 +195,17 @@ function debugmode {
 function main {
     LONGTABLE=longtables
     if [ ! -d $LONGTABLE ]; then mkdir $LONGTABLE; fi
-    if [ $# -eq 2 ] && [ $2 == "debug" ]; then
+    if [ $NARG -eq 2 ] && [ $DEBUG == "debug" ]; then
+        ##echo DEBUG
         while read line; do
             b=`basename $line .fasta`
-            debugmode $line $b > $LONGTABLE/$b
+            debugmode $line $b > $LONGTABLE/$b.longtable.debugmode
         done < $FOFN
     else
+        ##echo NO DEBUG 
         while read line; do
             b=`basename $line .fasta`
-            getall $line $b > $LONGTABLE/$b
+            getall $line $b > $LONGTABLE/$b.longtable
         done < $FOFN
     fi
 }
