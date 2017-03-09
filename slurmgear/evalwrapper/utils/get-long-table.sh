@@ -7,6 +7,9 @@ if [ $# -eq 0 ] || [ $1 == "-h" ] || [ $1 == "-help" ] || [ $1 == "--help" ]; th
 
     ...where FOFN has list of all assemblies used in the assembly evaluations in subdirs you are trying to summarize.
     (( typically called input.fofn ))
+
+    Alt Usage: bash $0 FOFN debug
+    ...writing the word 'debug' as the second argument will create files that have more information.
     "
     exit
 fi
@@ -169,13 +172,38 @@ function getall {
     getsniffles $b
 }
 
+
+function debugmode {
+    line=$1
+    b=$2
+    SIZE=`getsizestats $line | wc -l`
+    BUSCO=`getbusco $b | wc -l`
+    BT2=`getbowtie2 $b  | wc -l`
+    ALE=`getale $b | wc -l`
+    LAP=`getlap $b | wc -l`
+    REAP=`getreapr $b | wc -l`
+    FRC=`getfrc $b | wc -l`
+    BNG=`getmaligner $b | wc -l`
+    SNIF=`getsniffles $b | wc `
+    for var in SIZE BUSCO BT2 ALE LAP REAP FRC BNG SNIF; do
+        echo -e $var"\t"${!var}
+    done
+}
+
 function main {
     LONGTABLE=longtables
     if [ ! -d $LONGTABLE ]; then mkdir $LONGTABLE; fi
-    while read line; do
-      b=`basename $line .fasta`
-      getall $line $b > $LONGTABLE/$b
-    done < $FOFN
+    if [ $# -eq 2 ] && [ $2 == "debug" ]; then
+        while read line; do
+            b=`basename $line .fasta`
+            debugmode $line $b > $LONGTABLE/$b
+        done < $FOFN
+    else
+        while read line; do
+            b=`basename $line .fasta`
+            getall $line $b > $LONGTABLE/$b
+        done < $FOFN
+    fi
 }
 
 

@@ -1,0 +1,11 @@
+Should change run-cmd.sh name to something more descriptive
+-- e.g. run-bionano-maligner-program.sh
+
+Will need to change some stuff in the evalrapper
+...
+
+
+Do same for sniffles dir....
+when done -- erase this README
+
+put here 3/9/17
