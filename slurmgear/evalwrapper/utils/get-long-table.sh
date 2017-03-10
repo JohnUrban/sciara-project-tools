@@ -56,6 +56,7 @@ SIMPLEFACTORS="1,-1,-1,1,-1,-1,-1,-1,1,-1,-1,-1,-1,-1,-1,-1,-1,1,1,1,1,1,1,1,1,1
 
 
 function getsizestats { ##takes fasta
+    ## 6 outputs: ncontigs, asmlen, maxlen, ng50, lg50, eg
     b=`basename $1 .fasta`
     F=sizestats/${b}.tsv
     if [ ! -d sizestats ]; then mkdir sizestats; fi
@@ -64,6 +65,7 @@ function getsizestats { ##takes fasta
 }
 
 function getsizestats_vizmat { ##takes fasta
+    ## 5 outputs: ncontigs, maxlen, ng50, lg50, eg
     b=`basename $1 .fasta`
     F=sizestats/${b}.tsv
     if [ ! -d sizestats ]; then mkdir sizestats; fi
@@ -73,6 +75,7 @@ function getsizestats_vizmat { ##takes fasta
 }
 
 function getbusco {
+    ## 5 outputs: complete, complete+single, complete+dup, frag, missing
     F=$SHORT/${1}/busco/*/short*
     for l in "Complete BUSCOs" "Complete and single-copy BUSCOs" "Complete and duplicated BUSCOs" "Fragmented BUSCOs" "Missing BUSCOs"; do
         grep "${l}" $F | awk '{print $1}'
@@ -80,6 +83,7 @@ function getbusco {
 }
 
 function getbusco_simple {
+    ## 1 output: complete
     F=$SHORT/${1}/busco/*/short*
     ## Removed
     ## "Complete and single-copy BUSCOs" "Complete and duplicated BUSCOs" "Fragmented BUSCOs" "Missing BUSCOs"
@@ -91,6 +95,7 @@ function getbusco_simple {
 }
 
 function getbowtie2 {
+    ## 12 outputs: alnrate, npairs, alncon1, alncon>1, alncon0, alndis1-pctdnac,alndis(all),pairs aln 0, nmates of 0, mate0,mat1,mat>1
     F=$SHORT/${1}/mreads/*.err
     grep "overall alignment rate" $F | awk '{sub(/%/,""); print $1}'
     pair=`grep "were paired; of these:" $F | awk '{print $1}'`
@@ -104,7 +109,7 @@ function getbowtie2 {
     echo "${disc1}_(${pctdisc1}\%)" ## pct of all pairs that aln disc
     grep "pairs aligned 0 times concordantly or discordantly; of these:" $F | awk '{print $1}'
     grep "mates make up the pairs; of these:" $F | awk '{print $1}'
-    grep "aligned 0 times" $F | awk '{print $1}'
+    grep "aligned 0 times" $F | grep -v "pairs aligned 0 times concordantly or discordantly; of these:" | awk '{print $1}'
     grep "aligned exactly 1 time" $F | awk '{print $1}'
     grep "aligned >1 times" $F | awk '{print $1}'
 }
@@ -126,7 +131,7 @@ function getbowtie2_vizmat {
     unmap=`grep "pairs aligned 0 times concordantly or discordantly; of these:" $F | awk '{print $1}'`
     pctunmap=`echo $unmap $pair | awk '{print 100.0*$1/$2}'`
     echo $pctunmap
-    grep "aligned 0 times" $F | awk '{print $2}' | awk '{sub(/%/,""); sub(/\(/,""); sub(/\)/,""); print}'
+    grep "aligned 0 times" $F | grep -v "pairs aligned 0 times concordantly or discordantly; of these:" | awk '{print $1}'
     grep "aligned exactly 1 time" $F | awk '{print $2}' | awk '{sub(/%/,""); sub(/\(/,""); sub(/\)/,""); print}'
     grep "aligned >1 times" $F | awk '{print $2}' | awk '{sub(/%/,""); sub(/\(/,""); sub(/\)/,""); print}'
 }
