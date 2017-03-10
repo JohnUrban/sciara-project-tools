@@ -1,0 +1,72 @@
+Num Contigs
+Max Contig Size
+NG50
+LG50
+E G
+Complete BUSCOs
+Bowtie2 Ilmn Pct
+Bowtie2 Pct Aligned Concordantly
+Bowtie2 Pct Aligned Disconcordantly
+ALE Score
+ALE Place Avg
+ALE Insert Avg
+ALE kmer Avg
+ALE Depth Score Avg
+LAP
+REAPR MBS
+REAPR Pct EF
+REAPR FCD Errors within a contig
+REAPR FCD Errors over a gap
+REAPR Low frag cov within a contig
+REAPR Low frag cov over a gap
+REAPR Low Score Regions
+REAPR Links
+REAPR Soft Clip
+REAPR Collapsed repeats
+REAPR Low Read Coverage
+REAPR Low Perfect Coverage
+REAPR Wrong Orientation
+REAPR Broken Num Contigs
+REAPR Broken Max Contig Length
+REAPR Broken NG50
+REAPR Broken LG50
+REAPR Broken EG
+REAPR Broken Num Gaps
+REAPR Broken Total Gap Len
+FRC Num Features
+FRC Norm Num Features (per Mb)
+FRC Proper
+FRC Wrong Dist
+FRC Wrong Orientation
+FRC Wrong Contig
+FRC Singleton
+FRC Mean Cov
+FRC Spanning Cov
+FRC Proper Pairs Cov
+FRC Wrong Mate Cov
+FRC Singleton Mate Cov
+FRC Different Contig Cov
+BNG Score
+BNG Span
+BNG Cov
+BNG Num
+BNG 1e4*Score/Cov
+BNG Score/Num
+BNG Span/AsmSize
+BNG Cov/AsmSize
+BNG Cov/Span
+BNG Cov/Num
+ONT sum mapq
+ONT pct aln
+ONT ratio
+ONT avg mapq
+PacBio sum mapq
+PacBio Pct aln
+PacBio ratio
+PacBio avg mapq
+Sniffles ONT Num SV
+Sniffles PacBio Num SV
+Sniffles Combined Num SV
+Sniffles ONT Sum SV
+Sniffles PacBio Sum SV
+Sniffles Combined Sum SV
