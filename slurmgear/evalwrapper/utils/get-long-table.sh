@@ -178,6 +178,7 @@ function getlap {
 
 
 function getasmstats {
+    ## WARN: assumes getsizestats was already run
     F=sizestats/${b}.tsv
     paste -sd"\t" $F
 }
@@ -237,17 +238,27 @@ function getreapr_simple {
 
 ### I DONT SEE NORM FRC ANYWHERE.....?!?!?
 function getfrc {
+    ## WARN: assumes getasmstats was already run
     F1=$SHORT/${1}/frc/*gff
     F2=$SHORT/${1}/frc/*frc_assemblyTable.csv
-    grep -c -v ^# $F1
+    numfrc=`grep -c -v ^# $F1`
+    asmlen=`getasmstats | awk '{print $2}'`
+    normfrc=`echo $numfrc $asmlen | awk '{print 1e6*$1/$2}'`
+    echo $numfrc
+    echo $normfrc
     ##InsertSizeMean,InsertSizeStd,READS,MAPPED,UNMAPPED,PROPER,WRONG_DIST,ZERO_QUAL,WRONG_ORIENTATION,WRONG_CONTIG,SINGLETON,MEAN_COVERAGE,SPANNING_COVERAGE,PROPER_PAIRS_COVERAGE,WRONG_MATE_COVERAGE,SINGLETON_MATE_COV,DIFFERENT_CONTIG_COV
     tail -n 1 $F2 | awk '{gsub(/,/,"\n"); print}' | tail -n +3
 }
 
 function getfrc_vizmat {
+    ## WARN: assumes getasmstats was already run
     F1=$SHORT/${1}/frc/*gff
     F2=$SHORT/${1}/frc/*frc_assemblyTable.csv
-    grep -c -v ^# $F1
+    numfrc=`grep -c -v ^# $F1`
+    asmlen=`getasmstats | awk '{print $2}'`
+    normfrc=`echo $numfrc $asmlen | awk '{print 1e6*$1/$2}'`
+    echo $numfrc
+    echo $normfrc
     ## 1=BAM,2=LIB_TYPE,
     ##3=InsertSizeMean,4=InsertSizeStd,5=READS,
     ## 6=MAPPED,7=UNMAPPED,8=PROPER,9=WRONG_DIST,    --> 10=ZERO_QUAL, <--- excluding b/c usually 0
@@ -259,9 +270,14 @@ function getfrc_vizmat {
 function getfrc_simple {
     ## FOR FRC SIMPLE -- rm 6,7, 10 
     ## was thnking about removing 13 and 14 -- but kept
+    ## WARN: assumes getasmstats was already run
     F1=$SHORT/${1}/frc/*gff
     F2=$SHORT/${1}/frc/*frc_assemblyTable.csv
-    grep -c -v ^# $F1
+    numfrc=`grep -c -v ^# $F1`
+    asmlen=`getasmstats | awk '{print $2}'`
+    normfrc=`echo $numfrc $asmlen | awk '{print 1e6*$1/$2}'`
+    echo $numfrc
+    echo $normfrc
     ## 1=BAM,2=LIB_TYPE,
     ##3=InsertSizeMean,4=InsertSizeStd,5=READS,
     ## 6=MAPPED,7=UNMAPPED,8=PROPER,9=WRONG_DIST,    --> 10=ZERO_QUAL, <--- excluding b/c usually 0
