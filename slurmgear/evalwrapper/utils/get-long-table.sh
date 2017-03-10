@@ -236,7 +236,6 @@ function getreapr_simple {
 }
 
 
-### I DONT SEE NORM FRC ANYWHERE.....?!?!?
 function getfrc {
     ## WARN: assumes getasmstats was already run
     F1=$SHORT/${1}/frc/*gff
@@ -519,12 +518,12 @@ function main {
         ##echo ALL
         while read LINE; do
             B=`basename $LINE .fasta`
-            getall $LINE $B > $LONGTABLE/$b.longtable
-            getall_vizmat $LINE $B > $LONGTABLE/$b.longtable.vizmat
-            getsimple $LINE $B > $LONGTABLE/$b.longtable.simple
-            debugmode $LINE $B > $LONGTABLE/$b.longtable.debugmode
-            debugsimple $LINE $B > $LONGTABLE/$b.longtable.debugsimple
-            debugvizmat $LINE $B > $LONGTABLE/$b.longtable.debugvizmat
+            getall $LINE $B > $LONGTABLE/$B.longtable
+            getall_vizmat $LINE $B > $LONGTABLE/$B.longtable.vizmat
+            getsimple $LINE $B > $LONGTABLE/$B.longtable.simple
+            debugmode $LINE $B > $LONGTABLE/$B.longtable.debugmode
+            debugsimple $LINE $B > $LONGTABLE/$B.longtable.debugsimple
+            debugvizmat $LINE $B > $LONGTABLE/$B.longtable.debugvizmat
         done < $FOFN
     elif [ $NARG -eq 2 ] && [ $DEBUG == "names" ]; then
         ##echo NAMES
