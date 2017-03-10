@@ -8,7 +8,7 @@ if [ $# -eq 0 ] || [ $1 == "-h" ] || [ $1 == "-help" ] || [ $1 == "--help" ]; th
     ...where FOFN has list of all assemblies used in the assembly evaluations in subdirs you are trying to summarize.
     (( typically called input.fofn ))
 
-    Alt Usage: bash $0 FOFN debug|debugsimple
+    Alt Usage: bash $0 FOFN debug|debugsimple|debugvizmat
     ...writing the word 'debug' as the second argument will create files that count the number of metrics from each function in 2-col tab-delim file.
 
     Alt Usage: bash $0 FOFN vizmat
@@ -235,7 +235,7 @@ function getreapr_simple {
 }
 
 
-
+### I DONT SEE NORM FRC ANYWHERE.....?!?!?
 function getfrc {
     F1=$SHORT/${1}/frc/*gff
     F2=$SHORT/${1}/frc/*frc_assemblyTable.csv
@@ -428,6 +428,24 @@ function debugsimple {
 }
 
 
+function debugvizmat {
+    line=$1
+    b=$2
+    SIZE=`getsizestats_vizmat $line | wc -l`
+    BUSCO=`getbusco $b | wc -l`
+    BT2=`getbowtie2_vizmat $b | wc -l`  
+    ALE=`getale_vizmat $b | wc -l`
+    LAP=`getlap $b | wc -l`
+    REAP=`getreapr_vizmat $b | wc -l`
+    FRC=`getfrc_vizmat $b | wc -l`
+    BNG=`getmaligner $b | wc -l`
+    SNIF=`getsniffles $b | wc -l`
+    for var in SIZE BUSCO BT2 ALE LAP REAP FRC BNG SNIF; do
+        echo -e $var"\t"${!var}
+    done
+}
+
+
 function getnames {
     echo $NAMES
 }
@@ -463,6 +481,12 @@ function main {
             b=`basename $line .fasta`
             debugsimple $line $b > $LONGTABLE/$b.longtable.debugsimple
         done < $FOFN
+    elif [ $NARG -eq 2 ] && [ $DEBUG == "debugvizmat" ]; then
+        ##echo DEBUG
+        while read line; do
+            b=`basename $line .fasta`
+            debugvizmat $line $b > $LONGTABLE/$b.longtable.debugvizmat
+        done < $FOFN
     elif [ $NARG -eq 2 ] && [ $DEBUG == "vizmat" ]; then
         ##echo VIZMAT
         while read line; do
@@ -484,6 +508,7 @@ function main {
             getsimple $LINE $B > $LONGTABLE/$b.longtable.simple
             debugmode $LINE $B > $LONGTABLE/$b.longtable.debugmode
             debugsimple $LINE $B > $LONGTABLE/$b.longtable.debugsimple
+            debugvizmat $LINE $B > $LONGTABLE/$b.longtable.debugvizmat
         done < $FOFN
     elif [ $NARG -eq 2 ] && [ $DEBUG == "names" ]; then
         ##echo NAMES
