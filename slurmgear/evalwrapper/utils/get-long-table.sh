@@ -315,7 +315,7 @@ function getmaligner {
 }
 
 function getsniffles {
-    D=$LONG/$1/snifflestats
+    D=${LONG}/${1}/snifflestats
     PRE=${D}/ont
     ORDEREDONT="${PRE}.numaln  ${PRE}.numentries ${PRE}.numuniqaln ${PRE}.numuniqentries ${PRE}.sum.mapq ${PRE}.pctaln ${PRE}.alnratio ${PRE}.avg.mapq"
     PRE=${D}/pacbio
@@ -331,7 +331,7 @@ function getsniffles {
 }
 
 function getsniffles_simple {
-    D=$LONG/$1/snifflestats
+    D=${LONG}/${1}/snifflestats
     PRE=${D}/ont
     ## numalign and numuniqalign do not give extra info over pctaln and ratio
     ## numentries and numuniqentries are not useful here necessarily
@@ -453,12 +453,12 @@ function main {
         done < $FOFN
     elif [ $NARG -eq 2 ] && [ $DEBUG == "all" ]; then
         ##echo ALL
-        while read line; do
-            b=`basename $line .fasta`
-            getall $line $b > $LONGTABLE/$b.longtable
-            getall_vizmat $line $b > $LONGTABLE/$b.longtable.vizmat
-            getsimple $line $b > $LONGTABLE/$b.longtable.simple
-            debugmode $line $b > $LONGTABLE/$b.longtable.debugmode
+        while read LINE; do
+            B=`basename $LINE .fasta`
+            getall $LINE $B > $LONGTABLE/$b.longtable
+            getall_vizmat $LINE $B > $LONGTABLE/$b.longtable.vizmat
+            getsimple $LINE $B > $LONGTABLE/$b.longtable.simple
+            debugmode $LINE $B > $LONGTABLE/$b.longtable.debugmode
         done < $FOFN
     elif [ $NARG -eq 2 ] && [ $DEBUG == "names" ]; then
         ##echo NAMES
