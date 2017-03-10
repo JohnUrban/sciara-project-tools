@@ -188,7 +188,7 @@ function getreapr {
     ## pctEF, numErrors, FCD, FCD_gap, frag_cov, frag_cov_gap, num warnings, lowscore, link, softclip, collapsed repeat, readcov, low perfect cov, readorientation
     awk 'NR==2 {OFS="\t"; print 100*$38/$2, $39+$40+$41+$42, $39, $40, $41, $42, $43+$44+$45+$46+$47+$48+$49, $43, $44, $45, $46, $47, $48, $49}' ${D}/05.summary.report.tsv | awk '{gsub(/\t/,"\n"); print}'
     ## asm bases, brasm bases, nseqs, br nseqs, mean len, br meanlen, longest, br longest, n50, br n50
-    awk 'NR==2 {$2, $20, $3, $21, $4, $22, $5, $23, $6, $24}' ${D}/05.summary.report.tsv | awk '{gsub(/\t/,"\n"); print}'    
+    awk 'NR==2 {OFS="\t"; print $2, $20, $3, $21, $4, $22, $5, $23, $6, $24}' ${D}/05.summary.report.tsv | awk '{gsub(/\t/,"\n"); print}'    
     stats=`getasmstats $1`
     bstats=`awk '{gsub(/,/,"\t"); print }' ${D}/broken_assembly.sizestats.csv`
     echo $stats | awk '{print $10}' ##ng50
@@ -207,7 +207,7 @@ function getreapr_vizmat {
     ## pctEF, numErrors, FCD, FCD_gap, frag_cov, frag_cov_gap, num warnings, lowscore, link, softclip, collapsed repeat, readcov, low perfect cov, readorientation
     awk 'NR==2 {OFS="\t"; print 100*$38/$2, $39+$40+$41+$42, $39, $40, $41, $42, $43+$44+$45+$46+$47+$48+$49, $43, $44, $45, $46, $47, $48, $49}' ${D}/05.summary.report.tsv | awk '{gsub(/\t/,"\n"); print}'
     ## br nseqs,  br longest, 
-    awk 'NR==2 {$21, $23}' ${D}/05.summary.report.tsv | awk '{gsub(/\t/,"\n"); print}'    
+    awk 'NR==2 {OFS="\t"; print $21, $23}' ${D}/05.summary.report.tsv | awk '{gsub(/\t/,"\n"); print}'    
     stats=`getasmstats $1`
     bstats=`awk '{gsub(/,/,"\t"); print }' ${D}/broken_assembly.sizestats.csv`
     echo $bstats | awk '{print $10}' ##broken ng50
@@ -224,7 +224,7 @@ function getreapr_simple {
     ## pctEF, FCD, FCD_gap, frag_cov, frag_cov_gap, lowscore, link, softclip, collapsed repeat, readcov, low perfect cov, readorientation
     awk 'NR==2 {OFS="\t"; print 100*$38/$2, $39, $40, $41, $42, $43, $44, $45, $46, $47, $48, $49}' ${D}/05.summary.report.tsv | awk '{gsub(/\t/,"\n"); print}'
     ## br nseqs,  br longest, 
-    awk 'NR==2 {$21, $23}' ${D}/05.summary.report.tsv | awk '{gsub(/\t/,"\n"); print}'    
+    awk 'NR==2 {OFS="\t"; print $21, $23}' ${D}/05.summary.report.tsv | awk '{gsub(/\t/,"\n"); print}'    
     stats=`getasmstats $1`
     bstats=`awk '{gsub(/,/,"\t"); print }' ${D}/broken_assembly.sizestats.csv`
     echo $bstats | awk '{print $10}' ##broken ng50
