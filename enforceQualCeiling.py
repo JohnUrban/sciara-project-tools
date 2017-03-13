@@ -6,9 +6,9 @@ import numpy as np
 
 
 ## ONT fastqs have Q values spanning 0-90.
-## This is breaking programs that do not expect it to exceed 64 (e.g. ALE).
+## This is breaking programs that do not expect it to exceed 62 (e.g. ALE).
 ## Can re-compile those programs with different expectations.... maybe.
-## Can also re-vamp fastq to not exceed 64 -- give it cieling.
+## Can also re-vamp fastq to not exceed 62 -- give it cieling.
 helpmsg='''
 Usage:
 enforceQualCeiling.py fastqfile[required] ceiling[default:64]
@@ -23,7 +23,7 @@ if sys.argv[1] == "-" or sys.argv[1] == "stdin":
 if len(sys.argv) == 3:
     ceiling = int(sys.argv[2])
 else:
-    ceiling = 64
+    ceiling = 62
 
 
 

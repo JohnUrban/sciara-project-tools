@@ -1,0 +1,12 @@
+.*project
+*~
+*.o
+*.a
+*.pyc
+*testPhiX*
+*testRealignPhiX*
+*testSNPPhiX*
+ALE
+synthReadGen
+GCcompFinder
+readFileSplitter
