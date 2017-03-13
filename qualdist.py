@@ -4,6 +4,8 @@ from collections import defaultdict
 import sys
 ## adapted from poretools qualdist
 
+if sys.argv[1] == "-" or sys.argv[1] == "stdin":
+    sys.argv[1] = sys.stdin
 
 qual_count = defaultdict(int)
 total_nucs = 0
