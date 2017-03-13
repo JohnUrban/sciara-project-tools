@@ -90,7 +90,7 @@ def runBowtie2(options = None, output_sam = 'temp.sam'):
     """
     Run Bowtie2 with the given options and save the SAM file.
     """
-
+    
     if not options:
         sys.stderr.write("[ERROR] No Bowtie2 options specified" + '\n')
         return
@@ -120,7 +120,7 @@ def runBowtie2(options = None, output_sam = 'temp.sam'):
     # Clean up the temp file.
     bowtie_stderr.close()
     os.remove(bowtie_stderr_name)
-
+    
     return bowtie_stats
 
 def calcScoreFromReads(reads_filenames, assembly_fasta, fastq_file = False,

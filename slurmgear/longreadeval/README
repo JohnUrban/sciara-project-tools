@@ -1,0 +1,62 @@
+It would be nice to have the formal metrics used with shortreads also use with long read data to see what they say.
+
+LAP can take single-end reads - so actually it would be best to just let it align the long reads unscathed -- not turned into PE reads.
+However, it does not give you enough control over Bowtie2 to toggle parameters to map reads with 15-30% error.
+One can provide SAM files instead.
+I found that this may be appropriate Bowtie2 parameters:
+bowtie2 -D 20 -R 3 -N 1 -L 15 -i S,1,0.50 --score-min L,-1.5,-1.5 -x $BT2 -U R1.fastq 
+
+Or if you do make them into PE reads (e.g. 500 bp reads from 2000 bp fragments)
+bowtie2 -D 20 -R 3 -N 1 -L 15 -i S,1,0.50 --score-min L,-1.5,-1.5 -x $BT2 -1 R1.fastq -2 R2.fastq -X 3000
+
+
+Other info:
+BWA uses for ont2d,pacbio:
+min seed = 14,17 -- blasr uses min seed of 12
+discrd chain if seed bases shorter than = 20,40
+look for internal seeds inside a seed longer than 10,10
++1 for match, -1 for mismatch, -1 for gap open, -1 for gap extend
+-- above bowtie2 uses minseed of 15 -- mismtach -2/-6, gapopen -5, gapextend -3
+--> b/c the fastq base qualities are low in general the mismatch will usually be around -3
+
+Based on scoring method above, how many mismatches allowed?
+This could allow 25-76 mismatches in a 100 bp read.
+If we assume the mean base-quality is Q=10, this will allow 50-51 mismatches.
+It would allow 30 gaps to open (and immediately close).
+It would allow up to ~50 gap extends (assuming 1 gap open).
+
+The bowtie2 approach above appears super slow.
+Could use "bwa mem -x ont2d" with "-a" to report all alignments....
+
+
+
+ALE:
+Can do this with "single end" long reads -- i.e. no need to pair.
+I got ale working on "bwa mem" alignments for pacbio only -- for some reason the ont alns did not work...
+Nonetheless - though small N (2) - it seems the ALE score correlates with the other long read metrics I already use
+..such as pct aln, ratio, and avg mapq of the alignments...
+
+
+FRC:
+Need to make PE reads from the long reads....
+Need to map PE reads....
+
+
+REAPR:
+Need PE and basically need to use SMALT mapper with REAPR....
+Need to understand SMALT a little better...
+Tried perfect map -- that will not happen with error-prone shortFromLong reads...
+
+
+
+Conclusions:
+For now, ALE would be easiest to implement using same BWA mapping as for sniffles, but it is throwing an error on ONT alignments.
+However, since the ALE score seems to fully agree with the summary metrics I already use and since it needs debugging for ONT alignments, for now I will not pursue combining ALE with long reads any further.
+LAP could be performed using bwa mem with the -a option.
+FRC could be done using PE sim reads sampled from long and mapped with BWA mem.
+Since these programs require some more development for my automation scripts and more exploration to see how best to combine them with long reads, I will put this on hold.
+REAPR might need a lot of exploration -- and needs to be put on hold for sure.
+
+
+
+

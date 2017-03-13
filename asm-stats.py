@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import sys
 import numpy as np
-import pandas
-import matplotlib.pyplot as plt
+####import pandas
+####import matplotlib.pyplot as plt
 import argparse
-import re
+####import re
 from collections import defaultdict
-import pysam
+####import pysam
 
 
 parser = argparse.ArgumentParser(description="""

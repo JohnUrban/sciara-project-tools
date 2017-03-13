@@ -1,0 +1,58 @@
+#!/usr/local/bin/python
+import sys
+
+if len(sys.argv) == 1:
+    print
+    print "Usage 1: scriptname minSize maxSize"
+    print "  --> alt. is minRatio maxRatio"
+    print "  -->If both args are <= 1.0, it will assume ratios were given."
+    print " Adding 'r' or 'recipe' as a 3rd argument gives 100 ul recipe example"
+    print
+    print "Usage 2: scriptname intervalSize"
+    print "  This will print a table of sizes 200-800 in intervalSize"
+    print "  'Size' is the boundary size:"
+    print "      --> DNA > Size is on the beads"
+    print "      --> DNA < Size is in the supernatant"
+    print
+    print "This linear model works (approx) for ratios in between 0.4-1.0"
+    print " --> i.e. boundaries between 200-800 bp"
+    print
+    quit()
+
+m = (1.0-0.4)/(200-800)
+b = 0.4 - m*800
+
+if len(sys.argv) == 2: ##table
+    intervalSize = int(sys.argv[1])
+    print "Size\tRatio"
+    for x in range(200, 801, intervalSize):
+        print x, "\t", m*x + b
+    quit()
+
+minSize = float(sys.argv[1])
+maxSize = float(sys.argv[2])
+
+
+if minSize <= 1.0 and maxSize <= 1.0: ##ratios given
+    low = int((maxSize-b)/m)
+    high = int((minSize-b)/m)
+    print low, "-", high, "bp DNA will be selected."
+else:
+    low = m*maxSize + b
+    high = m*minSize + b
+    if len(sys.argv) == 4 and sys.argv[3] == "recipe":
+        print
+    print low, " - ", high
+    if len(sys.argv) == 4 and sys.argv[3][0] == "r":
+        print
+        print "Transfer sup from ", low, " to new tube."
+        print "Final ratio needs to be ", high
+        print
+        print "For 100 ul DNA:"
+        print "    Add ", low*100, " ul AMPure beads (ratio = ", low, ")"
+        print "    The sup contains DNA <= ", maxSize, "."
+        print "    Transfer sup to new tube. "
+        print "    Add ", (high-low)*100, "ul AMPure beads to the previous sup."
+        print "    Final ratio is", high
+        print "    Treat this as normal AMPure cleaning and take DNA off beads"
+        print
