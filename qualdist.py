@@ -1,4 +1,4 @@
-#!/bin/usr/env python
+#!/usr/bin/env python
 from Bio import SeqIO
 from collections import defaultdict
 import sys
