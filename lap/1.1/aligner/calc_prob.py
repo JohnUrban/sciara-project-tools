@@ -207,13 +207,18 @@ def calcScoreFromReads(reads_filenames, assembly_fasta, fastq_file = False,
             edit_dist = re.search('NM:i:(\d+)', ''.join(query_align_tuple[11:]))
             if edit_dist:
                 edit_dist = int(edit_dist.group(1))
-                seq_len = len(query_align_tuple[9])
+                #seq_len = len(query_align_tuple[9]) # JU: Modifying (see next 4 lines) b/c in other applications (e.g. long reads with bwa mem -a), secondary alignments have '*' in SEQ column. SAM spec says. "Sum of lengths of the M/I/S/=/X operations shall equal the length of SEQ". I verified this. Nonetheless, I use the authors len() approach unless necessary. 
+                if query_align_tuple[9] != '*':
+                    seq_len = len(query_align_tuple[9])
+                else:
+                    seq_len = sum([int(e) for e in re.findall('(\d+)[MIS=X]', query_align_tuple[5])])
                 score = math.pow(mismatch_prob, edit_dist) * math.pow(match_prob, seq_len - edit_dist)
                 total_query_score += score * contig_abundance[query_align_tuple[2]]
             #else:
             #     bowtie_alignments[query_seq] = 0
         except:
-            sys.stderr.write(query_align_tuple + '\n')
+            ##sys.stderr.write(query_align_tuple + '\n') ## JU: need str(query_align_tuple) or alternatively use "alignments"
+            sys.stderr.write(alignment) ## JU: I believe the authors intended this.
 
     # Print out the last score
     total_query_score = total_query_score / (2 * assembly_length)
@@ -408,7 +413,11 @@ def getScoreFromMatePairs(first_mate_filename, second_mate_filename, assembly_fa
             edit_dist = re.search('NM:i:(\d+)', ''.join(query_align_tuple[11:]))
             if edit_dist:
                 edit_dist = int(edit_dist.group(1))
-                seq_len = len(query_align_tuple[9])
+                #seq_len = len(query_align_tuple[9]) # JU: Modifying (see next 4 lines) b/c in other applications (e.g. long reads with bwa mem -a), secondary alignments have '*' in SEQ column. SAM spec says. "Sum of lengths of the M/I/S/=/X operations shall equal the length of SEQ". I verified this. Nonetheless, I use the authors len() approach unless necessary. 
+                if query_align_tuple[9] != '*':
+                    seq_len = len(query_align_tuple[9])
+                else:
+                    seq_len = sum([int(e) for e in re.findall('(\d+)[MIS=X]', query_align_tuple[5])])
                 
                 score = math.pow(mismatch_prob, edit_dist) * math.pow(match_prob, seq_len - edit_dist)
 
@@ -421,7 +430,9 @@ def getScoreFromMatePairs(first_mate_filename, second_mate_filename, assembly_fa
                 score *= getInsertProbability(insert_size_avg, insert_size_std_dev, mate_pair_len)
                 get_mate_probability = True
         except:
-            sys.stderr.write(query_align_tuple + '\n')
+            ##sys.stderr.write(query_align_tuple + '\n') ## JU: need str(query_align_tuple) or alternatively use "alignments"
+            sys.stderr.write(alignment) ## JU: I believe the authors intended this.
+
 
         # If the mate matches, get the probability of the mate, otherwise skip the
         # mate and find the next pair.
@@ -433,14 +444,20 @@ def getScoreFromMatePairs(first_mate_filename, second_mate_filename, assembly_fa
                 edit_dist = re.search('NM:i:(\d+)', ''.join(query_align_tuple[11:]))
                 if edit_dist:
                     edit_dist = int(edit_dist.group(1))
-                    seq_len = len(query_align_tuple[9])
+                    #seq_len = len(query_align_tuple[9]) # JU: Modifying (see next 4 lines) b/c in other applications (e.g. long reads with bwa mem -a), secondary alignments have '*' in SEQ column. SAM spec says. "Sum of lengths of the M/I/S/=/X operations shall equal the length of SEQ". I verified this. Nonetheless, I use the authors len() approach unless necessary. 
+                    if query_align_tuple[9] != '*':
+                        seq_len = len(query_align_tuple[9])
+                    else:
+                        seq_len = sum([int(e) for e in re.findall('(\d+)[MIS=X]', query_align_tuple[5])])
+                        
                     score *= math.pow(mismatch_prob, edit_dist) * math.pow(match_prob, seq_len - edit_dist)
 
                     total_query_score += (score * contig_abundance[query_align_tuple[2]]) / (2 * assembly_length)
                 else:
                     sys.stderr.write('ERROR: MATE DOES NOT MATCH' + '\n')
             except:
-                sys.stderr.write(query_align_tuple + '\n')
+                ##sys.stderr.write(query_align_tuple + '\n') ## JU: need str(query_align_tuple) or alternatively use "alignments"
+                sys.stderr.write(alignment) ## JU: I believe the authors intended this.
 
         alignment = alignments.readline()
 
