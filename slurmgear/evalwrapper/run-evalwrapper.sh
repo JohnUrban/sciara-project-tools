@@ -55,6 +55,12 @@ BIONANORUN=${BIONANOSCRIPTS}/auto-malign.sh
 ONT=~/data/scratch/minion2016/fast5fastqs/allReadsFromAllONTlibsCombined.fastq
 PACBIO=~/data/scratch/pac_bio_data/filt/all_subreads.fastq
 
+## LONG2PE READ LOCATIONS
+ONT1=~/data/scratch/minion2016/fast5fastqs/molreads/ontmol-allLibs-f2r1s2-pairedreads-1.fastq
+ONT2=~/data/scratch/minion2016/fast5fastqs/molreads/ontmol-allLibs-f2r1s2-pairedreads-2.fastq
+PACBIO1=~/data/scratch/pac_bio_data/filt/otherPE/all_subreads-f2r1s2-pairedreads-1.fastq
+PACBIO2=~/data/scratch/pac_bio_data/filt/otherPE/all_subreads-f2r1s2-pairedreads-2.fastq
+
 ## RUN INFO LOCATIONS
 LRBASE=/users/jurban/software/sciaratools/sciara-project-tools/slurmgear/longreadeval
 LRSCRIPTS=${LRBASE}/scripts/
@@ -86,7 +92,7 @@ cd ../
 
 mkdir longread
 cd longread 
-bash $AUTOLR $LRCLEAN $LRCONFIG $ASMFOFN $LRSCRIPTS $ONT $PACBIO
+bash $AUTOLR $LRCLEAN $LRCONFIG $ASMFOFN $LRSCRIPTS $ONT $PACBIO $ONT1 $ONT2 $PACBIO1 $PACBIO2
 cd ../
 
 ################ EXECUTE #####################
