@@ -204,7 +204,7 @@ STATDEP=${SNIFFLESPBDONE}:${SNIFFLESONTDONE}:${SNIFFLESCOMBDONE}
 PBSNIFF=`readlink -f sniffles_pb/*_pacbio.bedpe`
 ONTSNIFF=`readlink -f sniffles_ont/*_ont.bedpe`
 COMBSNIFF=`readlink -f sniffles_combined/*_combined.bedpe`
-STATSDONE=`sbatch -J ${BASE}_snifflestats --dependency=afterok:${STATDEP} -o ${OUT}/snifflestats.slurm.%A.out --mem=32g --time=72:00:00 -c 4 --qos=$QOS --export=ASM=${ASM},PBBAM=${PBBAM},PBFQ=${PACBIO},ONTBAM=${ONTBAM},ONTFQ=${ONT},COMBBAM=${COMBBAM},PBSNIFF=${PBSNIFF},ONTSNIFF=${ONTSNIFF},COMBSNIFF=${COMBSNIFF} ${SCRIPTS}/snifflestats.sh | awk '{print $4}'`
+STATSDONE=`sbatch -J ${BASE}_snifflestats --dependency=afterok:${STATDEP} -o ${OUT}/snifflestats.slurm.%A.out --mem=32g --time=72:00:00 -c 4 --qos=$QOS --export=ASM=${ASM},PBBAM=${PBBAM},PBFQ=${PACBIO},ONTBAM=${ONTBAM},ONTFQ=${ONT},COMBBAM=${COMBBAM},PBSNIFF=${PBSNIFF},ONTSNIFF=${ONTSNIFF},COMBSNIFF=${COMBSNIFF} ${SCRIPTS}/longreadstats.sh | awk '{print $4}'`
 
 CLEANONTDEP=${CLEANONTDEP}:${STATSDONE}
 CLEANPBDEP=${CLEANPBDEP}:${STATSDONE}
