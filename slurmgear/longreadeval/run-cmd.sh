@@ -46,7 +46,7 @@ PACBIO2=~/data/scratch/pac_bio_data/filt/otherPE/all_subreads-f2r1s2-pairedreads
 
 
 ## RUN INFO LOCATIONS
-BASE=/users/jurban/software/sciaratools/sciara-project-tools/slurmgear/sniffles
+BASE=/users/jurban/software/sciaratools/sciara-project-tools/slurmgear/longreadeval
 SCRIPTS=${BASE}/scripts/
 AUTOLRPIPE=${SCRIPTS}/auto-lrpipe.sh
 CONFIGS=${BASE}/configs/
