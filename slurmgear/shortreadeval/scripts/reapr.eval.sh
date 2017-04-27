@@ -21,6 +21,6 @@ fi
 
 if $PIPELINE; then
  echo pipeline
- if $AGRESSIVE ; then A="-break a=1"; else A=""; fi
+ if $AGGRESSIVE ; then A="-break a=1"; else A=""; fi
  reapr pipeline ${BASE}_renamed.fa mapped.bam output_directory perfect ${A}
 fi

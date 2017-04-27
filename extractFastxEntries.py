@@ -2,6 +2,7 @@
 import sys
 import argparse
 from Bio import SeqIO
+from collections import defaultdict
 
 parser = argparse.ArgumentParser(description="""
 
@@ -52,6 +53,30 @@ names.add_argument('--namesfile', '-n', type=str,
 
 names.add_argument('--names', '-c', type=str, help='Enter comma-separated names at command line with this flag')
 
+
+names.add_argument('--annotatednamesfile', '-a', type=str,
+                   help='''Path to file with fasta/fastq entry names and annotations.
+There needs to be one name per line in first column.
+The annotation in 2nd column (tab-sep) is added to the fasta header of the extracted sequence.
+Does NOT have any effect when --exclude is being used -- works same as --namesfile.
+Does NOT have effect when --indexes, --head, --minlen, --maxlen used...''')
+
+names.add_argument('--regex', '-r', type=str, help='''Provide a regular expression. If it is in the record.description, the record will be printed.''')
+
+
+parser.add_argument('--ignore_case', '-I', action='store_true', default=False, help='''Only has an effect in conjunction with --regex.
+This simplifies writing the regex when you want to search for the presence of a word, but do not care how it appears.
+For example: word, Word, wOrd, WOrD....
+Normal regex: [Ww][Oo][Rr][Dd]
+Regex with --ignore_case: word''')
+
+
+parser.add_argument('--annotation2id', '-A', action='store_true', default=False,
+                   help='''When using --annotatednamesfile, append annotation to record.id (first string before white space in fasta header).
+This overrides default behavior of adding the annotation to the record.description after a tab.
+With this flag, the annotation is appended with a '_' character to the record.id.
+Any white space in the annotation is replaced with '-'.''')
+
 parser.add_argument('--exclude', '-e', action='store_true', default=False,
                    help='''All sequences in fastx file EXCEPT names given will be returned.''')
 
@@ -89,6 +114,8 @@ parser.add_argument('--head', type=int, default=False,
 ##                    help=''' Will ensure all letters in sequence returned are lowercase.''')
 
 args = parser.parse_args()
+if args.regex: import re
+if args.ignore_case: import string
 
 ############################################
 '''           functions                '''
@@ -173,16 +200,25 @@ if args.verbose:
 out = sys.stdout
 msg = sys.stderr
 
-if args.namesfile or args.names:
+if args.namesfile or args.names or args.annotatednamesfile:
     ## Make set of record IDs (names)
     names = set()
-    if args.namesfile:
-        if args.namesfile == "-" or args.namesfile == "stdin":
+    if args.namesfile or args.annotatednamesfile:
+        if args.namesfile:
+            fname = args.namesfile
+        else:
+            fname = args.annotatednamesfile
+            annotations = defaultdict(str)
+        if fname == "-" or fname == "stdin":
             nfile = sys.stdin
         else:
-            nfile = open(args.namesfile)
+            nfile = open(fname)
         for line in nfile:
-            names.add(line.rstrip())
+            line = line.rstrip().split("\t")
+            names.add(line[0])
+            if args.annotatednamesfile:
+                annotations[line[0]] = line[1]
+            
     elif args.names:
         for name in args.names.split(","):
             names.add(name)
@@ -194,12 +230,19 @@ if args.namesfile or args.names:
     if not args.exclude:
         for record in SeqIO.parse(fastxFile, fastx):
             if record.id in names:
+                if args.annotatednamesfile:
+                    if args.annotation2id:
+                        record.id = record.id + "_" + ("-").join(annotations[record.id].split())
+                    else:
+                        record.description = record.description + "\t" + annotations[record.id]
                 if args.separate:
                     with open(record.id+".fasta", 'w') as f:
                         SeqIO.write(record, f, fastx)
                 else:
                     SeqIO.write(record, out, fastx)
                 if not args.multiple:
+                    if args.annotatednamesfile and args.annotation2id:
+                        record.id = ("_").join(record.id.split("_")[:-1])
                     names.remove(record.id)
                 pctdone += 100*1.0/setsize
                 if pctdone >= gatepct and args.verbose:
@@ -246,11 +289,29 @@ elif args.head:
     for record in SeqIO.parse(fastxFile, fastx):
         record = record[:args.head]
         SeqIO.write(record, out, fastx)
-    
+
+
+elif args.regex:
+    if args.ignore_case:
+        new_re = ''
+        for ltr in args.regex.lower():
+            if ltr in string.ascii_lowercase:
+                new_re += '[' + ltr.upper() + ltr + ']'
+            else:
+                new_re += ltr
+        args.regex = new_re
+    regex = re.compile(args.regex)
+    for record in SeqIO.parse(fastxFile, fastx):
+        regex_present = len( re.findall( regex, record.description ) )
+        if regex_present:
+            SeqIO.write(record, out, fastx)
+
+## NEW ELIFs SHOULD BE ABOVE THIS LINE    
 elif args.minlen or args.maxlen:
     for record in SeqIO.parse(fastxFile, fastx):
         if len(record) >= args.minlen and len(record) <= args.maxlen:
             SeqIO.write(record, out, fastx)
+                   
 
 fastxFile.close()
 out.close()

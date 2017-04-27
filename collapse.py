@@ -42,14 +42,20 @@ parser.add_argument('--skip', '-s', type=str, default='#',
 parser.add_argument('--header','-H', action='store_true', default=False,
                     help='''Print header line''')
 
+parser.add_argument('--strings', '-str', action='store_true', default=False,
+                    help=''' Default treats elements in columns as floats. Treat as strings instead --operation must be set to list....''')
+
 args = parser.parse_args()
 
+if args.strings:
+    assert args.operation == "list"
 
 c1 = args.column-1
 c2 = args.column2-1
 
 fxns = args.operation.split(",")
 
+addcol=False
 if args.addcol and len(fxns) == 1 and (fxns[0] == 'max' or fxns[0] == 'min'):
     addcol=True
     cols = [int(e)-1 for e in args.addcol.strip().split(",")]
@@ -89,7 +95,10 @@ for line in f:
         if line.startswith(args.skip):
             continue
     line = line.strip().split(args.delimiter)
-    d[line[c1]].append(float(line[c2]))
+    if args.strings:
+        d[line[c1]].append(str(line[c2]))
+    else:
+        d[line[c1]].append(float(line[c2]))
     if addcol:
         for col in cols:
             D[col][line[c1]].append(line[col])

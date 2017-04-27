@@ -9,7 +9,8 @@ echo PBFQ, $PBFQ
 echo ONTFQ, $ONTFQ
 echo ASM, $ASM
 
-D=snifflestats
+D=stats
+#snifflestats
 if [ ! -d $D ]; then mkdir $D; fi
 cd $D
 

@@ -50,20 +50,20 @@ BIONANORUN=${BIONANOSCRIPTS}/auto-malign.sh
 
 
 
-############### LONG READ SNIFFLES SECTION #################
+############### LONG READ SECTION #################
 ## LONG READ LOCATIONS
 ONT=~/data/scratch/minion2016/fast5fastqs/allReadsFromAllONTlibsCombined.fastq
 PACBIO=~/data/scratch/pac_bio_data/filt/all_subreads.fastq
 
 ## RUN INFO LOCATIONS
-SNIFFBASE=/users/jurban/software/sciaratools/sciara-project-tools/slurmgear/sniffles
-SNIFFSCRIPTS=${SNIFFBASE}/scripts/
-AUTOSNIFF=${SNIFFSCRIPTS}/auto-sniff.sh
-SNIFFCONFIGS=${SNIFFBASE}/configs/
-SNIFFCONFIG=${SNIFFCONFIGS}/sniffles-config-sciara.cfg
+LRBASE=/users/jurban/software/sciaratools/sciara-project-tools/slurmgear/longreadeval
+LRSCRIPTS=${LRBASE}/scripts/
+AUTOLR=${LRSCRIPTS}/auto-lrpipe.sh
+LRCONFIGS=${LRBASE}/configs/
+LRCONFIG=${LRCONFIGS}/longread-config-sciara.cfg
 
 ## OTHER OPTIONS
-SNIFFCLEAN=false
+LRCLEAN=false
 
 
 
@@ -86,7 +86,7 @@ cd ../
 
 mkdir longread
 cd longread 
-bash $AUTOSNIFF $SNIFFCLEAN $SNIFFCONFIG $ASMFOFN $SNIFFSCRIPTS $ONT $PACBIO
+bash $AUTOLR $LRCLEAN $LRCONFIG $ASMFOFN $LRSCRIPTS $ONT $PACBIO
 cd ../
 
 ################ EXECUTE #####################
