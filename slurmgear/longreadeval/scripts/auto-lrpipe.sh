@@ -23,7 +23,7 @@ PACBIO=$6
 ONT1=$7
 ONT2=$8
 PACBIO1=$9
-PACBIO2=$10
+PACBIO2=${10}
 
 LRPIPE=${SCRIPTS}/longread-pipeline.sh
 
