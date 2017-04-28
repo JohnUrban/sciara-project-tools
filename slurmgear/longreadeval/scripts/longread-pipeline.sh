@@ -456,6 +456,52 @@ fi
 
 
 
+
+##############################################################################
+## LAP Long2pe section -- NOTE: for now (maybe always), this just uses the "long2pe" reads like "se" reads - same as LAP above.
+## One reason to do so is that the way LAP is calculated goes to 0 within a few kb for long reads...
+## The reads used for long2pe essentially break long reads up into 1kb sections, which allows many more scores >0 to be used to discriminate assemblies
+## Shortcoming here is that not all mappings, not even more than 1 (I dont think) are reported here -- so that aspect does not satisfy LAP assumptions.
+##############################################################################
+
+##############################################################################
+## LAP PACBIO Long2pe
+##############################################################################
+D=lap_pb_long2pe
+if $LAPPB; then
+ if [ ! -d $D ]; then mkdir $D; fi
+ cd $D
+ if $MAPPB_PE; then
+  LAPPBL2PEDONE=`sbatch -J ${BASE}_lap_pb_long2pe --dependency=afterok:${MAPL2PEPBDONE} -o ${OUT}/lap_pb_long2pe.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS --export=BASE=${BASE},SAM=${PBBAML2PE},REF=${ASM},MISMATCH=${PBMISMATCHRATE},P=${LTHREADS} ${SCRIPTS}/lap.long2pe.sh | awk '{print $4}'`
+ else
+  LAPPBL2PEDONE=`sbatch -J ${BASE}_lap_pb_long2pe -o ${OUT}/lap_pb_long2pe.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS --export=BASE=${BASE},SAM=${PBBAML2PE},REF=${ASM},MISMATCH=${PBMISMATCHRATE},P=${LTHREADS} ${SCRIPTS}/lap.long2pe.sh | awk '{print $4}'`
+ fi
+ cd ../
+ L2PECLEANPBDEP=${L2PECLEANPBDEP}:${LAPPBL2PEDONE}
+fi
+
+
+
+
+##############################################################################
+## LAP ONT Long2pe
+##############################################################################
+D=lap_ont_long2pe
+if $LAPONT; then
+ if [ ! -d $D ]; then mkdir $D; fi
+ cd $D
+ if $MAPONT_PE; then
+  LAPONTL2PEDONE=`sbatch -J ${BASE}_lap_ont_long2pe --dependency=afterok:${MAPL2PEONTDONE} -o ${OUT}/lap_ont_long2pe.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS --export=BASE=${BASE},SAM=${ONTBAML2PE},REF=${ASM},MISMATCH=${ONTMISMATCHRATE},P=${LTHREADS} ${SCRIPTS}/lap.long2pe.sh | awk '{print $4}'`
+ else
+  LAPONTL2PEDONE=`sbatch -J ${BASE}_lap_ont_long2pe -o ${OUT}/lap_ont_long2pe.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS --export=BASE=${BASE},SAM=${ONTBAML2PE},REF=${ASM},MISMATCH=${ONTMISMATCHRATE},P=${LTHREADS} ${SCRIPTS}/lap.long2pe.sh | awk '{print $4}'`
+ fi
+ cd ../
+ L2PECLEANONTDEP=${L2PECLEANONTDEP}:${LAPONTL2PEDONE}
+fi
+
+
+
+
 ##############################################################################
 ## LONG2PE CLEAN 
 ##############################################################################
