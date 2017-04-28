@@ -6,6 +6,12 @@ PATH=~/software/sciaratools/sciara-project-tools/lap/1.1/aligner:/users/jurban/s
 
 ## NEED: BASE, SAM, REF, MISMATCH, 
 
+echo BASE $BASE
+echo SAM $SAM
+echo REF $REF
+echo MISMATCH $MISMATCH
+echo P $P
+
 ##Example ONT: MISMATCH=0.3366179
 
 ## Note that in its current form, LAP is not entirely great for the BWA long read alignments
@@ -17,11 +23,11 @@ PATH=~/software/sciaratools/sciara-project-tools/lap/1.1/aligner:/users/jurban/s
    c=`cat ${BASE}.prob | wc -l`
    if [ $c -lt 10 ]; then ##it is just a ghost file, so make it for reals
      ## Note: -i $SAM is just a dummy/place holder here - since a SAM is given, it bypasses -i.
-     calc_prob.py -p $P -a $REF -i $SAM -s $SAM -a $A -c $MISMATCH > ${BASE}.probs
+     calc_prob.py -p $P -a $REF -i $SAM -s $SAM -c $MISMATCH > ${BASE}.probs
    fi
  else ##DoesNotExist so create
   date; echo prob file DoesNotExist so create
-  calc_prob.py -p $P -a $REF -i $SAM -s $SAM -a $A -c $MISMATCH > ${BASE}.probs
+  calc_prob.py -p $P -a $REF -i $SAM -s $SAM -c $MISMATCH > ${BASE}.probs
   date; echo prob file DoesNotExist so created it...
  fi
  

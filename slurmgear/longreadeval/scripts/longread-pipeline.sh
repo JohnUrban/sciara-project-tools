@@ -283,9 +283,9 @@ if $LAPPB; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
  if $MAPLAPPB; then
-  LAPPBDONE=`sbatch -J ${BASE}_lap_pb --dependency=afterok:${MAPLAPPBDONE} -o ${OUT}/lap_pb.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS --export=BASE=${BASE},SAM=${PBSAMLAP},REF=S{ASM},MISMATCH=${PBMISMATCHRATE} ${SCRIPTS}/lap.longread.sh | awk '{print $4}'`
+  LAPPBDONE=`sbatch -J ${BASE}_lap_pb --dependency=afterok:${MAPLAPPBDONE} -o ${OUT}/lap_pb.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS --export=BASE=${BASE},SAM=${PBSAMLAP},REF=S{ASM},MISMATCH=${PBMISMATCHRATE},P=${LTHREADS} ${SCRIPTS}/lap.longread.sh | awk '{print $4}'`
  else
-  LAPPBDONE=`sbatch -J ${BASE}_lap_pb -o ${OUT}/lap_pb.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS --export=BASE=${BASE},SAM=${PBSAMLAP},REF=S{ASM},MISMATCH=${PBMISMATCHRATE} ${SCRIPTS}/lap.longread.sh | awk '{print $4}'`
+  LAPPBDONE=`sbatch -J ${BASE}_lap_pb -o ${OUT}/lap_pb.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS --export=BASE=${BASE},SAM=${PBSAMLAP},REF=S{ASM},MISMATCH=${PBMISMATCHRATE},P=${LTHREADS} ${SCRIPTS}/lap.longread.sh | awk '{print $4}'`
  fi
  cd ../
  LAPCLEANPBDEP=${LAPCLEANPBDEP}:${LAPPBDONE}
@@ -302,9 +302,9 @@ if $LAPONT; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
  if $MAPLAPONT; then
-  LAPONTDONE=`sbatch -J ${BASE}_lap_ont --dependency=afterok:${MAPLAPONTDONE} -o ${OUT}/lap_ont.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS --export=BASE=${BASE},SAM=${ONTSAMLAP},REF=S{ASM},MISMATCH=${ONTMISMATCHRATE} ${SCRIPTS}/lap.longread.sh | awk '{print $4}'`
+  LAPONTDONE=`sbatch -J ${BASE}_lap_ont --dependency=afterok:${MAPLAPONTDONE} -o ${OUT}/lap_ont.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS --export=BASE=${BASE},SAM=${ONTSAMLAP},REF=S{ASM},MISMATCH=${ONTMISMATCHRATE},P=${LTHREADS} ${SCRIPTS}/lap.longread.sh | awk '{print $4}'`
  else
-  LAPONTDONE=`sbatch -J ${BASE}_lap_ont -o ${OUT}/lap_ont.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS --export=BASE=${BASE},SAM=${ONTSAMLAP},REF=S{ASM},MISMATCH=${ONTMISMATCHRATE} ${SCRIPTS}/lap.longread.sh | awk '{print $4}'`
+  LAPONTDONE=`sbatch -J ${BASE}_lap_ont -o ${OUT}/lap_ont.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS --export=BASE=${BASE},SAM=${ONTSAMLAP},REF=S{ASM},MISMATCH=${ONTMISMATCHRATE},P=${LTHREADS} ${SCRIPTS}/lap.longread.sh | awk '{print $4}'`
  fi
  cd ../
  LAPCLEANONTDEP=${LAPCLEANONTDEP}:${LAPONTDONE}
