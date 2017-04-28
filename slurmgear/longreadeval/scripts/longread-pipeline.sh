@@ -238,20 +238,6 @@ fi
 ##############################################################################
 
 ##############################################################################
-## NEED TO BUILD BWA INDEX ???  
-##############################################################################
-if $MAPLAPPB || $MAPLAPPB; then
-  D=bwa
-  if [ ! -d $D ]; then
-    mkdir $D
-    cd $D
-    IDXDEP=`sbatch -J ${BASE}_buildbwa -o ${OUT}/bwaidx.slurm.%A.out --mem=$BIMEM --time=$BITIME -c $BITHREADS --qos=$QOS --export=ASM=${ASM},BASE=${BASE} ${SCRIPTS}/bwa-idx.sh | awk '{print $4}'`
-    cd ../
-  fi
-  BWAIDX=`readlink -f bwa/`/$BASE
-fi
-
-##############################################################################
 ## MAP FOR LAP PACBIO
 ##############################################################################
 D=mreads
@@ -350,19 +336,6 @@ fi
 ##############################################################################
 ## LONG2PE SECTION ::: 
 ##############################################################################
-##############################################################################
-## NEED TO BUILD BWA INDEX ???  
-##############################################################################
-if $MAPPB_PE || $MAPPB_ONT; then
-  D=bwa
-  if [ ! -d $D ]; then
-    mkdir $D
-    cd $D
-    IDXDEP=`sbatch -J ${BASE}_buildbwa -o ${OUT}/bwaidx.slurm.%A.out --mem=$BIMEM --time=$BITIME -c $BITHREADS --qos=$QOS --export=ASM=${ASM},BASE=${BASE} ${SCRIPTS}/bwa-idx.sh | awk '{print $4}'`
-    cd ../
-  fi
-  BWAIDX=`readlink -f bwa/`/$BASE
-fi
 
 ##############################################################################
 ## MAP FOR LONG2PE PACBIO
