@@ -65,7 +65,11 @@ parser.add_argument('-r','--readlen',type=int,default=100,
 Must be <= fragment length.
 Default: 300.''')
 parser.add_argument('-S','--start',type=int,default=0,
-                    help='''Use this so that it does not start at the first position for every read.
+                    help='''Use this so it starts at position S in each read instead of the first position. This is 0-based.
+So, e.g., subtract 1 from 500 to get 499, if you want it to start at the 500th position.''')
+
+parser.add_argument('-R','--random',action='store_true', default=False,
+                    help='''Use this in conjunction with --start so that it does not start at the same position for every read.
 Instead it will start at a randomly sampled position to start at up to the given distance.
 For example, start anywhere in the first 500 bp.
 Default: 0 --> Meaning it always starts at the first position.''')
@@ -161,7 +165,10 @@ for record in SeqIO.parse(fastxFile, in_fastx):
 ##    print len(record.seq)
     orig_name = record.name
     if args.step:
-        start = random.randint(0, args.start)
+        if args.random:
+            start = random.randint(0, args.start)
+        else:
+            start = args.start
         if len(record.seq) >= args.fraglen+start:
             num_used += 1
             for i in range(start, len(record.seq)-args.fraglen+1, args.step):
