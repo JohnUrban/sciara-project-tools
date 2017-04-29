@@ -12,7 +12,7 @@ reapr facheck $REF ${BASE}_renamed
 if $AGGRESSIVE ; then A="-break a=1"; else A=""; fi
 
 echo pipeline
-reapr pipeline ${BASE}_renamed.fa $BAM output_directory ${A}
+reapr pipeline ${BASE}_renamed.fa $BAM output_directory -stats s=1 -score l=1000 ${A}
 
 
 ## do stuff
