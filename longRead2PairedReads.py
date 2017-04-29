@@ -45,12 +45,20 @@ This will be the length from beginning of read 1 to end of read2.
 Can also think of it as the sliding window size.
 Default: 300.''')
 
-parser.add_argument('-s','--step',type=int,default=50,
+approach = parser.add_mutually_exclusive_group(required=True)
+#default=50,
+approach.add_argument('-s','--step',type=int, default=False,
                     help='''Specify the step size of sliding window used to generate pairs. default: 50.
 Estimate number of read pairs by: numLongReads*(meanLongReadLen - fraglen + 1)/stepsize.
 Example: 1.5 million long reads of mean length = 5000, fraglen for PE reads = 300, step size = 50,
 will generate around 141 million PE reads.''')
 
+approach.add_argument('-N','--num',type=int, default=False,
+                    help='''Specify how many PE reads to sample from each eligible long read.''')
+
+##parser.add_argument('-U','--unique',action="store_true",default=False,
+##                    help='''Only has effect when used with -N/--num. This says to only sample unique PE reads from each long
+##read. If ''')
 
 parser.add_argument('-r','--readlen',type=int,default=100,
                     help='''specify read length of synthetic paired-end reads. This will be the length each read.
@@ -149,24 +157,40 @@ if args.seed > -1:
 
 for record in SeqIO.parse(fastxFile, in_fastx):
     total_long += 1
-    print record.id
-    print len(record.seq)
+##    print record.id
+##    print len(record.seq)
     orig_name = record.name
-    start = random.randint(0, args.start)
-    if len(record.seq) >= args.fraglen+start:
-        num_used += 1
-        for i in range(start, len(record.seq)-args.fraglen+1, args.step):
+    if args.step:
+        start = random.randint(0, args.start)
+        if len(record.seq) >= args.fraglen+start:
+            num_used += 1
+            for i in range(start, len(record.seq)-args.fraglen+1, args.step):
+                total_pairs += 1
+                record.id = orig_name+":"+str(i)+"-"+str(i+args.fraglen)+"\n"
+                record.description = str(args.readlen) ## otherwise, it was giving id and description as name, which was same info twice
+                SeqIO.write(record[i:i+args.readlen], r1, out_fastx)
+                SeqIO.write(record[i+args.fraglen-args.readlen:i+args.fraglen].reverse_complement(id=True, name=True, description=True), r2, out_fastx)
+    ##            SeqIO.write(record[i+args.fraglen-args.readlen:i+args.fraglen], r2, out_fastx)
+                ## still need to make it take right end of fragment (right now it just revcomps beginnin)
+                ## also -- need to name the subreads of a given long read slightly different names....
+        else:
+            num_unused += 1
+            unused_readnames[record.id] = len(record.seq)
+    elif args.num:
+        for j in range(args.num):
             total_pairs += 1
-            record.id = orig_name+":"+str(i)+"-"+str(i+args.fraglen)+"\n"
-            record.description = str(args.readlen) ## otherwise, it was giving id and description as name, which was same info twice
-            SeqIO.write(record[i:i+args.readlen], r1, out_fastx)
-            SeqIO.write(record[i+args.fraglen-args.readlen:i+args.fraglen].reverse_complement(id=True, name=True, description=True), r2, out_fastx)
-##            SeqIO.write(record[i+args.fraglen-args.readlen:i+args.fraglen], r2, out_fastx)
-            ## still need to make it take right end of fragment (right now it just revcomps beginnin)
-            ## also -- need to name the subreads of a given long read slightly different names....
-    else:
-        num_unused += 1
-        unused_readnames[record.id] = len(record.seq)
+            ## Pick random spot
+            seqlen = len(record.seq)
+            if seqlen >= args.fraglen:
+                i = random.randint(0, seqlen-args.fraglen)
+                record.id = orig_name+":"+str(i)+"-"+str(i+args.fraglen)+"\n"
+                record.description = str(args.readlen)
+                SeqIO.write(record[i:i+args.readlen], r1, out_fastx)
+                SeqIO.write(record[i+args.fraglen-args.readlen:i+args.fraglen].reverse_complement(id=True, name=True, description=True), r2, out_fastx)
+            else:
+                num_unused += 1
+                unused_readnames[record.id] = len(record.seq)               
+                
 
 
 if not args.stdin:
