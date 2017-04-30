@@ -426,9 +426,9 @@ if $REAPRPB; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
  if $MAPPB_PE; then
-  REAPRPBDONE=`sbatch -J ${BASE}_reapr_pb --dependency=afterok:${MAPL2PEPBDONE} -o ${OUT}/reapr_pb.slurm.%A.out --mem=$RMEM --time=$RTIME -c $RTHREADS --qos=$QOS --export=REF=${ASM},BASE=${BASE},AGGRESSIVE=${AGGRESSIVE_LONG},BAM=${PBBAML2PE} ${SCRIPTS}/reapr.eval.sh | awk '{print $4}'`
+  REAPRPBDONE=`sbatch -J ${BASE}_reapr_pb --dependency=afterok:${MAPL2PEPBDONE} -o ${OUT}/reapr_pb.slurm.%A.out --mem=$RMEM --time=$RTIME -c $RTHREADS --qos=$QOS --export=REF=${ASM},BASE=${BASE},AGGRESSIVE=${AGGRESSIVE_LONG},BAM=${PBBAML2PE},WINLEN=${WINLEN_PACBIO},MININNER=${MININNER_PACBIO} ${SCRIPTS}/reapr.eval.sh | awk '{print $4}'`
  else
-  REAPRPBDONE=`sbatch -J ${BASE}_reapr_pb -o ${OUT}/reapr_pb.slurm.%A.out --mem=$RMEM --time=$RTIME -c $RTHREADS --qos=$QOS --export=REF=${ASM},BASE=${BASE},AGGRESSIVE=${AGGRESSIVE_LONG},BAM=${PBBAML2PE} ${SCRIPTS}/reapr.eval.sh | awk '{print $4}'`
+  REAPRPBDONE=`sbatch -J ${BASE}_reapr_pb -o ${OUT}/reapr_pb.slurm.%A.out --mem=$RMEM --time=$RTIME -c $RTHREADS --qos=$QOS --export=REF=${ASM},BASE=${BASE},AGGRESSIVE=${AGGRESSIVE_LONG},BAM=${PBBAML2PE},WINLEN=${WINLEN_PACBIO},MININNER=${MININNER_PACBIO} ${SCRIPTS}/reapr.eval.sh | awk '{print $4}'`
  fi
  cd ../
  L2PECLEANPBDEP=${L2PECLEANPBDEP}:${REAPRPBDONE}
@@ -445,9 +445,9 @@ if $REAPRONT; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
  if $MAPONT_PE; then
-  REAPRONTDONE=`sbatch -J ${BASE}_reapr_ont --dependency=afterok:${MAPL2PEONTDONE} -o ${OUT}/reapr_ont.slurm.%A.out --mem=$RMEM --time=$RTIME -c $RTHREADS --qos=$QOS --export=REF=${ASM},BASE=${BASE},AGGRESSIVE=${AGGRESSIVE_LONG},BAM=${ONTBAML2PE} ${SCRIPTS}/reapr.eval.sh | awk '{print $4}'`
+  REAPRONTDONE=`sbatch -J ${BASE}_reapr_ont --dependency=afterok:${MAPL2PEONTDONE} -o ${OUT}/reapr_ont.slurm.%A.out --mem=$RMEM --time=$RTIME -c $RTHREADS --qos=$QOS --export=REF=${ASM},BASE=${BASE},AGGRESSIVE=${AGGRESSIVE_LONG},BAM=${ONTBAML2PE},WINLEN=${WINLEN_ONT},MININNER=${MININNER_ONT} ${SCRIPTS}/reapr.eval.sh | awk '{print $4}'`
  else
-  REAPRONTDONE=`sbatch -J ${BASE}_reapr_ont -o ${OUT}/reapr_ont.slurm.%A.out --mem=$RMEM --time=$RTIME -c $RTHREADS --qos=$QOS --export=REF=${ASM},BASE=${BASE},AGGRESSIVE=${AGGRESSIVE_LONG},BAM=${ONTBAML2PE} ${SCRIPTS}/reapr.eval.sh | awk '{print $4}'`
+  REAPRONTDONE=`sbatch -J ${BASE}_reapr_ont -o ${OUT}/reapr_ont.slurm.%A.out --mem=$RMEM --time=$RTIME -c $RTHREADS --qos=$QOS --export=REF=${ASM},BASE=${BASE},AGGRESSIVE=${AGGRESSIVE_LONG},BAM=${ONTBAML2PE},WINLEN=${WINLEN_ONT},MININNER=${MININNER_ONT} ${SCRIPTS}/reapr.eval.sh | awk '{print $4}'`
  fi
  cd ../
  L2PECLEANONTDEP=${L2PECLEANONTDEP}:${REAPRONTDONE}
