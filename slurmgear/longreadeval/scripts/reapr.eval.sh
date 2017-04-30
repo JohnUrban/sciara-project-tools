@@ -12,8 +12,8 @@ reapr facheck $REF ${BASE}_renamed
 if $AGGRESSIVE ; then A="-break a=1"; else A=""; fi
 
 echo pipeline
+
 reapr pipeline ${BASE}_renamed.fa $BAM output_directory -stats s=1 -score l=$WINLEN -score f=$MININNER -score u=$FCDWINLEN -fcdrate l=$FCDWINLEN -fcdrate w=$MAXFCDSAMPLE ${A}
-## -stats s=1 -score l=1000
 
 
 ## do stuff
