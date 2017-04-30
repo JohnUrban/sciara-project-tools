@@ -107,9 +107,9 @@ if $SNIFFLESPB; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
  if $MAPPB; then
-  SNIFFLESPBDONE=`sbatch -J ${BASE}_sniffles_pb --dependency=afterok:${MAPPBDONE} -o ${OUT}/snifflesPB.slurm.%A.out --mem=$SMEM --time=$STIME -c $STHREADS --qos=$QOS --export=BAM=$PBBAM,BEDPE=${BASE}_pacbio ${SCRIPTS}/sniffles.sh | awk '{print $4}'`
+  SNIFFLESPBDONE=`sbatch -J ${BASE}_sniffles_pb --dependency=afterok:${MAPPBDONE} -o ${OUT}/snifflesPB.slurm.%A.out --mem=$SMEM --time=$STIME -c $STHREADS --qos=$QOS --export=BAM=$PBBAM,BEDPE=${BASE}_pacbio,MINSUPPORT=${MINSUPPORT_PACBIO} ${SCRIPTS}/sniffles.sh | awk '{print $4}'`
  else
-  SNIFFLESPBDONE=`sbatch -J ${BASE}_sniffles_pb -o ${OUT}/snifflesPB.slurm.%A.out --mem=$SMEM --time=$STIME -c $STHREADS --qos=$QOS --export=BAM=$PBBAM,BEDPE=${BASE}_pacbio ${SCRIPTS}/sniffles.sh | awk '{print $4}'`
+  SNIFFLESPBDONE=`sbatch -J ${BASE}_sniffles_pb -o ${OUT}/snifflesPB.slurm.%A.out --mem=$SMEM --time=$STIME -c $STHREADS --qos=$QOS --export=BAM=$PBBAM,BEDPE=${BASE}_pacbio,MINSUPPORT=${MINSUPPORT_PACBIO} ${SCRIPTS}/sniffles.sh | awk '{print $4}'`
  fi
  cd ../
  CLEANPBDEP=${CLEANPBDEP}:${SNIFFLESPBDONE}
@@ -123,9 +123,9 @@ if $SNIFFLESONT; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
  if $MAPONT; then
-  SNIFFLESONTDONE=`sbatch -J ${BASE}_sniffles_ont --dependency=afterok:${MAPONTDONE} -o ${OUT}/snifflesONT.slurm.%A.out --mem=$SMEM --time=$STIME -c $STHREADS --qos=$QOS --export=BAM=$ONTBAM,BEDPE=${BASE}_ont ${SCRIPTS}/sniffles.sh | awk '{print $4}'`
+  SNIFFLESONTDONE=`sbatch -J ${BASE}_sniffles_ont --dependency=afterok:${MAPONTDONE} -o ${OUT}/snifflesONT.slurm.%A.out --mem=$SMEM --time=$STIME -c $STHREADS --qos=$QOS --export=BAM=$ONTBAM,BEDPE=${BASE}_ont,MINSUPPORT=${MINSUPPORT_ONT} ${SCRIPTS}/sniffles.sh | awk '{print $4}'`
  else
-  SNIFFLESONTDONE=`sbatch -J ${BASE}_sniffles_ont -o ${OUT}/snifflesONT.slurm.%A.out --mem=$SMEM --time=$STIME -c $STHREADS --qos=$QOS --export=BAM=$ONTBAM,BEDPE=${BASE}_ont ${SCRIPTS}/sniffles.sh | awk '{print $4}'`
+  SNIFFLESONTDONE=`sbatch -J ${BASE}_sniffles_ont -o ${OUT}/snifflesONT.slurm.%A.out --mem=$SMEM --time=$STIME -c $STHREADS --qos=$QOS --export=BAM=$ONTBAM,BEDPE=${BASE}_ont,MINSUPPORT=${MINSUPPORT_ONT} ${SCRIPTS}/sniffles.sh | awk '{print $4}'`
  fi
  cd ../
  CLEANONTDEP=${CLEANONTDEP}:${SNIFFLESONTDONE}
