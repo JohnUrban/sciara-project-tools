@@ -95,6 +95,12 @@ cd longread
 bash $AUTOLR $LRCLEAN $LRCONFIG $ASMFOFN $LRSCRIPTS $ONT $PACBIO $ONT1 $ONT2 $PACBIO1 $PACBIO2
 cd ../
 
+
+#mkdir transcriptome
+#cd transcriptome
+#bash $AUTOTRANS 
+#cd ../
+
 ################ EXECUTE #####################
 ##############################################
 ##############################################

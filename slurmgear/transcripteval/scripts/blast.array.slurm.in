@@ -1,0 +1,47 @@
+#!/bin/bash
+#SBATCH -J blast_array
+#SBATCH -c 1
+#SBATCH --qos=ccmb-condo
+#SBATCH --mem=8g
+#SBATCH --time=1:00:00
+
+###########################
+
+#VARS
+TEMPDIR=temp
+BLASTDIR=blastout
+SLURMDIR=slurmout
+P=16
+PRE=platanus.blobfilt1.q5.bh.contig
+FASTA=platanus.blobfilt1.q5.bh.contig.fa
+NJOBS=1000
+MEM=30g
+TIME=24:00:00
+
+
+#Dir exist?
+if [ ! -d "$TEMPDIR" ]; then
+  mkdir $TEMPDIR
+fi
+if [ ! -d $BLASTDIR ]; then
+  mkdir $BLASTDIR
+fi
+if [ ! -d $SLURMDIR ]; then
+  mkdir $SLURMDIR
+fi
+
+# EXECUTE
+facount=`grep -c ">" $FASTA`
+count=`echo $facount+$NJOBS | bc`
+nlines=`echo $count/$NJOBS | bc`
+splitFastA.py -f $FASTA -n $nlines
+mv  $PRE.*.fa $TEMPDIR
+
+echo $NJOBS
+
+sbatch --qos=ccmb-condo --time=$TIME --mem=$MEM \
+  --cpus-per-task=$P -J blast.taxinfo.ls -a 1-$NJOBS \
+  -o ${SLURMDIR}/taxinfo.%A_%a.out \
+  --export=TEMPDIR=${TEMPDIR},BLASTDIR=${BLASTDIR},PRE=${PRE},P=${P} \
+  blastjob.sh 
+

@@ -1,0 +1,49 @@
+#!/bin/bash
+#SBATCH -J blast_array
+#SBATCH -c 1
+#SBATCH --qos=biomed-sb-condo
+#SBATCH --mem=8g
+#SBATCH --time=1:00:00
+
+###########################
+
+#VARS
+TEMPDIR=temp
+BLASTDIR=blastout
+SLURMDIR=slurmout
+SLURMDIR2=slurmout2
+if [ ! -d $SLURMDIR2 ]; then mkdir $SLURMDIR2; fi
+
+P=16
+PRE=platanus.blobfilt1.q5.bh.contig
+NJOBS=1000
+MEM=30g
+TIME=72:00:00
+
+module load blast/2.2.30+ 
+NT=/gpfs/scratch/shared/blastdb/nt
+
+mkdir incomplete
+
+for i in {1..1000}; do
+ slurmfile=slurmout/taxinfo.*_${i}.out
+ fa=temp/${PRE}.${i}.fa
+ bout=blastout/${PRE}.${i}.blastout
+ c=`grep -c slurm $slurmfile`
+ c2=`grep -c EDT $slurmfile` #count how many times date stamped, should be 3
+ if [ $c -ge 1 ] || [ $c2 -lt 3 ]; then
+   #
+   echo $i $slurmfile $bout $fa
+   echo $c slurm, $c2 EDT
+   mv $bout incomplete/
+   sbatch --qos=biomed-sb-condo --time=$TIME --mem=$MEM \
+     --cpus-per-task=$P -J blast.taxinfo.contig.${i} \
+     -o ${SLURMDIR2}/taxinfo.followup.%A.out \
+     --export=fa=${fa},i=${i},TEMPDIR=${TEMPDIR},BLASTDIR=${BLASTDIR},PRE=${PRE},P=${P} \
+     blastjob.followup.sh
+
+ fi
+done
+
+
+

@@ -1,0 +1,4 @@
+1. sum of bitscores
+2. sum of pctid*length/100
+3. percent of transcripts that align.... at least X%... i.e. num uniq queries where sum uniq alns lengths for that query >= X% of query length (where uniq alns mean each section only used once)
+4. percent of total transcript length that aligns... i.e. sum of aln lengths
