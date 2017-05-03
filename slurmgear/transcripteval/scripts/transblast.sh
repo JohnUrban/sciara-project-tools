@@ -1,5 +1,7 @@
 #!/bin/bash
 
+module load blast/2.2.30+ 
+
 ## if use "-max_target_seqs 1" you will punish assemblies with more genes split up -- i.e. reward assemblies with more intact genes
 ## will likely be faster than allowing more....
 
