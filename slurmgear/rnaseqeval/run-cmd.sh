@@ -6,7 +6,7 @@
 
 ## FILL THIS IN:
 ## READSFOFN - tab-sep 2 column -- col1=R1 paths ; col2=R2 paths -- each line has corresponding pairs
-READSFOFN=
+READSFOFN=reads.fofn
 
 function help {
     echo "
@@ -35,6 +35,7 @@ if [ $# -eq 1 ]; then ASMFOFN=$1; fi
 if [ ! -f $ASMFOFN ]; then echo; echo "    ASMFOFN ERROR: FILE NOT FOUND"; echo "    YOU GAVE:"; echo "    $ASMFOFN"; help; exit; fi
 
 
+READSFOFN=`readlink -f $READSFOFN`
 
 CLEAN=false
 
