@@ -24,8 +24,8 @@ PIPELINE=${SCRIPTS}/trans-pipeline.sh
 
 TMP=tmpdir
 
-if [[ "$TRANSFASTA" == *.fa ]]; then echo PRE=`basename $TRANSFASTA .fa`;
-elif [[ "$TRANSFASTA" == *.fasta ]]; then echo PRE=`basename $TRANSFASTA .fasta`; fi
+if [[ "$TRANSFASTA" == *.fa ]]; then PRE=`basename $TRANSFASTA .fa`;
+elif [[ "$TRANSFASTA" == *.fasta ]]; then PRE=`basename $TRANSFASTA .fasta`; fi
 
 ## BREAK UP QUERY FASTA FILE IN ONE SPOT FOR ALL ASMS TO USE
 ###if $BREAKUP; then
@@ -42,7 +42,7 @@ while read f; do
   i=$(( $i+1 ))
   if [ $i -eq 9 ]; then QOS=biomed-sb-condo; i=0; else QOS=epscor-condo; fi
   REF=`readlink -f $f` 
-  if [[ "$f" == *.fa ]]; then echo B=`basename $f .fa`; 
+  if [[ "$f" == *.fa ]]; then B=`basename $f .fa`; 
   elif [[ "$f" == *.fasta ]]; then B=`basename $f .fasta`; fi
   echo $B; 
   if [ ! -d $B ]; then mkdir $B; fi
