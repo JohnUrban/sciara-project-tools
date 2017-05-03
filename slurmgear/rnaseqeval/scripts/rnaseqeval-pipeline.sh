@@ -44,7 +44,7 @@ if $MAKEIDX; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
  MAKEDONE=`sbatch -J ${BASE}_make_hisat_idx -o ${OUT}/make_hisat_idx.slurm.%A.out --mem=$IMEM --time=$ITIME -c $ITHREADS --qos=$QOS \
-   --export=G=${REF},PRE=asm | awk '{print $4}'`
+   --export=G=${REF},PRE=asm ${SCRIPTS}/hisatbuild.sh | awk '{print $4}'`
  cd ../
 fi
 HIDX=$(echo `readlink -f ${MAIN}/${D}`/asm)
@@ -61,7 +61,7 @@ if $MAPREADS; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
  MAPDONE=`sbatch -J ${BASE}_hisat2 -o ${OUT}/hisat.slurm.%A.out --mem=$MMEM --time=$MTIME -c $MTHREADS --qos=$QOS \
-   --export=P=${MTHREADS},HIDX=${HIDX},READSFOFN=${READSFOFN},STRANDEDNESS=${STRANDEDNESS},PRE=rnaseq | awk '{print $4}'`
+   --export=P=${MTHREADS},HIDX=${HIDX},READSFOFN=${READSFOFN},STRANDEDNESS=${STRANDEDNESS},PRE=rnaseq \
+   ${SCRIPTS}/hisat2.sh | awk '{print $4}'`
  cd ../
 fi
-IDX=$(echo `readlink -f ${MAIN}/${D}`/asm)
