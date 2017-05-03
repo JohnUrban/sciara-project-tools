@@ -42,7 +42,7 @@ while read f; do
   i=$(( $i+1 ))
   if [ $i -eq 9 ]; then QOS=biomed-sb-condo; i=0; else QOS=epscor-condo; fi
   REF=`readlink -f $f` 
-  if [[ "$f" == *.fa ]]; then echo B=`basename $f .fa`; fi
+  if [[ "$f" == *.fa ]]; then echo B=`basename $f .fa`; 
   elif [[ "$f" == *.fasta ]]; then B=`basename $f .fasta`; fi
   echo $B; 
   if [ ! -d $B ]; then mkdir $B; fi
