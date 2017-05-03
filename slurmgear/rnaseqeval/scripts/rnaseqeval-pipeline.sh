@@ -44,7 +44,7 @@ if $MAKEIDX; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
  MAKEDONE=`sbatch -J ${BASE}_make_hisat_idx -o ${OUT}/make_hisat_idx.slurm.%A.out --mem=$IMEM --time=$ITIME -c $ITHREADS --qos=$QOS \
-   --export=G=${REF},PRE=asm ${SCRIPTS}/hisatbuild.sh | awk '{print $4}'`
+   --export=G=${ASM},PRE=asm ${SCRIPTS}/hisatbuild.sh | awk '{print $4}'`
  cd ../
 fi
 HIDX=$(echo `readlink -f ${MAIN}/${D}`/asm)
