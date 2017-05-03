@@ -10,7 +10,7 @@ INCOMPLETE_DIR=incomplete_${FOLLOWUPNUM}/
 if [ ! -d $INCOMPLETE_DIR ]; then mkdir $INCOMPLETE_DIR; fi
 
 NUM_TO_FIX=0
-
+BLASTDONE=afterany
 for i in $(seq $NJOBS); do 
  SLURMFILE=${SLURMOUTDIR}/${SLURMPRE}*_${i}.out
  FA=${QUERYDIR}/${PRE}.${i}.fa
@@ -29,10 +29,12 @@ for i in $(seq $NJOBS); do
    mv $SLURMFILE $INCOMPLETE_DIR
 
    TASK=blastn
-   sbatch -J ${BASE}_blast_trans_${i}_followup_${FOLLOWUPNUM} -o ${SLURMOUTDIR}/blast_trans_followup_${FOLLOWUPNUM}.slurm.%A.out \
+   BDONE=`sbatch -J ${BASE}_blast_trans_${i}_followup_${FOLLOWUPNUM} -o ${SLURMOUTDIR}/blast_trans_followup_${FOLLOWUPNUM}.slurm.%A_${i}.out \
      --mem=$BMEM --time=$BTIME -c $BTHREADS --qos=$QOS \
      --export=QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},P=${BTHREADS},BDB=${BDB},TASK=${TASK},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ} \
-     ${SCRIPTS}/transblast.sh
+     ${SCRIPTS}/transblast.sh | awk '{print $4}'`
+   
+   BLASTDONE+=":"$BDONE
 
  fi
 done
@@ -47,9 +49,22 @@ let FOLLOWUPNUM++
 if [ $NUM_TO_FIX -gt 0 ]; then
   #sbatch ...
   echo FIX MORE
+  FOLLOWDONE=`sbatch --dependency=${BLASTDONE} -J ${BASE}_blast_trans_followup_${FOLLOWUPNUM} \
+     -o ${OUT}/blast_trans_follow_up_${FOLLOWUPNUM}.slurm.%A.out \
+     --mem=2g --time=6:00:00 -c 2 --qos=$QOS \
+     --export=BASE=${BASE},NJOBS=${NJOBS},SLURMOUTDIR=${OUT},SLURMPRE=blast_trans_followup_${FOLLOWUPNUM}.slurm,FOLLOWUPNUM=${FOLLOWUPNUM},BMEM=${BMEM},BTIME=${BTIME},BTHREADS=${BTHREADS},QOS=${QOS},SCRIPTS=${SCRIPTS},QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},BDB=${BDB},TASK=${TASK},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ} \
+     ${SCRIPTS}/followup.sh | awk '{print $4}'`
 elif [ $NUM_TO_FIX -eq 0 ]; then
   #sbatch
   echo MOVE ON TO BLASTOUT ANALYSIS
+  D=analysis
+  if [ ! -d $D ]; then mkdir $D; fi
+  cd $D
+  FOLLOWDONE=`sbatch --dependency=${BLASTDONE} -J ${BASE}_trans_blastout_analysis \
+     -o ${OUT}/analysis.slurm.%A.out \
+     --mem=2g --time=6:00:00 -c 2 --qos=$QOS \
+     --export=NJOBS=${NJOBS},BLASTDIR=${BLASTDIR}
+     ${SCRIPTS}/analysis.sh | awk '{print $4}'`
 fi
 
 
