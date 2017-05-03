@@ -72,6 +72,7 @@ LRCONFIG=${LRCONFIGS}/longread-config-sciara.cfg
 LRCLEAN=false
 
 
+############### TRANSCRIPT SECTION #################
 
 
 
