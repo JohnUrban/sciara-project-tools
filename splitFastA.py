@@ -36,7 +36,7 @@ if args.wd:
 ## functions
 def get_base_name(fasta_handle, outdir=False):
     fa_path = os.path.dirname(fasta_handle)
-    fa_base = os.path.basename(fasta_handle).split(".")[:-1]
+    fa_base = (".")join( os.path.basename(fasta_handle).split(".")[:-1] )
     if outdir:
         if outdir.endswith("/"):
             base_name = outdir + fa_base
