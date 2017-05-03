@@ -60,7 +60,7 @@ D=mreads
 if $MAPREADS; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
- MAPDONE=`sbatch -J ${BASE}_hisat2 -o ${OUT}/hisat.slurm.%A.out --mem=$MMEM --time=$MTIME -c $MTHREADS --qos=$QOS \
+ MAPDONE=`sbatch --dependency=afterok:${MAKEDONE} -J ${BASE}_hisat2 -o ${OUT}/hisat.slurm.%A.out --mem=$MMEM --time=$MTIME -c $MTHREADS --qos=$QOS \
    --export=P=${MTHREADS},HIDX=${HIDX},READSFOFN=${READSFOFN},STRANDEDNESS=${STRANDEDNESS},PRE=rnaseq \
    ${SCRIPTS}/hisat2.sh | awk '{print $4}'`
  cd ../
