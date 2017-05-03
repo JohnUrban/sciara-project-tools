@@ -43,6 +43,8 @@ samtools view -F 4 ${PRE}.bam | awk '{s+=$5}END{print NR,s,s/NR}' > mapq.txt
 bedtools bamtobed -bedpe -i ${PRE}.bam 2> bamtobed.err | awk '{diff+=$1!=$4; same+=$1==$4; total+=1}END{print same, diff, total}' > pairinfo.txt
 
 # GET INFO ON HOW MANY PAIRS MAP TO DIFFERENT CONTIGS - filtered
+# This allows one to get rid of noise from multireads
+# However, it also no longer counts pairs where 1 read mapped and 1 did not -- or where 1 read mapq > cutoff and other < cutoff
 for i in 2 10 20 30 40; do
   samtools view -bSh -q $i ${PRE}.bam | bedtools bamtobed -bedpe -i - 2> bamtobed.q${i}.err | awk '{diff+=$1!=$4; same+=$1==$4; total+=1}END{print same, diff, total}' > pairinfo.${i}.txt &
 done
