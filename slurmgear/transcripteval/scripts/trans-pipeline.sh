@@ -73,4 +73,12 @@ BLASTDONE=`sbatch --dependency=afterok:${MAKEDONE} -a 1-$NJOBS -J ${BASE}_blast_
 ##############################################################################
 ## FOLLOW UP 1
 ##############################################################################
+# SLURMOUTDIR, SLURMPRE, QUERYDIR, FOLLOWUPNUM, BMEM, BTIME, BTHREADS, QOS
+# QUERYDIR, PRE, BLASTDIR, BDB, TASK, EVAL, WORDSIZE, CULL, MAXTARGSEQ, SCRIPTS
 echo $BLASTDONE
+FOLLOWUPNUM=1
+FOLLOWDONE=`sbatch --dependency=afterok:${BLASTDONE} -J ${BASE}_blast_trans_followup_${FOLLOWUPNUM} \
+   -o ${OUT}/blast_trans_follow_up_${FOLLOWUPNUM}.slurm.%A.out \
+   --mem=2g --time=6:00:00 -c 2 --qos=$QOS \
+   --export=SLURMOUTDIR=${OUT},SLURMPRE=${blast_trans.slurm},FOLLOWUPNUM=${FOLLOWUPNUM},BMEM=${BMEM},BTIME=${BTIME},BTHREADS=${BTHREADS},QOS=${QOS},SCRIPTS=${SCRIPTS},QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},BDB=${BDB},TASK=${TASK},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ} \
+   ${SCRIPTS}/followup.sh | awk '{print $4}'`
