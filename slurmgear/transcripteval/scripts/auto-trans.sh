@@ -24,7 +24,7 @@ PIPELINE=${SCRIPTS}/trans-pipeline.sh
 
 TMP=tmpdir
 
-if [[ "$TRANSFASTA" == *.fa ]]; then echo PRE=`basename $TRANSFASTA .fa`; fi
+if [[ "$TRANSFASTA" == *.fa ]]; then echo PRE=`basename $TRANSFASTA .fa`;
 elif [[ "$TRANSFASTA" == *.fasta ]]; then echo PRE=`basename $TRANSFASTA .fasta`; fi
 
 ## BREAK UP QUERY FASTA FILE IN ONE SPOT FOR ALL ASMS TO USE
