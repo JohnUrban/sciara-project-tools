@@ -50,7 +50,7 @@ if [ $NUM_TO_FIX -gt 0 ]; then
   #sbatch ...
   echo FIX MORE
   FOLLOWDONE=`sbatch --dependency=${BLASTDONE} -J ${BASE}_blast_trans_followup_${FOLLOWUPNUM} \
-     -o ${OUT}/blast_trans_follow_up_${FOLLOWUPNUM}.slurm.%A.out \
+     -o ${OUT}/follow_up_${FOLLOWUPNUM}.slurm.%A.out \
      --mem=2g --time=6:00:00 -c 2 --qos=$QOS \
      --export=BASE=${BASE},NJOBS=${NJOBS},SLURMOUTDIR=${OUT},SLURMPRE=blast_trans_followup_${FOLLOWUPNUM}.slurm,FOLLOWUPNUM=${FOLLOWUPNUM},BMEM=${BMEM},BTIME=${BTIME},BTHREADS=${BTHREADS},QOS=${QOS},SCRIPTS=${SCRIPTS},QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},BDB=${BDB},TASK=${TASK},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ} \
      ${SCRIPTS}/followup.sh | awk '{print $4}'`
@@ -60,7 +60,8 @@ elif [ $NUM_TO_FIX -eq 0 ]; then
   D=analysis
   if [ ! -d $D ]; then mkdir $D; fi
   cd $D
-  FOLLOWDONE=`sbatch --dependency=${BLASTDONE} -J ${BASE}_trans_blastout_analysis \
+  ## there should not be any dependencies by definition at this point
+  FOLLOWDONE=`sbatch -J ${BASE}_trans_blastout_analysis \
      -o ${OUT}/analysis.slurm.%A.out \
      --mem=2g --time=6:00:00 -c 2 --qos=$QOS \
      --export=NJOBS=${NJOBS},BLASTDIR=${BLASTDIR} \
