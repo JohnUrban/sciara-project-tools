@@ -7,6 +7,8 @@
 
 INCOMPLETE_DIR=incomplete_${FOLLOWUPNUM}/
 
+if [ ! -d $INCOMPLETE_DIR ]; then mkdir $INCOMPLETE_DIR; fi
+
 NUM_TO_FIX=0
 
 for i in $(seq $NJOBS); do 
@@ -27,7 +29,7 @@ for i in $(seq $NJOBS); do
    mv $SLURMFILE $INCOMPLETE_DIR
 
    TASK=blastn
-   sbatch -J ${BASE}_blast_trans_${i}_followup_${FOLLOWUPNUM} -o ${SLURMOUTDIR}/blast_trans_followup_${FOLLOWUPNUM}.slurm.%A_%a.out \
+   sbatch -J ${BASE}_blast_trans_${i}_followup_${FOLLOWUPNUM} -o ${SLURMOUTDIR}/blast_trans_followup_${FOLLOWUPNUM}.slurm.%A.out \
      --mem=$BMEM --time=$BTIME -c $BTHREADS --qos=$QOS \
      --export=QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},P=${BTHREADS},BDB=${BDB},TASK=${TASK},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ} \
      ${SCRIPTS}/transblast.sh
