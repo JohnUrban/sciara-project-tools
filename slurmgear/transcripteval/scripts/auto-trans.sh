@@ -33,7 +33,7 @@ elif [[ "$TRANSFASTA" == *.fasta ]]; then echo PRE=`basename $TRANSFASTA .fasta`
 facount=`grep -c ">" $TRANSFASTA`
 count=`echo $facount+$NJOBS | bc`
 nlines=`echo $count/$NJOBS | bc`
-splitFastA.py -f $FASTA -n $nlines -o $TMP
+splitFastA.py -f $TRANSFASTA -n $nlines -o $TMP
 
 QUERYDIR=`readlink -f $TMP`
 
