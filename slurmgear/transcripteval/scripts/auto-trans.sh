@@ -22,31 +22,32 @@ NJOBS=$6
 
 PIPELINE=${SCRIPTS}/trans-pipeline.sh
 
+TMP=tmpdir
 
 if [[ "$TRANSFASTA" == *.fa ]]; then echo PRE=`basename $TRANSFASTA .fa`; fi
 elif [[ "$TRANSFASTA" == *.fasta ]]; then echo PRE=`basename $TRANSFASTA .fasta`; fi
 
 ## BREAK UP QUERY FASTA FILE IN ONE SPOT FOR ALL ASMS TO USE
-if $BREAKUP; then
-  # EXECUTE
-  facount=`grep -c ">" $TRANSFASTA`
-  count=`echo $facount+$NJOBS | bc`
-  nlines=`echo $count/$NJOBS | bc`
-  splitFastA.py -f $FASTA -n $nlines
-  mv  $PRE.*.fa $TEMPDIR
+###if $BREAKUP; then
 
+facount=`grep -c ">" $TRANSFASTA`
+count=`echo $facount+$NJOBS | bc`
+nlines=`echo $count/$NJOBS | bc`
+splitFastA.py -f $FASTA -n $nlines -o $TMP
 
+QUERYDIR=`readlink -f $TMP`
 
 i=0
 while read f; do
   i=$(( $i+1 ))
   if [ $i -eq 9 ]; then QOS=biomed-sb-condo; i=0; else QOS=epscor-condo; fi
   REF=`readlink -f $f` 
-  B=`basename $f ${SUFFIX}.fasta`; 
+  if [[ "$f" == *.fa ]]; then echo B=`basename $f .fa`; fi
+  elif [[ "$f" == *.fasta ]]; then B=`basename $f .fasta`; fi
   echo $B; 
   if [ ! -d $B ]; then mkdir $B; fi
   cd $B;
-  $PIPELINE $SCRIPTS $CONFIG $CLEAN $TRANSQUERYFOFN $REF $QOS   
+  $PIPELINE $SCRIPTS $CONFIG $CLEAN $QOS $REF $QUERYDIR $PRE $NJOBS
   cd ../
 done < $ASMFOFN
 
