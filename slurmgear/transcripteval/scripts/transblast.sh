@@ -22,10 +22,9 @@ CMD="blastn -task $TASK -db $BDB -query ${QUERYDIR}/${PRE}.${SLURM_ARRAY_TASK_ID
  -evalue $EVAL -word_size $WORDSIZE -culling_limit $CULL \
  -max_target_seqs $MAXTARGSEQ -num_threads $P \
  -out ${BLASTDIR}/${PRE}.${SLURM_ARRAY_TASK_ID}.blastout \
- -outfmt '6 qseqid sseqid pident length qstart qend sstart send evalue bitscore qlen slen sstrand' "
+ -outfmt \'6 qseqid sseqid pident length qstart qend sstart send evalue bitscore qlen slen sstrand\' "
 
 echo $CMD
 
-$CMD
 
 

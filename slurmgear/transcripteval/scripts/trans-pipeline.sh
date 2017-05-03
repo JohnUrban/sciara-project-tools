@@ -65,6 +65,6 @@ BDB=$(echo `readlink -f ${MAIN}/${D}`/asm)
 ##############################################################################
 TASK=blastn
 sbatch --dependency=afterok:${MAKEDONE} -a 1-$NJOBS -J ${BASE}_blast_trans -o ${OUT}/blast_trans.slurm.%A_%a.out --mem=$BMEM --time=$BTIME -c $BTHREADS --qos=$QOS \
-   --export=$QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},P=${BTHREADS},BDB=${BDB},TASK=${TASK},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ} \
+   --export=QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},P=${BTHREADS},BDB=${BDB},TASK=${TASK},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ} \
    ${SCRIPTS}/transblast.sh
 
