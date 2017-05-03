@@ -42,5 +42,11 @@ samtools view -F 4 ${PRE}.bam | awk '{s+=$5}END{print NR,s,s/NR}' > mapq.txt
 # GET INFO ON HOW MANY PAIRS MAP TO DIFFERENT CONTIGS
 bedtools bamtobed -bedpe -i ${PRE}.bam 2> bamtobed.err | awk '{diff+=$1!=$4; same+=$1==$4; total+=1}END{print same, diff, total}' > pairinfo.txt
 
+# GET INFO ON HOW MANY PAIRS MAP TO DIFFERENT CONTIGS - filtered
+for i in 2 10 20 30 40; do
+  samtools view -bSh -q $i ${PRE}.bam | bedtools bamtobed -bedpe -i - 2> bamtobed.q${i}.err | awk '{diff+=$1!=$4; same+=$1==$4; total+=1}END{print same, diff, total}' > pairinfo.${i}.txt &
+done
+wait
+
 # CLEAN
 if $CLEAN; then rm ${PRE}.bam; fi
