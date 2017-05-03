@@ -7,7 +7,6 @@
 
 INCOMPLETE_DIR=incomplete_${FOLLOWUPNUM}/
 
-if [ ! -d $INCOMPLETE_DIR ]; then mkdir $INCOMPLETE_DIR; fi
 
 NUM_TO_FIX=0
 BLASTDONE=afterany
@@ -24,6 +23,7 @@ for i in $(seq $NJOBS); do
    echo fixing ..............
    echo
    #
+   if [ ! -d $INCOMPLETE_DIR ]; then mkdir $INCOMPLETE_DIR; fi
    let NUM_TO_FIX++
    mv $BLASTOUT $INCOMPLETE_DIR
    mv $SLURMFILE $INCOMPLETE_DIR
@@ -63,7 +63,7 @@ elif [ $NUM_TO_FIX -eq 0 ]; then
   FOLLOWDONE=`sbatch --dependency=${BLASTDONE} -J ${BASE}_trans_blastout_analysis \
      -o ${OUT}/analysis.slurm.%A.out \
      --mem=2g --time=6:00:00 -c 2 --qos=$QOS \
-     --export=NJOBS=${NJOBS},BLASTDIR=${BLASTDIR}
+     --export=NJOBS=${NJOBS},BLASTDIR=${BLASTDIR} \
      ${SCRIPTS}/analysis.sh | awk '{print $4}'`
 fi
 
