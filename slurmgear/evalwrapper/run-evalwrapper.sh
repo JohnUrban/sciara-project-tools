@@ -73,23 +73,52 @@ LRCLEAN=false
 
 
 ############### TRANSCRIPT SECTION #################
-TRANSCLEAN1=false
+TBLASTX=true
+TRANSNJOBS=100
+TRANSCLEAN=false
 
-TRANSBASE=/users/jurban/software/sciaratools/sciara-project-tools/slurmgear/opticalmap/malignerautomation
+TRANSBASE=/users/jurban/software/sciaratools/sciara-project-tools/slurmgear/transcripteval
 TRANSSCRIPTS=${TRANSBASE}/scripts/
 TRANSCONFIGS=${TRANSBASE}/configs/
 TRANSFOFNS=${TRANSBASE}/fofns/
 
-TRANSCONFIG=${TRANSCONFIGS}/trans-config-sciara.cfg
+TRANSCONFIG=${TRANSCONFIGS}/trans-config-sciara.cfg ## does both blastn and tblastx
 TRANSFOFN=${TRANSFOFNS}/
-TRANSRUN=${TRANSSCRIPTS}/auto-malign.sh
+TRANSRUN=${TRANSSCRIPTS}/auto-trans.sh
 
 TRANS1=~/data/illumina/generalTranscriptome/trinity/trinity_out_dir/Trinity.fasta
 TRANS2=/gpfs/data/sgerbi/jurban/flies/dmel/dmel-all-transcript-r6.14.fasta
 TRANS3=/gpfs/data/sgerbi/jurban/flies/anopheles_gambiae/anopheles-gambiae-pesttranscriptsagamp46.fa
 
+############### PEPTIDE SECTION #################
+## Evaluate with peptides
+PEPNJOBS=100
+PEPCLEAN=false
+
+PEPBASE=/users/jurban/software/sciaratools/sciara-project-tools/slurmgear/peptideval
+PEPSCRIPTS=${PEPBASE}/scripts/
+PEPCONFIGS=${PEPBASE}/configs/
+PEPFOFNS=${PEPBASE}/fofns/
+
+PEPCONFIG=${PEPCONFIGS}/peptide-config-sciara.cfg ## does both blastn and tblastx
+PEPFOFN=${PEPFOFNS}/
+PEPRUN=${PEPSCRIPTS}/auto-peptide.sh
+
+PEP2=/gpfs/data/sgerbi/jurban/flies/dmel/dmel-all-transcript-r6.14.fasta
+PEP3=/gpfs/data/sgerbi/jurban/flies/anopheles_gambiae/anopheles-gambiae-pesttranscriptsagamp46.fa
+
+############### KNOWN SEQUENCES SECTION #################
+## Also evaluate Known Seqs
+## USE TRANS variables (e.g. TRANSSCRIPTS etc) for everything other than these 4 things
+KNOWNTBLASTX=false
+KNOWNNJOBS=1
+KNOWNCLEAN=false
+KNOWNSEQS=
+
 
 ############### RNASEQ SECTION #################
+#$RNARUN $RNASCRIPTS $RNACONFIG $RNACLEAN $ASMFOFN $RNAFOFN
+
 RNACLEAN1=false
 
 RNABASE=/users/jurban/software/sciaratools/sciara-project-tools/slurmgear/rnaseqeval
@@ -97,11 +126,10 @@ RNASCRIPTS=${RNABASE}/scripts/
 RNACONFIGS=${RNABASE}/configs/
 RNAFOFNS=${RNABASE}/fofns/
 
-TRANSCONFIG=${TRANSCONFIGS}/rnaseq-config-sciara.cfg
-TRANSFOFN=${TRANSFOFNS}/reads.fofn
-TRANSRUN=${TRANSSCRIPTS}/auto-rnaseqeval.sh
+RNACONFIG=${TRANSCONFIGS}/rnaseq-config-sciara.cfg
+RNAFOFN=${TRANSFOFNS}/reads.fofn
+RNARUN=${TRANSSCRIPTS}/auto-rnaseqeval.sh
 
-TRANS1=~/data/illumina/generalTranscriptome/trinity/trinity_out_dir/Trinity.fasta
 
 
 
@@ -126,10 +154,40 @@ bash $AUTOLR $LRCLEAN $LRCONFIG $ASMFOFN $LRSCRIPTS $ONT $PACBIO $ONT1 $ONT2 $PA
 cd ../
 
 
-#mkdir transcriptome
-#cd transcriptome
-#bash $AUTOTRANS 
-#cd ../
+mkdir transcriptome
+cd transcriptome
+$TRANSRUN $TRANSSCRIPTS $TRANSCONFIG $TRANSCLEAN $ASMFOFN $TRANS1 $TRANSNJOBS $TBLASTX
+cd ../
+
+mkdir dmel
+cd dmel
+$TRANSRUN $TRANSSCRIPTS $TRANSCONFIG $TRANSCLEAN $ASMFOFN $TRANS2 $TRANSNJOBS $TBLASTX
+cd ../
+
+mkdir anopheles
+cd anopheles
+$TRANSRUN $TRANSSCRIPTS $TRANSCONFIG $TRANSCLEAN $ASMFOFN $TRANS2 $TRANSNJOBS $TBLASTX
+cd ../
+
+mkdir dmel_peptides
+cd peptides
+$PEPRUN $PEPSCRIPTS $PEPCONFIG $PEPCLEAN $ASMFOFN $PEP2 $PEPNJOBS
+cd ../
+
+mkdir anopheles_peptides
+cd peptides
+$PEPRUN $PEPSCRIPTS $PEPCONFIG $PEPCLEAN $ASMFOFN $PEP2 $PEPNJOBS
+cd ../
+
+mkdir knownseqs
+cd knownseqs
+$TRANSRUN $TRANSSCRIPTS $TRANSCONFIG $KNOWNCLEAN $ASMFOFN $KNOWNSEQS $KNOWNNJOBS $KNOWNTBLASTX
+cd ../
+
+mkdir rnaseq
+cd rnaseq
+$RNARUN $RNASCRIPTS $RNACONFIG $RNACLEAN $ASMFOFN $RNAFOFN
+cd ../
 
 ################ EXECUTE #####################
 ##############################################
