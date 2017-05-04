@@ -67,7 +67,7 @@ BLASTDONE=`sbatch --dependency=afterok:${MAKEDONE} -a 1-$NJOBS -J ${BASE}_tblast
 ## FOLLOW UP 1
 ##############################################################################
 FOLLOWUPNUM=1
-FOLLOWDONE=`sbatch --dependency=afterany:${BLASTDONE} -J ${BASE}_blast_trans_followup_${FOLLOWUPNUM} \
+FOLLOWDONE=`sbatch --dependency=afterany:${BLASTDONE} -J ${BASE}_tblastn_followup_${FOLLOWUPNUM} \
    -o ${OUT}/follow_up_${FOLLOWUPNUM}.slurm.%A.out \
    --mem=2g --time=6:00:00 -c 2 --qos=$QOS \
    --export=BASE=${BASE},NJOBS=${NJOBS},SLURMOUTDIR=${OUT},SLURMPRE=tblastn.slurm,FOLLOWUPNUM=${FOLLOWUPNUM},BMEM=${BMEM},BTIME=${BTIME},BTHREADS=${BTHREADS},QOS=${QOS},SCRIPTS=${SCRIPTS},QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},BDB=${BDB},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ} \

@@ -102,7 +102,7 @@ PEPFOFNS=${PEPBASE}/fofns/
 
 PEPCONFIG=${PEPCONFIGS}/peptide-config-sciara.cfg ## does both blastn and tblastx
 PEPFOFN=${PEPFOFNS}/
-PEPRUN=${PEPSCRIPTS}/auto-peptide.sh
+PEPRUN=${PEPSCRIPTS}/auto-pep.sh
 
 PEP2=/gpfs/data/sgerbi/jurban/flies/dmel/dmel-all-transcript-r6.14.fasta
 PEP3=/gpfs/data/sgerbi/jurban/flies/anopheles_gambiae/anopheles-gambiae-pesttranscriptsagamp46.fa
@@ -126,9 +126,9 @@ RNASCRIPTS=${RNABASE}/scripts/
 RNACONFIGS=${RNABASE}/configs/
 RNAFOFNS=${RNABASE}/fofns/
 
-RNACONFIG=${TRANSCONFIGS}/rnaseq-config-sciara.cfg
-RNAFOFN=${TRANSFOFNS}/reads.fofn
-RNARUN=${TRANSSCRIPTS}/auto-rnaseqeval.sh
+RNACONFIG=${RNACONFIGS}/rnaseq-config-sciara.cfg
+RNAFOFN=${RNAFOFNS}/reads.fofn
+RNARUN=${RNASCRIPTS}/auto-rnaseqeval.sh
 
 
 

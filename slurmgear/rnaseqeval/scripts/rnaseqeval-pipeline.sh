@@ -33,10 +33,6 @@ OUT=`readlink -f $MAIN`/$SLURMOUTDIR
 
 
 
-### PIPELINE
-CLEAN1DEP=afterok
-CLEAN2DEP=afterok
-
 
 ##############################################################################
 ## MAKE HISAT2 INDEX
