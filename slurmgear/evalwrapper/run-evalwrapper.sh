@@ -73,6 +73,35 @@ LRCLEAN=false
 
 
 ############### TRANSCRIPT SECTION #################
+TRANSCLEAN1=false
+
+TRANSBASE=/users/jurban/software/sciaratools/sciara-project-tools/slurmgear/opticalmap/malignerautomation
+TRANSSCRIPTS=${TRANSBASE}/scripts/
+TRANSCONFIGS=${TRANSBASE}/configs/
+TRANSFOFNS=${TRANSBASE}/fofns/
+
+TRANSCONFIG=${TRANSCONFIGS}/trans-config-sciara.cfg
+TRANSFOFN=${TRANSFOFNS}/
+TRANSRUN=${TRANSSCRIPTS}/auto-malign.sh
+
+TRANS1=~/data/illumina/generalTranscriptome/trinity/trinity_out_dir/Trinity.fasta
+TRANS2=/gpfs/data/sgerbi/jurban/flies/dmel/dmel-all-transcript-r6.14.fasta
+TRANS3=/gpfs/data/sgerbi/jurban/flies/anopheles_gambiae/anopheles-gambiae-pesttranscriptsagamp46.fa
+
+
+############### RNASEQ SECTION #################
+RNACLEAN1=false
+
+RNABASE=/users/jurban/software/sciaratools/sciara-project-tools/slurmgear/rnaseqeval
+RNASCRIPTS=${RNABASE}/scripts/
+RNACONFIGS=${RNABASE}/configs/
+RNAFOFNS=${RNABASE}/fofns/
+
+TRANSCONFIG=${TRANSCONFIGS}/rnaseq-config-sciara.cfg
+TRANSFOFN=${TRANSFOFNS}/reads.fofn
+TRANSRUN=${TRANSSCRIPTS}/auto-rnaseqeval.sh
+
+TRANS1=~/data/illumina/generalTranscriptome/trinity/trinity_out_dir/Trinity.fasta
 
 
 

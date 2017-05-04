@@ -9,6 +9,7 @@ Arg3=Logical true/false -- clean as it works?
 Arg4=ASMFOFN - file of filenames -- paths to each assembly FASTA - extension for all fasta files should be .fasta
 Arg5=TRANSFASTA -- fasta file of transcripts (or other) to align to each assembly
 Arg6=NJOBS -- how many jobs the TRANSFASTA should be broken up into.
+Arg7=TBLASTX -- true/false -- also do tblastx
 "; exit; fi
 
 ##TRANSQUERYFOFN - file of filenames -- paths to each FASTA to be used as a query file in BLAST.
@@ -19,6 +20,7 @@ CLEAN=$3
 ASMFOFN=$4
 TRANSFASTA=$5
 NJOBS=$6
+TBLASTX=$7
 
 PIPELINE=${SCRIPTS}/trans-pipeline.sh
 
@@ -47,7 +49,7 @@ while read f; do
   echo $B; 
   if [ ! -d $B ]; then mkdir $B; fi
   cd $B;
-  $PIPELINE $SCRIPTS $CONFIG $CLEAN $QOS $REF $QUERYDIR $PRE $NJOBS
+  $PIPELINE $SCRIPTS $CONFIG $CLEAN $QOS $REF $QUERYDIR $PRE $NJOBS $TBLASTX
   cd ../
 done < $ASMFOFN
 

@@ -6,7 +6,6 @@ echo P, ${P}
 echo READSFOFN, $READSFOFN
 echo HIDX, $HIDX
 echo PRE, $PRE
-echo
 
 
 
@@ -24,7 +23,9 @@ while read line; do
   fi
 done < $READSFOFN
 
-
+echo R1LIST, $R1LIST
+echo R2LIST, $R2LIST
+echo
 
 
 ## MAP READS

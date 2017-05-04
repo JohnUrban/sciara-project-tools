@@ -12,6 +12,7 @@ Arg5 = /Path/To/Reference.fasta
 Arg6 = Query Dir
 Arg7 = Prefix to fasta files in query dir
 Arg8 = Num Jobs -- equal to num files in query dir
+Arg9 = TBLASTX -- true/false -- also do tblastx?
 "; exit; fi
 ##TRANSQUERYFOFN - file of filenames -- paths to each FASTA to be used as a query file in BLAST.
 
@@ -25,6 +26,7 @@ ASM=$5
 QUERYDIR=$6
 PRE=$7
 NJOBS=$8
+TBLASTX=$9
 
 BASE=`basename $ASM .fasta`
 
@@ -38,6 +40,14 @@ if [ ! -d $BLASTOUTDIR ]; then
   mkdir $BLASTOUTDIR
 fi
 BLASTDIR=`readlink -f $MAIN`/$BLASTOUTDIR
+
+
+if $TBLASTX; then
+  if [ ! -d $TBLASTXOUTDIR ]; then
+    mkdir $TBLASTXOUTDIR
+  fi
+  TBLASTXDIR=`readlink -f $MAIN`/$TBLASTXOUTDIR
+fi
 
 
 
@@ -82,3 +92,26 @@ FOLLOWDONE=`sbatch --dependency=afterany:${BLASTDONE} -J ${BASE}_blast_trans_fol
    --mem=2g --time=6:00:00 -c 2 --qos=$QOS \
    --export=BASE=${BASE},NJOBS=${NJOBS},SLURMOUTDIR=${OUT},SLURMPRE=blast_trans.slurm,FOLLOWUPNUM=${FOLLOWUPNUM},BMEM=${BMEM},BTIME=${BTIME},BTHREADS=${BTHREADS},QOS=${QOS},SCRIPTS=${SCRIPTS},QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},BDB=${BDB},TASK=${TASK},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ} \
    ${SCRIPTS}/followup.sh | awk '{print $4}'`
+
+
+
+##############################################################################
+## TBLASTX
+##############################################################################
+TBLASTXDONE=`sbatch --dependency=afterok:${MAKEDONE} -a 1-$NJOBS -J ${BASE}_tblastx -o ${OUT}/tblastx.slurm.%A_%a.out --mem=$BMEM --time=$BTIME -c $BTHREADS --qos=$QOS \
+   --export=QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${TBLASTXDIR},P=${BTHREADS},BDB=${BDB},EVAL=${TBXEVAL},WORDSIZE=${TBXWORDSIZE},CULL=${TBXCULL},MAXTARGSEQ=${TBXMAXTARGSEQ} \
+   ${SCRIPTS}/transtblastx.sh | awk '{print $4}'`
+
+
+
+##############################################################################
+## TBX FOLLOW UP 1
+##############################################################################
+FOLLOWUPNUM=1
+TBXFOLLOWDONE=`sbatch --dependency=afterany:${TBLASTXDONE} -J ${BASE}_tblastx_followup_${FOLLOWUPNUM} \
+   -o ${OUT}/tbx_follow_up_${FOLLOWUPNUM}.slurm.%A.out \
+   --mem=2g --time=6:00:00 -c 2 --qos=$QOS \
+   --export=BASE=${BASE},NJOBS=${NJOBS},SLURMOUTDIR=${OUT},SLURMPRE=tblastx.slurm,FOLLOWUPNUM=${FOLLOWUPNUM},BMEM=${BMEM},BTIME=${BTIME},BTHREADS=${BTHREADS},QOS=${QOS},SCRIPTS=${SCRIPTS},QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${TBLASTXDIR},BDB=${BDB},EVAL=${TBXEVAL},WORDSIZE=${TBXWORDSIZE},CULL=${TBXCULL},MAXTARGSEQ=${TBXMAXTARGSEQ} \
+   ${SCRIPTS}/followup-tbx.sh | awk '{print $4}'`
+
+

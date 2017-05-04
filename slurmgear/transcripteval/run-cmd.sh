@@ -7,6 +7,8 @@
 ## FILL THIS IN:
 TRANSFASTA=
 NJOBS=100
+## Also do TBLASTX in addition to BLASTN ???
+TBLASTX=true
 
 function help {
     echo "
@@ -53,7 +55,7 @@ RUN=${SCRIPTS}/auto-trans.sh
 
 ################ EXECUTE #####################
 
-$RUN $SCRIPTS $CONFIG $CLEAN $ASMFOFN $TRANSFASTA $NJOBS
+$RUN $SCRIPTS $CONFIG $CLEAN $ASMFOFN $TRANSFASTA $NJOBS $TBLASTX
 
 ################ EXECUTE #####################
 
