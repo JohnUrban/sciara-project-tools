@@ -119,7 +119,7 @@ KNOWNSEQS=
 ############### RNASEQ SECTION #################
 #$RNARUN $RNASCRIPTS $RNACONFIG $RNACLEAN $ASMFOFN $RNAFOFN
 
-RNACLEAN1=false
+RNACLEAN=false
 
 RNABASE=/users/jurban/software/sciaratools/sciara-project-tools/slurmgear/rnaseqeval
 RNASCRIPTS=${RNABASE}/scripts/
@@ -130,6 +130,7 @@ RNACONFIG=${RNACONFIGS}/rnaseq-config-sciara.cfg
 RNAFOFN=${RNAFOFNS}/reads.fofn
 RNARUN=${RNASCRIPTS}/auto-rnaseqeval.sh
 
+RNAFOFN=`readlink -f $RNAFOFN`
 
 
 
