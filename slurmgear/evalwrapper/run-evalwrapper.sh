@@ -56,10 +56,10 @@ ONT=~/data/scratch/minion2016/fast5fastqs/allReadsFromAllONTlibsCombined.fastq
 PACBIO=~/data/scratch/pac_bio_data/filt/all_subreads.fastq
 
 ## LONG2PE READ LOCATIONS
-ONT1=~/data/scratch/minion2016/fast5fastqs/molreads/ontmol-allLibs-f2r1s2-pairedreads-1.fastq
-ONT2=~/data/scratch/minion2016/fast5fastqs/molreads/ontmol-allLibs-f2r1s2-pairedreads-2.fastq
-PACBIO1=~/data/scratch/pac_bio_data/filt/otherPE/all_subreads-f2r1s2-pairedreads-1.fastq
-PACBIO2=~/data/scratch/pac_bio_data/filt/otherPE/all_subreads-f2r1s2-pairedreads-2.fastq
+ONT1=/gpfs/data/sgerbi/jurban/scratch/minion2016/fast5fastqs/molreads/long2pe/ontmol-1.fastq
+ONT2=/gpfs/data/sgerbi/jurban/scratch/minion2016/fast5fastqs/molreads/long2pe/ontmol-2.fastq
+PACBIO1=/gpfs/data/sgerbi/jurban/scratch/pac_bio_data/filt/long2pe/pacbio-1.fastq
+PACBIO2=/gpfs/data/sgerbi/jurban/scratch/pac_bio_data/filt/long2pe/pacbio-2.fastq
 
 ## RUN INFO LOCATIONS
 LRBASE=/users/jurban/software/sciaratools/sciara-project-tools/slurmgear/longreadeval
@@ -113,7 +113,7 @@ PEP3=/gpfs/data/sgerbi/jurban/flies/anopheles_gambiae/anopheles-gambiae-pesttran
 KNOWNTBLASTX=false
 KNOWNNJOBS=1
 KNOWNCLEAN=false
-KNOWNSEQS=
+KNOWNSEQS=/gpfs/data/sgerbi/jurban/sciaraknownseqs/allCoprophilaNTSeqOnNCBI.fa
 
 
 ############### RNASEQ SECTION #################
