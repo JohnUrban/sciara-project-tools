@@ -171,12 +171,12 @@ $TRANSRUN $TRANSSCRIPTS $TRANSCONFIG $TRANSCLEAN $ASMFOFN $TRANS2 $TRANSNJOBS $T
 cd ../
 
 mkdir dmel_peptides
-cd peptides
+cd dmel_peptides
 $PEPRUN $PEPSCRIPTS $PEPCONFIG $PEPCLEAN $ASMFOFN $PEP2 $PEPNJOBS
 cd ../
 
 mkdir anopheles_peptides
-cd peptides
+cd anopheles_peptides
 $PEPRUN $PEPSCRIPTS $PEPCONFIG $PEPCLEAN $ASMFOFN $PEP2 $PEPNJOBS
 cd ../
 
