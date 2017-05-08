@@ -17,7 +17,7 @@ if $MKDUPS; then
 fi
 
 if $RUNPILON; then
- VCF=false
+ 
  if $NOSTRAYS; then nostrays=--nostrays; fi
  if $CHANGES; then changes=--changes; fi
  if $VCF; then vcf=--vcf; fi
