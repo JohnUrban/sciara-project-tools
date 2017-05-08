@@ -21,7 +21,7 @@ if $RUNPILON; then
  if $CHANGES; then changes=--changes; fi
  if $VCF; then vcf=--vcf; fi
  if $TRACKS; then tracks=--tracks; fi
- echo "java -Xmx${JX} -jar $PILONJAR --genome $ASM --output $PRE --frags ${BAM} --diploid --fix $FIX $nostrays $changes $vcf $tracks"
+ echo "java -Xmx${JX} -jar $PILONJAR --genome $ASM --output pilon --frags ${BAM} --diploid --fix $FIX $nostrays $changes $vcf $tracks"
  java -Xmx${JX} -jar $PILONJAR --genome $ASM --output $PRE --frags ${BAM} --diploid --fix $FIX $nostrays $changes $vcf $tracks
 
 fi
