@@ -5,10 +5,13 @@
 # NOSTRAYS, CHANGES, VCF, TRACKS
 
 #non-logicals 
-# JX, PICARDJAR, BAM, PILONJAR, ASM
+# JX, PICARDJAR, BAM, PILONJAR, ASM, FIX
+
+VARS="MKDUPS RUNPILON NOSTRAYS CHANGES VCF TRACKS JX PICARDJAR BAM PILONJAR ASM FIX"
+for var in $VARS; do echo $VAR ${!VAR}; done; echo
 
 if $MKDUPS; then
- java -Xmx${JX} -jar $PICARDJAR MarkDuplicates INPUT=${BAM} OUTPUT=markdup.bam METRICS_FILE=${PRE}.markdup.metrics.txt REMOVE_DUPLICATES=false ASSUME_SORTED=true
+ java -Xmx${JX} -jar $PICARDJAR MarkDuplicates INPUT=${BAM} OUTPUT=markdup.bam METRICS_FILE=${PRE}.markdup.metrics.txt REMOVE_DUPLICATES=false ASSUME_SORTED=true 2> mkdups.err
  BAM=markdup.bam
 fi
 
