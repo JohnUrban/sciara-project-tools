@@ -17,13 +17,13 @@ if $MKDUPS; then
 fi
 
 if $RUNPILON; then
- 
+ VCF=false
  if $NOSTRAYS; then nostrays=--nostrays; fi
  if $CHANGES; then changes=--changes; fi
  if $VCF; then vcf=--vcf; fi
  if $TRACKS; then tracks=--tracks; fi
  echo "java -Xmx${JX} -jar $PILONJAR --genome $ASM --output pilon --frags ${BAM} --diploid --fix $FIX $nostrays $changes $vcf $tracks"
- java -Xmx${JX} -jar $PILONJAR --genome $ASM --output pilon --frags ${BAM} --diploid --fix $FIX $nostrays $changes $vcf $tracks 2> pilon.err
+ java -Xmx${JX} -jar $PILONJAR --genome $ASM --output pilon --frags ${BAM} --diploid --fix $FIX $nostrays $changes $vcf $tracks 1> pilon.err
  echo confirmed total pct_confirmed | awk 'OFS="\t" {print $1,$2,$3}' > confirmed.txt
  grep Confirmed pilon.err | awk '{s+=$2; t+=$4}END{print s, t, 100.0*s/t}' >> confirmed.txt
 fi
