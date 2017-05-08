@@ -1,0 +1,32 @@
+#!/bin/bash
+
+#logicals
+# MKDUPS, RUNPILON
+# NOSTRAYS, CHANGES, VCF, TRACKS
+
+#non-logicals 
+# JX, PICARDJAR, BAM, PILONJAR, ASM
+
+if $MKDUPS; then
+ java -Xmx${JX} -jar $PICARDJAR MarkDuplicates INPUT=${BAM} OUTPUT=markdup.bam METRICS_FILE=${PRE}.markdup.metrics.txt REMOVE_DUPLICATES=false ASSUME_SORTED=true
+ BAM=markdup.bam
+fi
+
+if $RUNPILON; then
+
+ if $NOSTRAYS; then nostrays=--nostrays; fi
+ if $CHANGES; then changes=--changes; fi
+ if $VCF; then vcf=--vcf; fi
+ if $TRACKS; then tracks=--tracks; fi
+ echo "java -Xmx${JX} -jar $PILONJAR --genome $ASM --output $PRE --frags ${BAM} --diploid --fix $FIX $nostrays $changes $vcf $tracks"
+ java -Xmx${JX} -jar $PILONJAR --genome $ASM --output $PRE --frags ${BAM} --diploid --fix $FIX $nostrays $changes $vcf $tracks
+
+fi
+
+
+if $CLEAN; then
+#
+ if $MKDUPS; then
+  rm markdup.bam
+fi
+

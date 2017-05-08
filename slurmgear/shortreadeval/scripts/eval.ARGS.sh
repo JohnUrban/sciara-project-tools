@@ -87,7 +87,7 @@ fi
  
 
 ##############################################################################
-## MAP READS FOR ALE AND FRC ?
+## MAP READS FOR ALE AND FRC AND/OR PILONEVAL?
 ##############################################################################
 if $MAPREADS; then
  if [ ! -d mreads ]; then mkdir mreads; fi
@@ -156,6 +156,35 @@ if $CLEANFRC; then
  fi
  cd ../
 fi
+
+
+
+##############################################################################
+## PILN VARIANTS
+##############################################################################
+#logicals
+# MKDUPS, RUNPILON
+# NOSTRAYS, CHANGES, VCF, TRACKS
+#non-logicals
+# JX, PICARDJAR, BAM, PILONJAR, ASM
+
+if $RUNPILON; then
+ DIR=pilonvars
+ if [ ! -d $DIR ]; then mkdir $DIR; fi
+ cd $DIR
+ if $MAPREADS; then
+  PIDONE=`sbatch -J ${BASE}_pilonvar${JOBSFX} --dependency=afterok:${ALEFRCDEP} -o ${OUT}/pilon.slurm.%A.out --mem=$PMEM --time=$PTIME -c $PTHREADS --qos=$QOS \
+  --export=MKDUPS=${MKDUPS},RUNPILON=${RUNPILON},NOSTRAYS=${NOSTRAYS},CHANGES=${CHANGES},VCF=${VCF},TRACKS=${TRACKS},JX=${JX},PICARDJAR=${PICARDJAR},BAM=${BAM},PILONJAR=${PILONJAR},ASM=${REF},CLEAN=${PILONCLEAN} \
+  ${SCRIPTS}/pilon-eval.sh | awk '{print $4}'`
+ else
+  PIDONE=`sbatch -J ${BASE}_pilonvar${JOBSFX} -o ${OUT}/pilon.slurm.%A.out --mem=$PMEM --time=$PTIME -c $PTHREADS --qos=$QOS \
+  --export=MKDUPS=${MKDUPS},RUNPILON=${RUNPILON},NOSTRAYS=${NOSTRAYS},CHANGES=${CHANGES},VCF=${VCF},TRACKS=${TRACKS},JX=${JX},PICARDJAR=${PICARDJAR},BAM=${BAM},PILONJAR=${PILONJAR},ASM=${REF},CLEAN=${PILONCLEAN} \
+  ${SCRIPTS}/pilon-eval.sh | awk '{print $4}'`
+ fi
+ cd ../
+fi
+
+
 
 
 ##############################################################################

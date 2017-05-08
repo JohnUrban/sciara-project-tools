@@ -59,7 +59,7 @@ BDB=$(echo `readlink -f ${MAIN}/${D}`/asm)
 TASK=blastn
 BLASTDONE=`sbatch --dependency=afterok:${MAKEDONE} -a 1-$NJOBS -J ${BASE}_tblastn -o ${OUT}/tblastn.slurm.%A_%a.out --mem=$BMEM --time=$BTIME -c $BTHREADS --qos=$QOS \
    --export=QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},P=${BTHREADS},BDB=${BDB},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ} \
-   ${SCRIPTS}/tblastn.sh | awk '{print $4}'`
+   ${SCRIPTS}/tblastn-array.sh | awk '{print $4}'`
 
 
 

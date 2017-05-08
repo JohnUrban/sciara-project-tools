@@ -16,10 +16,11 @@ for i in $(seq $NJOBS); do
  BLASTOUT=${BLASTDIR}/${PRE}.${i}.blastout
  N=`grep -c slurm $SLURMFILE`
  N2=`grep -c EDT $SLURMFILE` #count how many times date stamped, should be 3
+ N3=`grep -c error $SLURMFILE`
  echo $i $SLURMFILE $BLASTOUT $FA
  echo $N slurm, $N2 EDT
  echo
- if [ $N -ge 1 ] || [ $N2 -lt 3 ]; then
+ if [ $N -ge 1 ] || [ $N2 -lt 3 ] || [ $N3 -ge 1  ]; then
    echo fixing ..............
    echo
    #
@@ -31,7 +32,7 @@ for i in $(seq $NJOBS); do
    TASK=blastn
    BDONE=`sbatch -J ${BASE}_blast_trans_${i}_followup_${FOLLOWUPNUM} -o ${SLURMOUTDIR}/blast_trans_followup_${FOLLOWUPNUM}.slurm.%A_${i}.out \
      --mem=$BMEM --time=$BTIME -c $BTHREADS --qos=$QOS \
-     --export=QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},P=${BTHREADS},BDB=${BDB},TASK=${TASK},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ} \
+     --export=QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},P=${BTHREADS},BDB=${BDB},TASK=${TASK},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ},JOBNUM=${i} \
      ${SCRIPTS}/transblast.sh | awk '{print $4}'`
    
    BLASTDONE+=":"$BDONE

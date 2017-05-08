@@ -15,22 +15,23 @@ echo EVAL $EVAL
 echo WORDSIZE $WORDSIZE
 echo CULL $CULL
 echo MAXTARGSEQ ${MAXTARGSEQ}
+echo JOBNUM $JOBNUM
 echo; date; echo
 
 
-CMD="blastn -task $TASK -db $BDB -query ${QUERYDIR}/${PRE}.${SLURM_ARRAY_TASK_ID}.fa \
+CMD="blastn -task $TASK -db $BDB -query ${QUERYDIR}/${PRE}.${JOBNUM}.fa \
  -evalue $EVAL -word_size $WORDSIZE -culling_limit $CULL \
  -max_target_seqs $MAXTARGSEQ -num_threads $P \
- -out ${BLASTDIR}/${PRE}.${SLURM_ARRAY_TASK_ID}.blastout \
+ -out ${BLASTDIR}/${PRE}.${JOBNUM}.blastout \
  -outfmt '6 qseqid sseqid pident length qstart qend sstart send evalue bitscore qlen slen sstrand' "
 
 echo $CMD
 
 
-blastn -task $TASK -db $BDB -query ${QUERYDIR}/${PRE}.${SLURM_ARRAY_TASK_ID}.fa \
+blastn -task $TASK -db $BDB -query ${QUERYDIR}/${PRE}.${JOBNUM}.fa \
  -evalue $EVAL -word_size $WORDSIZE -culling_limit $CULL \
  -max_target_seqs $MAXTARGSEQ -num_threads $P \
- -out ${BLASTDIR}/${PRE}.${SLURM_ARRAY_TASK_ID}.blastout \
+ -out ${BLASTDIR}/${PRE}.${JOBNUM}.blastout \
  -outfmt '6 qseqid sseqid pident length qstart qend sstart send evalue bitscore qlen slen sstrand'
 
 echo; date

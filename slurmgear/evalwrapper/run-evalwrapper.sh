@@ -104,8 +104,8 @@ PEPCONFIG=${PEPCONFIGS}/peptide-config-sciara.cfg ## does both blastn and tblast
 PEPFOFN=${PEPFOFNS}/
 PEPRUN=${PEPSCRIPTS}/auto-pep.sh
 
-PEP2=/gpfs/data/sgerbi/jurban/flies/dmel/dmel-all-transcript-r6.14.fasta
-PEP3=/gpfs/data/sgerbi/jurban/flies/anopheles_gambiae/anopheles-gambiae-pesttranscriptsagamp46.fa
+PEP2=/gpfs/data/sgerbi/jurban/flies/dmel/dmel-all-translation-r6.14.fasta 
+PEP3=/gpfs/data/sgerbi/jurban/flies/anopheles_gambiae/anopheles-gambiae-pestpeptidesagamp46.fa 
 
 ############### KNOWN SEQUENCES SECTION #################
 ## Also evaluate Known Seqs

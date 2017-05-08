@@ -51,10 +51,6 @@ fi
 
 
 
-### PIPELINE
-CLEAN1DEP=afterok
-CLEAN2DEP=afterok
-
 
 ##############################################################################
 ## MAKE BLAST DB FROM ASM
@@ -76,7 +72,7 @@ BDB=$(echo `readlink -f ${MAIN}/${D}`/asm)
 TASK=blastn
 BLASTDONE=`sbatch --dependency=afterok:${MAKEDONE} -a 1-$NJOBS -J ${BASE}_blast_trans -o ${OUT}/blast_trans.slurm.%A_%a.out --mem=$BMEM --time=$BTIME -c $BTHREADS --qos=$QOS \
    --export=QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},P=${BTHREADS},BDB=${BDB},TASK=${TASK},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ} \
-   ${SCRIPTS}/transblast.sh | awk '{print $4}'`
+   ${SCRIPTS}/transblast-array.sh | awk '{print $4}'`
 
 
 
@@ -98,15 +94,19 @@ FOLLOWDONE=`sbatch --dependency=afterany:${BLASTDONE} -J ${BASE}_blast_trans_fol
 ##############################################################################
 ## TBLASTX
 ##############################################################################
+if $TBLASTX; then
+
 TBLASTXDONE=`sbatch --dependency=afterok:${MAKEDONE} -a 1-$NJOBS -J ${BASE}_tblastx -o ${OUT}/tblastx.slurm.%A_%a.out --mem=$BMEM --time=$BTIME -c $BTHREADS --qos=$QOS \
    --export=QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${TBLASTXDIR},P=${BTHREADS},BDB=${BDB},EVAL=${TBXEVAL},WORDSIZE=${TBXWORDSIZE},CULL=${TBXCULL},MAXTARGSEQ=${TBXMAXTARGSEQ} \
-   ${SCRIPTS}/transtblastx.sh | awk '{print $4}'`
+   ${SCRIPTS}/transtblastx-array.sh | awk '{print $4}'`
 
-
+fi
 
 ##############################################################################
 ## TBX FOLLOW UP 1
 ##############################################################################
+if $TBLASTX; then
+
 FOLLOWUPNUM=1
 TBXFOLLOWDONE=`sbatch --dependency=afterany:${TBLASTXDONE} -J ${BASE}_tblastx_followup_${FOLLOWUPNUM} \
    -o ${OUT}/tbx_follow_up_${FOLLOWUPNUM}.slurm.%A.out \
@@ -114,4 +114,4 @@ TBXFOLLOWDONE=`sbatch --dependency=afterany:${TBLASTXDONE} -J ${BASE}_tblastx_fo
    --export=BASE=${BASE},NJOBS=${NJOBS},SLURMOUTDIR=${OUT},SLURMPRE=tblastx.slurm,FOLLOWUPNUM=${FOLLOWUPNUM},BMEM=${BMEM},BTIME=${BTIME},BTHREADS=${BTHREADS},QOS=${QOS},SCRIPTS=${SCRIPTS},QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${TBLASTXDIR},BDB=${BDB},EVAL=${TBXEVAL},WORDSIZE=${TBXWORDSIZE},CULL=${TBXCULL},MAXTARGSEQ=${TBXMAXTARGSEQ} \
    ${SCRIPTS}/followup-tbx.sh | awk '{print $4}'`
 
-
+fi
