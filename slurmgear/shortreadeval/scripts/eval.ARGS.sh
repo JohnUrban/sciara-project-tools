@@ -249,10 +249,11 @@ if $BUILDBT2; then DEPLIST=${DEPLIST}:$BT2DEP ; fi
 if $MAPREADS; then DEPLIST=${DEPLIST}:$ALEFRCDEP ; fi
 if $RUNALE; then DEPLIST=${DEPLIST}:$ALEDONE ; fi
 if $RUNFRC; then DEPLIST=${DEPLIST}:$FRCDONE ; fi
+if $RUNPILON; then DEPLIST=${DEPLIST}:${PIDONE}; fi
 echo $DEPLIST > deplist.txt
 
 if $CLEANMREADS; then
- if $BUILDBT2 || $MAPREADS || $RUNALE || $RUNFRC; then
+ if $BUILDBT2 || $MAPREADS || $RUNALE || $RUNFRC || $RUNPILON ; then
  ## has deplist
    sbatch -J ${BASE}_mreads_clean${JOBSFX} --dependency=${DEPLIST} -o ${OUT}/mreads.clean.slurm.%A.out --mem=8g --time=06:00:00 -c 2 --qos=$QOS ${SCRIPTS}/mreads.clean.sh 
  else ##nodeplist
@@ -263,7 +264,7 @@ fi
 ### cleaning bt2 index -- add lap dependency
 if $RUNLAP; then DEPLIST=${DEPLIST}:$LAPDONE ; fi
 if $CLEANBT2; then
- if $BUILDBT2 || $MAPREADS || $RUNALE || $RUNFRC || $RUNLAP; then
+ if $BUILDBT2 || $MAPREADS || $RUNALE || $RUNFRC || $RUNLAP || $RUNPILON ; then
  ## has deplist
    sbatch -J ${BASE}_bt2_clean${JOBSFX} --dependency=${DEPLIST} -o ${OUT}/bt2.clean.slurm.%A.out --mem=8g --time=06:00:00 -c 2 --qos=$QOS ${SCRIPTS}/bt2.clean.sh 
  else ##nodeplist
