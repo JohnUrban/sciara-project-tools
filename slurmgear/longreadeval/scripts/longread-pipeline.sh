@@ -41,6 +41,7 @@ if [ ! -d $SLURMOUTDIR ]; then mkdir $SLURMOUTDIR; fi
 OUT=`readlink -f $MAIN`/$SLURMOUTDIR
 
 ### PIPELINE
+RMIDX=afterok
 CLEANONTDEP=afterok
 CLEANPBDEP=afterok
 COMBINEDEP=afterok
@@ -54,6 +55,7 @@ if $BUILDBWA || [ ! -d $D ]; then
   cd $D
   IDXDEP=`sbatch -J ${BASE}_buildbwa -o ${OUT}/bwaidx.slurm.%A.out --mem=$BIMEM --time=$BITIME -c $BITHREADS --qos=$QOS --export=ASM=${ASM},BASE=${BASE} ${SCRIPTS}/bwa-idx.sh | awk '{print $4}'`
   cd ../
+  RMIDX+=":${IDXDEP}"
 fi
 BWAIDX=`readlink -f bwa/`/$BASE
 
@@ -73,6 +75,7 @@ if $MAPPB; then
  cd ../
  CLEANPBDEP=${CLEANPBDEP}:${MAPPBDONE}
  COMBINEDEP=${COMBINEDEP}:${MAPPBDONE}
+ RMIDX+=":${MAPPBDONE}"
 fi
 PBBAM=`readlink -f ${MAIN}/${D}/pacbio.bam`
 
@@ -91,6 +94,7 @@ if $MAPONT; then
  cd ../
  CLEANONTDEP=${CLEANONTDEP}:${MAPONTDONE}
  COMBINEDEP=${COMBINEDEP}:${MAPONTDONE}
+ RMIDX+=":${MAPONTDONE}"
 fi
 ONTBAM=`readlink -f ${MAIN}/${D}/ont2d.bam` ##not necessarily only 2d -- just using the bwa type as an easy prefix
 
@@ -274,6 +278,7 @@ if $MAPLAPPB; then
  fi
  cd ../
  LAPCLEANPBDEP=${MAPLAPPBDONE}
+ RMIDX+=":${MAPLAPPBDONE}"
 fi
 PBSAMLAP=`readlink -f ${MAIN}/${D}/pacbio.lap.sam`
 
@@ -293,6 +298,7 @@ if $MAPLAPONT; then
  fi
  cd ../
  LAPCLEANONTDEP=${MAPLAPONTDONE}
+ RMIDX+=":${MAPLAPONTDONE}"
 fi
 ONTSAMLAP=`readlink -f ${MAIN}/${D}/ont2d.lap.sam`
 
@@ -306,9 +312,11 @@ if $LAPPB; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
  if $MAPLAPPB; then
-  LAPPBDONE=`sbatch -J ${BASE}_lap_pb --dependency=afterok:${MAPLAPPBDONE} -o ${OUT}/lap_pb.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS --export=BASE=${BASE},SAM=${PBSAMLAP},REF=${ASM},MISMATCH=${PBMISMATCHRATE},P=${LTHREADS} ${SCRIPTS}/lap.longread.sh | awk '{print $4}'`
+  LAPPBDONE=`sbatch -J ${BASE}_lap_pb --dependency=afterok:${MAPLAPPBDONE} -o ${OUT}/lap_pb.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS \
+    --export=BASE=${BASE},SAM=${PBSAMLAP},REF=${ASM},MISMATCH=${PBMISMATCHRATE},P=${LTHREADS},CLEAN=${CLEAN},SCRIPTS=${SCRIPTS} ${SCRIPTS}/lap.longread.sh | awk '{print $4}'`
  else
-  LAPPBDONE=`sbatch -J ${BASE}_lap_pb -o ${OUT}/lap_pb.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS --export=BASE=${BASE},SAM=${PBSAMLAP},REF=${ASM},MISMATCH=${PBMISMATCHRATE},P=${LTHREADS} ${SCRIPTS}/lap.longread.sh | awk '{print $4}'`
+  LAPPBDONE=`sbatch -J ${BASE}_lap_pb -o ${OUT}/lap_pb.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS \
+    --export=BASE=${BASE},SAM=${PBSAMLAP},REF=${ASM},MISMATCH=${PBMISMATCHRATE},P=${LTHREADS},CLEAN=${CLEAN},SCRIPTS=${SCRIPTS} ${SCRIPTS}/lap.longread.sh | awk '{print $4}'`
  fi
  cd ../
  LAPCLEANPBDEP=${LAPCLEANPBDEP}:${LAPPBDONE}
@@ -325,9 +333,11 @@ if $LAPONT; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
  if $MAPLAPONT; then
-  LAPONTDONE=`sbatch -J ${BASE}_lap_ont --dependency=afterok:${MAPLAPONTDONE} -o ${OUT}/lap_ont.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS --export=BASE=${BASE},SAM=${ONTSAMLAP},REF=${ASM},MISMATCH=${ONTMISMATCHRATE},P=${LTHREADS} ${SCRIPTS}/lap.longread.sh | awk '{print $4}'`
+  LAPONTDONE=`sbatch -J ${BASE}_lap_ont --dependency=afterok:${MAPLAPONTDONE} -o ${OUT}/lap_ont.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS \
+    --export=BASE=${BASE},SAM=${ONTSAMLAP},REF=${ASM},MISMATCH=${ONTMISMATCHRATE},P=${LTHREADS},CLEAN=${CLEAN},SCRIPTS=${SCRIPTS} ${SCRIPTS}/lap.longread.sh | awk '{print $4}'`
  else
-  LAPONTDONE=`sbatch -J ${BASE}_lap_ont -o ${OUT}/lap_ont.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS --export=BASE=${BASE},SAM=${ONTSAMLAP},REF=${ASM},MISMATCH=${ONTMISMATCHRATE},P=${LTHREADS} ${SCRIPTS}/lap.longread.sh | awk '{print $4}'`
+  LAPONTDONE=`sbatch -J ${BASE}_lap_ont -o ${OUT}/lap_ont.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS \
+    --export=BASE=${BASE},SAM=${ONTSAMLAP},REF=${ASM},MISMATCH=${ONTMISMATCHRATE},P=${LTHREADS},CLEAN=${CLEAN},SCRIPTS=${SCRIPTS} ${SCRIPTS}/lap.longread.sh | awk '{print $4}'`
  fi
  cd ../
  LAPCLEANONTDEP=${LAPCLEANONTDEP}:${LAPONTDONE}
@@ -341,12 +351,14 @@ if $CLEAN; then
  if $MAPLAPPB ; then
   GATEFILE="lap_pb/${BASE}.lapscore"
   DELFILE=$PBSAMLAP
-  CLEANPBDONE=`sbatch -J ${BASE}_clean_pb_lap --dependency=afterok:${LAPCLEANPBDEP} -o ${OUT}/cleanPB_lap.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`
+  CLEANPBDONE=`sbatch -J ${BASE}_clean_pb_lap --dependency=afterok:${LAPCLEANPBDEP} -o ${OUT}/cleanPB_lap.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
+    --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`
  fi
  if $MAPLAPONT ; then
   GATEFILE="lap_ont/${BASE}.lapscore"
   DELFILE=$ONTSAMLAP
-  CLEANONTDONE=`sbatch -J ${BASE}_clean_ont_lap --dependency=afterok:${LAPCLEANONTDEP} -o ${OUT}/cleanONT_lap.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`
+  CLEANONTDONE=`sbatch -J ${BASE}_clean_ont_lap --dependency=afterok:${LAPCLEANONTDEP} -o ${OUT}/cleanONT_lap.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
+    --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`
  fi
 fi
 
@@ -375,6 +387,7 @@ if $MAPPB_PE; then
  fi
  cd ../
  L2PECLEANPBDEP=${MAPL2PEPBDONE}
+ RMIDX+=":${MAPL2PEPBDONE}"
 fi
 PBBAML2PE=`readlink -f ${MAIN}/${D}/pacbio.long2pe.bam`
 
@@ -393,6 +406,7 @@ if $MAPONT_PE; then
  fi
  cd ../
  L2PECLEANONTDEP=${MAPL2PEONTDONE}
+ RMIDX+=":${MAPL2PEONTDONE}"
 fi
 ONTBAML2PE=`readlink -f ${MAIN}/${D}/ont2d.long2pe.bam`
 
@@ -409,9 +423,11 @@ if $FRCPB; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
  if $MAPPB_PE; then
-  FRCPBDONE=`sbatch -J ${BASE}_frc_pb --dependency=afterok:${MAPL2PEPBDONE} -o ${OUT}/frc_pb.slurm.%A.out --mem=$FMEM --time=$FTIME -c $FTHREADS --qos=$QOS --export=BAM=${PBBAML2PE},L2PE_MAXINS=${L2PE_MAXINS},GSIZE=${GSIZE},BASE=${BASE} ${SCRIPTS}/frc.eval.sh | awk '{print $4}'`
+  FRCPBDONE=`sbatch -J ${BASE}_frc_pb --dependency=afterok:${MAPL2PEPBDONE} -o ${OUT}/frc_pb.slurm.%A.out --mem=$FMEM --time=$FTIME -c $FTHREADS --qos=$QOS \
+    --export=BAM=${PBBAML2PE},L2PE_MAXINS=${L2PE_MAXINS},GSIZE=${GSIZE},BASE=${BASE},CLEAN=${CLEAN},SCRIPTS=${SCRIPTS} ${SCRIPTS}/frc.eval.sh | awk '{print $4}'`
  else
-  FRCPBDONE=`sbatch -J ${BASE}_frc_pb -o ${OUT}/frc_pb.slurm.%A.out --mem=$FMEM --time=$FTIME -c $FTHREADS --qos=$QOS --export=BAM=${PBBAML2PE},L2PE_MAXINS=${L2PE_MAXINS},GSIZE=${GSIZE},BASE=${BASE} ${SCRIPTS}/frc.eval.sh | awk '{print $4}'`
+  FRCPBDONE=`sbatch -J ${BASE}_frc_pb -o ${OUT}/frc_pb.slurm.%A.out --mem=$FMEM --time=$FTIME -c $FTHREADS --qos=$QOS \
+    --export=BAM=${PBBAML2PE},L2PE_MAXINS=${L2PE_MAXINS},GSIZE=${GSIZE},BASE=${BASE},CLEAN=${CLEAN},SCRIPTS=${SCRIPTS} ${SCRIPTS}/frc.eval.sh | awk '{print $4}'`
  fi
  cd ../
  L2PECLEANPBDEP=${L2PECLEANPBDEP}:${FRCPBDONE}
@@ -428,9 +444,11 @@ if $FRCONT; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
  if $MAPONT_PE; then
-  FRCONTDONE=`sbatch -J ${BASE}_frc_ont --dependency=afterok:${MAPL2PEONTDONE} -o ${OUT}/frc_ont.slurm.%A.out --mem=$FMEM --time=$FTIME -c $FTHREADS --qos=$QOS --export=BAM=${ONTBAML2PE},L2PE_MAXINS=${L2PE_MAXINS},GSIZE=${GSIZE},BASE=${BASE} ${SCRIPTS}/frc.eval.sh | awk '{print $4}'`
+  FRCONTDONE=`sbatch -J ${BASE}_frc_ont --dependency=afterok:${MAPL2PEONTDONE} -o ${OUT}/frc_ont.slurm.%A.out --mem=$FMEM --time=$FTIME -c $FTHREADS --qos=$QOS \
+    --export=BAM=${ONTBAML2PE},L2PE_MAXINS=${L2PE_MAXINS},GSIZE=${GSIZE},BASE=${BASE},CLEAN=${CLEAN},SCRIPTS=${SCRIPTS} ${SCRIPTS}/frc.eval.sh | awk '{print $4}'`
  else
-  FRCONTDONE=`sbatch -J ${BASE}_frc_ont -o ${OUT}/frc_ont.slurm.%A.out --mem=$FMEM --time=$FTIME -c $FTHREADS --qos=$QOS --export=BAM=${ONTBAML2PE},L2PE_MAXINS=${L2PE_MAXINS},GSIZE=${GSIZE},BASE=${BASE} ${SCRIPTS}/frc.eval.sh | awk '{print $4}'`
+  FRCONTDONE=`sbatch -J ${BASE}_frc_ont -o ${OUT}/frc_ont.slurm.%A.out --mem=$FMEM --time=$FTIME -c $FTHREADS --qos=$QOS \
+    --export=BAM=${ONTBAML2PE},L2PE_MAXINS=${L2PE_MAXINS},GSIZE=${GSIZE},BASE=${BASE},CLEAN=${CLEAN},SCRIPTS=${SCRIPTS} ${SCRIPTS}/frc.eval.sh | awk '{print $4}'`
  fi
  cd ../
  L2PECLEANONTDEP=${L2PECLEANONTDEP}:${FRCONTDONE}
@@ -495,9 +513,11 @@ if $LAPPB; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
  if $MAPPB_PE; then
-  LAPPBL2PEDONE=`sbatch -J ${BASE}_lap_pb_long2pe --dependency=afterok:${MAPL2PEPBDONE} -o ${OUT}/lap_pb_long2pe.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS --export=BASE=${BASE},SAM=${PBBAML2PE},REF=${ASM},MISMATCH=${PBMISMATCHRATE},P=${LTHREADS} ${SCRIPTS}/lap.long2pe.sh | awk '{print $4}'`
+  LAPPBL2PEDONE=`sbatch -J ${BASE}_lap_pb_long2pe --dependency=afterok:${MAPL2PEPBDONE} -o ${OUT}/lap_pb_long2pe.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS \
+    --export=BASE=${BASE},SAM=${PBBAML2PE},REF=${ASM},MISMATCH=${PBMISMATCHRATE},P=${LTHREADS},CLEAN=${CLEAN},SCRIPTS=${SCRIPTS} ${SCRIPTS}/lap.long2pe.sh | awk '{print $4}'`
  else
-  LAPPBL2PEDONE=`sbatch -J ${BASE}_lap_pb_long2pe -o ${OUT}/lap_pb_long2pe.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS --export=BASE=${BASE},SAM=${PBBAML2PE},REF=${ASM},MISMATCH=${PBMISMATCHRATE},P=${LTHREADS} ${SCRIPTS}/lap.long2pe.sh | awk '{print $4}'`
+  LAPPBL2PEDONE=`sbatch -J ${BASE}_lap_pb_long2pe -o ${OUT}/lap_pb_long2pe.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS \
+    --export=BASE=${BASE},SAM=${PBBAML2PE},REF=${ASM},MISMATCH=${PBMISMATCHRATE},P=${LTHREADS},CLEAN=${CLEAN},SCRIPTS=${SCRIPTS} ${SCRIPTS}/lap.long2pe.sh | awk '{print $4}'`
  fi
  cd ../
  L2PECLEANPBDEP=${L2PECLEANPBDEP}:${LAPPBL2PEDONE}
@@ -557,4 +577,15 @@ if $CLEAN; then
     --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`  
  fi
 
+fi
+
+
+##############################################################################
+## IDX CLEAN 
+##############################################################################
+if $CLEAN; then
+  DELFILE=$BWAIDX
+  GATEFILE=$BWAIDX
+  CLEANIDX=`sbatch -J ${BASE}_clean_idx --dependency=${RMIDX} -o ${OUT}/clean_bwaidx.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
+    --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`  
 fi

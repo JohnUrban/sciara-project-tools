@@ -32,11 +32,11 @@ fi
    c=`cat ${BASE}.prob | wc -l`
    if [ $c -lt 10 ]; then ##it is just a ghost file, so make it for reals
      ## Note: -i $SAM is just a dummy/place holder here - since a SAM is given, it bypasses -i.
-     calc_prob.py -p $P -a $REF -i $SAM -s $SAM -c $MISMATCH > ${BASE}.probs
+     calc_prob.py -p $P -a $REF -i $SAM -s $SAM -c $MISMATCH > ${BASE}.prob
    fi
  else ##DoesNotExist so create
   date; echo prob file DoesNotExist so create
-  calc_prob.py -p $P -a $REF -i $SAM -s $SAM -c $MISMATCH > ${BASE}.probs
+  calc_prob.py -p $P -a $REF -i $SAM -s $SAM -c $MISMATCH > ${BASE}.prob
   date; echo prob file DoesNotExist so created it...
  fi
  
@@ -44,14 +44,16 @@ fi
  if [ -f ${BASE}.lapscore ]; then
    c=`cat ${BASE}.lapscore | wc -l`
    if [ $c -lt 1 ]; then ##it is just a ghost file, so make it for reals
-      sum_prob.py -i ${BASE}.probs -t 1e-323 -d 3 > ${BASE}.lapscore.detailed
+      sum_prob.py -i ${BASE}.prob -t 1e-323 -d 3 > ${BASE}.lapscore.detailed
       tail -n 1 ${BASE}.lapscore.detailed | awk 'OFS="\t" {print $3,$4}' > ${BASE}.lapscore
    fi
  else ##DoesNotExist so create
-   sum_prob.py -i ${BASE}.probs -t 1e-323 -d 3 > ${BASE}.lapscore.detailed
+   sum_prob.py -i ${BASE}.prob -t 1e-323 -d 3 > ${BASE}.lapscore.detailed
    tail -n 1 ${BASE}.lapscore.detailed | awk 'OFS="\t" {print $3,$4}' > ${BASE}.lapscore
  fi
 
 
 ## remove temp fle
 if [ -f temp.sam ]; then rm temp.sam; fi
+
+if $CLEAN; then bash ${SCRIPTS}/lap.clean.sh ; fi

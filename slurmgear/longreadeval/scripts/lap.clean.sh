@@ -2,4 +2,7 @@
 
 rm -r tmp/
 
+rm *.prob
+
+
 
