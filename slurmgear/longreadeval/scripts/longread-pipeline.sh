@@ -212,19 +212,6 @@ CLEANPBDEP=${CLEANPBDEP}:${STATSDONE}
 ##############################################################################
 ## CLEAN UP -- THIS CLEAN UP ONLY FOR BAM USED FOR SNIFFLES AND ALE
 ##############################################################################
- DELFILE=$PBBAML2PE
- if $FRCPB && $REAPRPB ; then
-  GATEFILE1="frc_pb/${BASE}.frcFeatures.gff"
-  GATEFILE2="reapr_pb/output_directory/05.summary.report.txt"
-  CLEANPBL2PE=`sbatch -J ${BASE}_clean_pb_long2pe --dependency=${L2PECLEANPBDEP} -o ${OUT}/cleanPB_l2pe.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
-    --export=GATEFILE1=${GATEFILE1},GATEFILE2=${GATEFILE2},DELFILE=${DELFILE} ${SCRIPTS}/clean.2.sh | awk '{print $4}'`
- elif $FRCPB || $REAPRPB ; then
-  if $FRCPB; then GATEFILE="frc_pb/${BASE}.frcFeatures.gff"; 
-    else GATEFILE="reapr_pb/output_directory/05.summary.report.txt"; fi
-  CLEANPBL2PE=`sbatch -J ${BASE}_clean_pb_long2pe --dependency=${L2PECLEANPBDEP} -o ${OUT}/cleanPB_l2pe.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
-    --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`  
- fi
-
 if $CLEAN; then
  DELFILE=$PBBAM
  #####if $SNIFFLESPB || $SNiFFLESCOMBINED; then
@@ -242,12 +229,12 @@ if $CLEAN; then
 
  #####if $SNIFFLESONT || $SNIFFLESCOMBINED; then
  DELFILE=$ONTBAM
- if $SNIFFLESONT && ALEONT; then
+ if $SNIFFLESONT && $ALEONT; then
   GATEFILE1="sniffles_ont/${BASE}_ont.bedpe"
   GATEFILE2="ale_ont/${BASE}.ALE.txt"
   CLEANPBDONE=`sbatch -J ${BASE}_clean_ont --dependency=${CLEANONTDEP} -o ${OUT}/cleanONT.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
     --export=GATEFILE1=${GATEFILE1},GATEFILE2=${GATEFILE2},DELFILE=${DELFILE} ${SCRIPTS}/clean.2.sh | awk '{print $4}'`
- elif $SNIFFLESONT || ALEONT; then
+ elif $SNIFFLESONT || $ALEONT; then
   if $SNIFFLESONT; then GATEFILE="sniffles_ont/${BASE}_ont.bedpe";
     else GATEFILE="ale_ont/${BASE}.ALE.txt"; fi
   CLEANPBDONE=`sbatch -J ${BASE}_clean_ont --dependency=${CLEANONTDEP} -o ${OUT}/cleanONT.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
