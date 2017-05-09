@@ -169,9 +169,11 @@ if $ALEPB; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
  if $MAPPB; then
-  ALEPBDONE=`sbatch -J ${BASE}_ale_pb --dependency=afterok:${MAPPBDONE} -o ${OUT}/alePB.slurm.%A.out --mem=$AMEM --time=$ATIME -c $ATHREADS --qos=$QOS --export=BAM=$PBBAM,BASE=${BASE},REF=${ASM} ${SCRIPTS}/ale.eval.sh | awk '{print $4}'`
+  ALEPBDONE=`sbatch -J ${BASE}_ale_pb --dependency=afterok:${MAPPBDONE} -o ${OUT}/alePB.slurm.%A.out --mem=$AMEM --time=$ATIME -c $ATHREADS --qos=$QOS \
+    --export=BAM=$PBBAM,BASE=${BASE},REF=${ASM},CLEAN=${CLEAN},SCRIPTS=${SCRIPTS} ${SCRIPTS}/ale.eval.sh | awk '{print $4}'`
  else
-  ALEPBDONE=`sbatch -J ${BASE}_ale_pb -o ${OUT}/alePB.slurm.%A.out --mem=$AMEM --time=$ATIME -c $ATHREADS --qos=$QOS --export=BAM=$PBBAM,BASE=${BASE},REF=${ASM} ${SCRIPTS}/ale.eval.sh | awk '{print $4}'`
+  ALEPBDONE=`sbatch -J ${BASE}_ale_pb -o ${OUT}/alePB.slurm.%A.out --mem=$AMEM --time=$ATIME -c $ATHREADS --qos=$QOS \
+    --export=BAM=$PBBAM,BASE=${BASE},REF=${ASM},CLEAN=${CLEAN},SCRIPTS=${SCRIPTS} ${SCRIPTS}/ale.eval.sh | awk '{print $4}'`
  fi
  cd ../
  CLEANPBDEP=${CLEANPBDEP}:${ALEPBDONE}
@@ -185,9 +187,11 @@ if $ALEONT; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
  if $MAPONT; then
-  ALEONTDONE=`sbatch -J ${BASE}_ale_ont --dependency=afterok:${MAPONTDONE} -o ${OUT}/aleONT.slurm.%A.out --mem=$AMEM --time=$ATIME -c $ATHREADS --qos=$QOS --export=BAM=$ONTBAM,BASE=${BASE},REF=${ASM} ${SCRIPTS}/ale.eval.sh | awk '{print $4}'`
+  ALEONTDONE=`sbatch -J ${BASE}_ale_ont --dependency=afterok:${MAPONTDONE} -o ${OUT}/aleONT.slurm.%A.out --mem=$AMEM --time=$ATIME -c $ATHREADS --qos=$QOS \
+    --export=BAM=$ONTBAM,BASE=${BASE},REF=${ASM},CLEAN=${CLEAN},SCRIPTS=${SCRIPTS} ${SCRIPTS}/ale.eval.sh | awk '{print $4}'`
  else
-  ALEONTDONE=`sbatch -J ${BASE}_ale_ont -o ${OUT}/aleONT.slurm.%A.out --mem=$AMEM --time=$ATIME -c $ATHREADS --qos=$QOS --export=BAM=$ONTBAM,BASE=${BASE},REF=${ASM} ${SCRIPTS}/ale.eval.sh | awk '{print $4}'`
+  ALEONTDONE=`sbatch -J ${BASE}_ale_ont -o ${OUT}/aleONT.slurm.%A.out --mem=$AMEM --time=$ATIME -c $ATHREADS --qos=$QOS \
+    --export=BAM=$ONTBAM,BASE=${BASE},REF=${ASM},CLEAN=${CLEAN},SCRIPTS=${SCRIPTS} ${SCRIPTS}/ale.eval.sh | awk '{print $4}'`
  fi
  cd ../
  CLEANONTDEP=${CLEANONTDEP}:${ALEONTDONE}
