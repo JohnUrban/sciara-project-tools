@@ -2,6 +2,7 @@
 
 ## Input Assemblies FOFN
 ASMFOFN=input.fofn
+CLEANALL=true
 
 ## GETTING ABS PATH OF ASMFOFN
 ASMFOFN=`readlink -f $ASMFOFN`
@@ -70,12 +71,13 @@ LRCONFIG=${LRCONFIGS}/longread-config-sciara.cfg
 
 ## OTHER OPTIONS
 LRCLEAN=false
-
+if $CLEANALL; then LRCLEAN=true; fi
 
 ############### TRANSCRIPT SECTION #################
 TBLASTX=true
 TRANSNJOBS=100
 TRANSCLEAN=false
+if $CLEANALL; then TRANSCLEAN=true; fi
 
 TRANSBASE=/users/jurban/software/sciaratools/sciara-project-tools/slurmgear/transcripteval
 TRANSSCRIPTS=${TRANSBASE}/scripts/
@@ -94,6 +96,7 @@ TRANS3=/gpfs/data/sgerbi/jurban/flies/anopheles_gambiae/anopheles-gambiae-pesttr
 ## Evaluate with peptides
 PEPNJOBS=100
 PEPCLEAN=false
+if $CLEANALL; then PEPCLEAN=true; fi
 
 PEPBASE=/users/jurban/software/sciaratools/sciara-project-tools/slurmgear/peptideval
 PEPSCRIPTS=${PEPBASE}/scripts/
@@ -113,6 +116,7 @@ PEP3=/gpfs/data/sgerbi/jurban/flies/anopheles_gambiae/anopheles-gambiae-pestpept
 KNOWNTBLASTX=false
 KNOWNNJOBS=1
 KNOWNCLEAN=false
+if $CLEANALL; then KNOWNCLEAN=true; fi
 KNOWNSEQS=/gpfs/data/sgerbi/jurban/sciaraknownseqs/allCoprophilaNTSeqOnNCBI.fa
 
 
@@ -120,6 +124,7 @@ KNOWNSEQS=/gpfs/data/sgerbi/jurban/sciaraknownseqs/allCoprophilaNTSeqOnNCBI.fa
 #$RNARUN $RNASCRIPTS $RNACONFIG $RNACLEAN $ASMFOFN $RNAFOFN
 
 RNACLEAN=false
+if $CLEANALL; then RNACLEAN=true; fi
 
 RNABASE=/users/jurban/software/sciaratools/sciara-project-tools/slurmgear/rnaseqeval
 RNASCRIPTS=${RNABASE}/scripts/
