@@ -534,9 +534,11 @@ if $LAPONT; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
  if $MAPONT_PE; then
-  LAPONTL2PEDONE=`sbatch -J ${BASE}_lap_ont_long2pe --dependency=afterok:${MAPL2PEONTDONE} -o ${OUT}/lap_ont_long2pe.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS --export=BASE=${BASE},SAM=${ONTBAML2PE},REF=${ASM},MISMATCH=${ONTMISMATCHRATE},P=${LTHREADS} ${SCRIPTS}/lap.long2pe.sh | awk '{print $4}'`
+  LAPONTL2PEDONE=`sbatch -J ${BASE}_lap_ont_long2pe --dependency=afterok:${MAPL2PEONTDONE} -o ${OUT}/lap_ont_long2pe.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS \
+    --export=BASE=${BASE},SAM=${ONTBAML2PE},REF=${ASM},MISMATCH=${ONTMISMATCHRATE},P=${LTHREADS},CLEAN=${CLEAN},SCRIPTS=${SCRIPTS} ${SCRIPTS}/lap.long2pe.sh | awk '{print $4}'`
  else
-  LAPONTL2PEDONE=`sbatch -J ${BASE}_lap_ont_long2pe -o ${OUT}/lap_ont_long2pe.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS --export=BASE=${BASE},SAM=${ONTBAML2PE},REF=${ASM},MISMATCH=${ONTMISMATCHRATE},P=${LTHREADS} ${SCRIPTS}/lap.long2pe.sh | awk '{print $4}'`
+  LAPONTL2PEDONE=`sbatch -J ${BASE}_lap_ont_long2pe -o ${OUT}/lap_ont_long2pe.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --qos=$QOS \
+    --export=BASE=${BASE},SAM=${ONTBAML2PE},REF=${ASM},MISMATCH=${ONTMISMATCHRATE},P=${LTHREADS},CLEAN=${CLEAN},SCRIPTS=${SCRIPTS} ${SCRIPTS}/lap.long2pe.sh | awk '{print $4}'`
  fi
  cd ../
  L2PECLEANONTDEP=${L2PECLEANONTDEP}:${LAPONTL2PEDONE}
