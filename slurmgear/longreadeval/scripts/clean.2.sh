@@ -18,5 +18,5 @@ if [ -f $GATEFILE1 ] && [ -f $GATEFILE2 ]; then
     echo $GATEFILE2 $LC2
   fi
 else
-  echo Gate files (${GATEFILE1} and ${GATEFILE2}) do not exist so not deleting $DELFILE
+  echo Gate files ${GATEFILE1} and ${GATEFILE2} do not exist so not deleting $DELFILE
 fi
