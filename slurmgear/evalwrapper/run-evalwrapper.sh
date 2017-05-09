@@ -155,6 +155,9 @@ bash $AUTOLR $LRCLEAN $LRCONFIG $ASMFOFN $LRSCRIPTS $ONT $PACBIO $ONT1 $ONT2 $PA
 cd ../
 
 
+mkdir blast_analyses
+cd blast_analyses
+
 mkdir transcriptome
 cd transcriptome
 $TRANSRUN $TRANSSCRIPTS $TRANSCONFIG $TRANSCLEAN $ASMFOFN $TRANS1 $TRANSNJOBS $TBLASTX
@@ -183,6 +186,9 @@ cd ../
 mkdir knownseqs
 cd knownseqs
 $TRANSRUN $TRANSSCRIPTS $TRANSCONFIG $KNOWNCLEAN $ASMFOFN $KNOWNSEQS $KNOWNNJOBS $KNOWNTBLASTX
+cd ../
+
+#leave blast_analyses
 cd ../
 
 mkdir rnaseq
