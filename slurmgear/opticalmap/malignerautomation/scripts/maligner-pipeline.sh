@@ -97,7 +97,9 @@ if $MERGE; then
  if $MERGE; then
    DEPENDS=--dependency=afterok:${MERGEDEP}
  fi
- CLEAN1DEP=$CLEAN1DEP:`sbatch -J ${BASE}_score $DEPENDS -o ${OUT}/score.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS --export=ALL=${ALL} ${SCRIPTS}/score.sh | awk '{print $4}'`
+ SCOREDONE=`sbatch -J ${BASE}_score $DEPENDS -o ${OUT}/score.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
+   --export=ALL=${ALL} ${SCRIPTS}/score.sh | awk '{print $4}'`
+ CLEAN1DEP=$CLEAN1DEP:$SCOREDONE
  cd ../
 fi
 
@@ -110,9 +112,10 @@ if $MERGE; then
  cd $D
  DEPENDS=""
  if $MERGE; then
-   DEPENDS=--dependency=afterok:${MERGEDEP}
+   DEPENDS=--dependency=afterok:${SCOREDONE}
  fi
- CLEAN1DEP=$CLEAN1DEP:`sbatch -J ${BASE}_score $DEPENDS -o ${OUT}/score.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS --export=ALL=${ALL},ASM=${ASM},BASE=${BASE} ${SCRIPTS}/convert2bedGraph.sh | awk '{print $4}'`
+ CLEAN1DEP=$CLEAN1DEP:`sbatch -J ${BASE}_bdg $DEPENDS -o ${OUT}/bedgraph.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS --export=ALL=${ALL},ASM=${ASM},BASE=${BASE} \
+   ${SCRIPTS}/convert2bedGraph.sh | awk '{print $4}'`
  cd ../
 fi
 

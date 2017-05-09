@@ -14,7 +14,7 @@ awk '{s+=($3-$2)*$4}END{print s}' ${ALL}.bedGraph > total_base_cov.txt
 ## COMBINE ALL SCORES
 
 ## calculate metrics
-score=`cat score.txt`
+score=`head -n 1 score.txt`
 span=`cat span.txt`
 cov=`cat total_base_cov.txt`
 num=`cat num_alignments.txt`
