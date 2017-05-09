@@ -13,6 +13,10 @@ awk '{p+=$2; b+=$3; l+=$4; n+=$5}END{printf "%f\t%f\t%f\t%f\n", p, b, l, n}' ind
 
 
 
-if [ -f clean.txt ]; then 
+if [ -f ../clean.txt ]; then
   rm ${BLASTDIR}/*.blastout
+else
+  echo nocleaning..... $PWD
+  ls
 fi
+
