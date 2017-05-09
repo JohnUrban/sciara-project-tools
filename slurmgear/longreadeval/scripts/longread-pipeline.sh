@@ -532,12 +532,12 @@ if $CLEAN; then
 
  DELFILE=$PBBAML2PE
  if $FRCPB && $REAPRPB ; then
-  GATEFILE1="frc_pb/${BASE}.frcFeatures.gff"
+  GATEFILE1="frc_pb/${BASE}.long2peFeatures.gff"
   GATEFILE2="reapr_pb/output_directory/05.summary.report.txt"
   CLEANPBL2PE=`sbatch -J ${BASE}_clean_pb_long2pe --dependency=afterok:${L2PECLEANPBDEP} -o ${OUT}/cleanPB_l2pe.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
     --export=GATEFILE1=${GATEFILE1},GATEFILE2=${GATEFILE2},DELFILE=${DELFILE} ${SCRIPTS}/clean.2.sh | awk '{print $4}'`
  elif $FRCPB || $REAPRPB ; then
-  if $FRCPB; then GATEFILE="frc_pb/${BASE}.frcFeatures.gff"; 
+  if $FRCPB; then GATEFILE="frc_pb/${BASE}.long2peFeatures.gff"; 
     else GATEFILE="reapr_pb/output_directory/05.summary.report.txt"; fi
   CLEANPBL2PE=`sbatch -J ${BASE}_clean_pb_long2pe --dependency=afterok:${L2PECLEANPBDEP} -o ${OUT}/cleanPB_l2pe.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
     --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`  
@@ -545,13 +545,13 @@ if $CLEAN; then
 
  DELFILE=$ONTBAML2PE
  if $FRCONT && $REAPRONT ; then
-  GATEFILE1="frc_ont/${BASE}.frcFeatures.gff"
+  GATEFILE1="frc_ont/${BASE}.long2peFeatures.gff"
   GATEFILE2="reapr_ont/output_directory/05.summary.report.txt"
   DELFILE=$ONTBAML2PE
   CLEANONTL2PE=`sbatch -J ${BASE}_clean_ont_long2pe1 --dependency=afterok:${L2PECLEANONTDEP} -o ${OUT}/cleanONT_l2pe.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
     --export=GATEFILE1=${GATEFILE1},GATEFILE2=${GATEFILE2},DELFILE=${DELFILE} ${SCRIPTS}/clean.2.sh | awk '{print $4}'`
  elif $FRCONT || $REAPRONT ; then
-  if $FRCONT; then GATEFILE="frc_ont/${BASE}.frcFeatures.gff"; 
+  if $FRCONT; then GATEFILE="frc_ont/${BASE}.long2peFeatures.gff"; 
     else GATEFILE="reapr_ont/output_directory/05.summary.report.txt"; fi
   CLEANONTL2PE=`sbatch -J ${BASE}_clean_ont_long2pe --dependency=afterok:${L2PECLEANONTDEP} -o ${OUT}/cleanONT_l2pe.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
     --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`  

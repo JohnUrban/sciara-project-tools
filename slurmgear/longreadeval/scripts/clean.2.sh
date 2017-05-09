@@ -1,5 +1,7 @@
 #!/bin/bash
 
+VARS="DELFILE GATEFILE1 GATEFILE2"
+for VAR in $VARS; do echo $VAR ${!VAR}; done; echo
 
 if [ -f $GATEFILE1 ] && [ -f $GATEFILE2 ]; then
   echo Both $GATEFILE1 and $GATEFILE2 exist....

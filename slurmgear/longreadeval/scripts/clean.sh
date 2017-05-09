@@ -1,5 +1,7 @@
 #!/bin/bash
 
+VARS="DELFILE GATEFILE"
+for VAR in $VARS; do echo $VAR ${!VAR}; done; echo
 
 if [ -f $GATEFILE ]; then
   echo Gate file, $GATEFILE, exists....
