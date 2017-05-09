@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-rm *
+rm *info *fa *sh
 
 cd output_directory/
  
