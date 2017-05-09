@@ -38,7 +38,7 @@ if [ ! -d $BLASTOUTDIR ]; then
 fi
 BLASTDIR=`readlink -f $MAIN`/$BLASTOUTDIR
 
-
+if $CLEAN; then touch clean.txt; fi
 
 ##############################################################################
 ## MAKE BLAST DB FROM ASM

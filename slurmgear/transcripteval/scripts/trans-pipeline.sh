@@ -51,6 +51,8 @@ fi
 
 
 
+if $CLEAN; then touch clean.txt; fi
+
 
 ##############################################################################
 ## MAKE BLAST DB FROM ASM
