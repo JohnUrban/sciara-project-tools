@@ -16,4 +16,5 @@ awk '{p+=$2; b+=$3; l+=$4; n+=$5}END{printf "%f\t%f\t%f\t%f\n", p, b, l, n}' ind
 ## clean.txt is a file made by parent script if CLEAN parameter set to true
 if [ -f clean.txt ]; then 
   rm ${BLASTDIR}/*.blastout
+else echo nocleaning.....
 fi
