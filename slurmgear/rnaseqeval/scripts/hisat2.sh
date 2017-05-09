@@ -56,4 +56,7 @@ done
 wait
 
 # CLEAN
-if $CLEAN; then rm ${PRE}.bam; fi
+if $CLEAN; then 
+  rm ${PRE}.bam; 
+  rm ../ht2/*
+fi
