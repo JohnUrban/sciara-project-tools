@@ -212,21 +212,53 @@ CLEANPBDEP=${CLEANPBDEP}:${STATSDONE}
 ##############################################################################
 ## CLEAN UP -- THIS CLEAN UP ONLY FOR BAM USED FOR SNIFFLES AND ALE
 ##############################################################################
+ DELFILE=$PBBAML2PE
+ if $FRCPB && $REAPRPB ; then
+  GATEFILE1="frc_pb/${BASE}.frcFeatures.gff"
+  GATEFILE2="reapr_pb/output_directory/05.summary.report.txt"
+  CLEANPBL2PE=`sbatch -J ${BASE}_clean_pb_long2pe --dependency=${L2PECLEANPBDEP} -o ${OUT}/cleanPB_l2pe.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
+    --export=GATEFILE1=${GATEFILE1},GATEFILE2=${GATEFILE2},DELFILE=${DELFILE} ${SCRIPTS}/clean.2.sh | awk '{print $4}'`
+ elif $FRCPB || $REAPRPB ; then
+  if $FRCPB; then GATEFILE="frc_pb/${BASE}.frcFeatures.gff"; 
+    else GATEFILE="reapr_pb/output_directory/05.summary.report.txt"; fi
+  CLEANPBL2PE=`sbatch -J ${BASE}_clean_pb_long2pe --dependency=${L2PECLEANPBDEP} -o ${OUT}/cleanPB_l2pe.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
+    --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`  
+ fi
+
 if $CLEAN; then
- if $SNIFFLESPB || $SNIFFLESCOMBINED; then
-  GATEFILE="sniffles_pb/${BASE}_pacbio.bedpe"
-  DELFILE=$PBBAM
-  CLEANPBDONE=`sbatch -J ${BASE}_clean_pb --dependency=${CLEANPBDEP} -o ${OUT}/cleanPB.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`
+ DELFILE=$PBBAM
+ #####if $SNIFFLESPB || $SNiFFLESCOMBINED; then
+ if $SNIFFLESPB && $ALEPB; then
+  GATEFILE1="sniffles_pb/${BASE}_pacbio.bedpe"
+  GATEFILE2="ale_pb/${BASE}.ALE.txt"
+  CLEANPBDONE=`sbatch -J ${BASE}_clean_pb --dependency=${CLEANPBDEP} -o ${OUT}/cleanPB.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
+    --export=GATEFILE1=${GATEFILE1},GATEFILE2=${GATEFILE2},DELFILE=${DELFILE} ${SCRIPTS}/clean.2.sh | awk '{print $4}'`
+ elif $SNIFFLESPB || $ALEPB; then
+  if $SNIFFLESPB; then GATEFILE="sniffles_pb/${BASE}_pacbio.bedpe";
+    else GATEFILE="ale_pb/${BASE}.ALE.txt"; fi
+  CLEANPBDONE=`sbatch -J ${BASE}_clean_pb --dependency=${CLEANPBDEP} -o ${OUT}/cleanPB.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
+    --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`
  fi
- if $SNIFFLESONT || $SNIFFLESCOMBINED; then
-  GATEFILE="sniffles_ont/${BASE}_ont.bedpe"
-  DELFILE=$ONTBAM
-  CLEANPBDONE=`sbatch -J ${BASE}_clean_ont --dependency=${CLEANONTDEP} -o ${OUT}/cleanONT.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`
+
+ #####if $SNIFFLESONT || $SNIFFLESCOMBINED; then
+ DELFILE=$ONTBAM
+ if $SNIFFLESONT && ALEONT; then
+  GATEFILE1="sniffles_ont/${BASE}_ont.bedpe"
+  GATEFILE2="ale_ont/${BASE}.ALE.txt"
+  CLEANPBDONE=`sbatch -J ${BASE}_clean_ont --dependency=${CLEANONTDEP} -o ${OUT}/cleanONT.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
+    --export=GATEFILE1=${GATEFILE1},GATEFILE2=${GATEFILE2},DELFILE=${DELFILE} ${SCRIPTS}/clean.2.sh | awk '{print $4}'`
+ elif $SNIFFLESONT || ALEONT; then
+  if $SNIFFLESONT; then GATEFILE="sniffles_ont/${BASE}_ont.bedpe";
+    else GATEFILE="ale_ont/${BASE}.ALE.txt"; fi
+  CLEANPBDONE=`sbatch -J ${BASE}_clean_ont --dependency=${CLEANONTDEP} -o ${OUT}/cleanONT.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
+    --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`
  fi
+
  if $SNIFFLESCOMBINED; then
   GATEFILE="sniffles_combined/${BASE}_combined.bedpe"
   DELFILE=$COMBBAM
-  CLEANCOMBINEDONE=`sbatch -J ${BASE}_clean_combined --dependency=afterok:${SNIFFLESCOMBDONE}:${STATSDONE} -o ${OUT}/cleanCombined.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'` 
+  CLEANCOMBINEDONE=`sbatch -J ${BASE}_clean_combined --dependency=afterok:${SNIFFLESCOMBDONE}:${STATSDONE} -o ${OUT}/cleanCombined.slurm.%A.out --mem=2g --time=1:00:00 -c 1 \
+    --qos=$QOS --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'` 
  fi
 fi
 
@@ -318,12 +350,12 @@ if $CLEAN; then
  if $MAPLAPPB ; then
   GATEFILE="lap_pb/${BASE}.lapscore"
   DELFILE=$PBSAMLAP
-  CLEANPBDONE=`sbatch -J ${BASE}_clean_pb_lap --dependency=${LAPCLEANPBDEP} -o ${OUT}/cleanPB_lap.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`
+  CLEANPBDONE=`sbatch -J ${BASE}_clean_pb_lap --dependency=afterok:${LAPCLEANPBDEP} -o ${OUT}/cleanPB_lap.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`
  fi
  if $MAPLAPONT ; then
   GATEFILE="lap_ont/${BASE}.lapscore"
   DELFILE=$ONTSAMLAP
-  CLEANONTDONE=`sbatch -J ${BASE}_clean_ont_lap --dependency=${LAPCLEANONTDEP} -o ${OUT}/cleanONT_lap.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`
+  CLEANONTDONE=`sbatch -J ${BASE}_clean_ont_lap --dependency=afterok:${LAPCLEANONTDEP} -o ${OUT}/cleanONT_lap.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`
  fi
 fi
 
@@ -511,10 +543,13 @@ if $CLEAN; then
  if $FRCPB && $REAPRPB ; then
   GATEFILE1="frc_pb/${BASE}.frcFeatures.gff"
   GATEFILE2="reapr_pb/output_directory/05.summary.report.txt"
-  CLEANPBL2PE=`sbatch -J ${BASE}_clean_pb_long2pe --dependency=${L2PECLEANPBDEP} -o ${OUT}/cleanPB_l2pe.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS --export=GATEFILE1=${GATEFILE1},GATEFILE2=${GATEFILE2},DELFILE=${DELFILE} ${SCRIPTS}/clean.2.sh | awk '{print $4}'`
+  CLEANPBL2PE=`sbatch -J ${BASE}_clean_pb_long2pe --dependency=afterok:${L2PECLEANPBDEP} -o ${OUT}/cleanPB_l2pe.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
+    --export=GATEFILE1=${GATEFILE1},GATEFILE2=${GATEFILE2},DELFILE=${DELFILE} ${SCRIPTS}/clean.2.sh | awk '{print $4}'`
  elif $FRCPB || $REAPRPB ; then
-  if $FRCPB; then GATEFILE="frc_pb/${BASE}.frcFeatures.gff"; else GATEFILE="reapr_pb/output_directory/05.summary.report.txt"; fi
-  CLEANPBL2PE=`sbatch -J ${BASE}_clean_pb_long2pe --dependency=${L2PECLEANPBDEP} -o ${OUT}/cleanPB_l2pe.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`  
+  if $FRCPB; then GATEFILE="frc_pb/${BASE}.frcFeatures.gff"; 
+    else GATEFILE="reapr_pb/output_directory/05.summary.report.txt"; fi
+  CLEANPBL2PE=`sbatch -J ${BASE}_clean_pb_long2pe --dependency=afterok:${L2PECLEANPBDEP} -o ${OUT}/cleanPB_l2pe.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
+    --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`  
  fi
 
  DELFILE=$ONTBAML2PE
@@ -522,10 +557,13 @@ if $CLEAN; then
   GATEFILE1="frc_ont/${BASE}.frcFeatures.gff"
   GATEFILE2="reapr_ont/output_directory/05.summary.report.txt"
   DELFILE=$ONTBAML2PE
-  CLEANONTL2PE=`sbatch -J ${BASE}_clean_ont_long2pe1 --dependency=${L2PECLEANONTDEP} -o ${OUT}/cleanONT_l2pe.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS --export=GATEFILE1=${GATEFILE1},GATEFILE2=${GATEFILE2},DELFILE=${DELFILE} ${SCRIPTS}/clean.2.sh | awk '{print $4}'`
+  CLEANONTL2PE=`sbatch -J ${BASE}_clean_ont_long2pe1 --dependency=afterok:${L2PECLEANONTDEP} -o ${OUT}/cleanONT_l2pe.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
+    --export=GATEFILE1=${GATEFILE1},GATEFILE2=${GATEFILE2},DELFILE=${DELFILE} ${SCRIPTS}/clean.2.sh | awk '{print $4}'`
  elif $FRCONT || $REAPRONT ; then
-  if $FRCONT; then GATEFILE="frc_ont/${BASE}.frcFeatures.gff"; else GATEFILE="reapr_ont/output_directory/05.summary.report.txt"; fi
-  CLEANONTL2PE=`sbatch -J ${BASE}_clean_ont_long2pe --dependency=${L2PECLEANONTDEP} -o ${OUT}/cleanONT_l2pe.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`  
+  if $FRCONT; then GATEFILE="frc_ont/${BASE}.frcFeatures.gff"; 
+    else GATEFILE="reapr_ont/output_directory/05.summary.report.txt"; fi
+  CLEANONTL2PE=`sbatch -J ${BASE}_clean_ont_long2pe --dependency=afterok:${L2PECLEANONTDEP} -o ${OUT}/cleanONT_l2pe.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=$QOS \
+    --export=GATEFILE=${GATEFILE},DELFILE=${DELFILE} ${SCRIPTS}/clean.sh | awk '{print $4}'`  
  fi
 
 fi

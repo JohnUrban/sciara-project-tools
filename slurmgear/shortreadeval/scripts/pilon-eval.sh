@@ -25,11 +25,11 @@ if $RUNPILON; then
  echo "java -Xmx${JX} -jar $PILONJAR --genome $ASM --output pilon --frags ${BAM} --diploid --fix $FIX $nostrays $changes $vcf $tracks"
  java -Xmx${JX} -jar $PILONJAR --genome $ASM --output pilon --frags ${BAM} --diploid --fix $FIX $nostrays $changes $vcf $tracks 1> pilon.err
  echo confirmed total pct_confirmed | awk 'OFS="\t" {print $1,$2,$3}' > confirmed.txt
- grep Confirmed pilon.err | awk '{s+=$2; t+=$4}END{print s, t, 100.0*s/t}' >> confirmed.txt
+ grep Confirmed pilon.err | awk -v "s=0" -v "t=0" '{s+=$2; t+=$4}END{print s, t, 100.0*s/t}' >> confirmed.txt
  grep ^Found pilon.err | awk 'OFS="\t"{snp+=$2; ins+=$4; inslen+=$8; del+=$10; dellen+=$14}END{print "snp\tins\tins_len\tdel\tdel_len\n" snp,ins,inslen,del,dellen}' > vars.txt
- grep -v ^# pilon.vcf | awk '$5 != "." {s+=1}END{print s}' > num_alt_alleles.txt
- grep -v ^# pilon.vcf | awk '$5 != "." && $7 != "PASS" {s+=1}END{print s}' > num_alt_alleles.notpass.txt
- grep -v ^# pilon.vcf | awk '$5 != "." && $7 == "PASS" {s+=1}END{print s}' > num_alt_alleles.pass.txt
+ grep -v ^# pilon.vcf | awk -v "s=0" '$5 != "." {s+=1}END{print s}' > num_alt_alleles.txt
+ grep -v ^# pilon.vcf | awk -v "s=0" '$5 != "." && $7 != "PASS" {s+=1}END{print s}' > num_alt_alleles.notpass.txt
+ grep -v ^# pilon.vcf | awk -v "s=0" '$5 != "." && $7 == "PASS" {s+=1}END{print s}' > num_alt_alleles.pass.txt
 fi
 
 
