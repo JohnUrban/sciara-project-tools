@@ -124,6 +124,6 @@ fi
 ## BEDGRAPH
 ##############################################################################
 if $CLEAN; then
-  CLEANDONE=`sbatch -J ${BASE}_bionano_clean --dependency=$CLEANDEP1 -o ${OUT}/clean.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=${QOS} ${SCRIPTS}/clean.sh | awk '{print $4}'`
+  CLEANDONE=`sbatch -J ${BASE}_bionano_clean --dependency=$CLEAN1DEP -o ${OUT}/clean.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=${QOS} ${SCRIPTS}/clean.sh | awk '{print $4}'`
 fi
   
