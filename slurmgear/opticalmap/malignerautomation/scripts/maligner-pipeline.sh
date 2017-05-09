@@ -32,6 +32,7 @@ OUT=`readlink -f $MAIN`/$SLURMOUTDIR
 ### PIPELINE
 CLEAN1DEP=afterok
 CLEAN2DEP=afterok
+
 ##############################################################################
 ## FASTA ASM TO SMOOTHED MAPS
 ##############################################################################
@@ -119,3 +120,10 @@ fi
 
 
 
+##############################################################################
+## BEDGRAPH
+##############################################################################
+if $CLEAN; then
+  CLEANDONE=`sbatch -J ${BASE}_bionano_clean --dependency=$CLEANDEP1 -o ${OUT}/clean.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=${QOS} ${SCRIPTS}/clean.sh | awk '{print $4}'`
+fi
+  
