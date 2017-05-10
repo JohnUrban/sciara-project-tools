@@ -34,7 +34,7 @@ fi
 
 
 if $CLEAN; then
- #rm pilon.vcf
+ rm pilon.vcf
  if $MKDUPS; then
   rm markdup.bam markdup.bam.bai
  fi
