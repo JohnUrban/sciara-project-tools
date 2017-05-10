@@ -27,7 +27,7 @@ for i in $(seq $NJOBS); do
    mv $SLURMFILE $INCOMPLETE_DIR
 
    TASK=blastn
-   BDONE=`sbatch -J ${BASE}_tblastn_${i}_followup_${FOLLOWUPNUM} -o ${SLURMOUTDIR}/tblastn_followup_${FOLLOWUPNUM}.slurm.%A_${i}.out \
+   BDONE=`sbatch -J ${JOBPRE}${BASE}_tblastn_${i}_followup_${FOLLOWUPNUM} -o ${SLURMOUTDIR}/tblastn.slurm.followup${FOLLOWUPNUM}.%A_${i}.out \
      --mem=$BMEM --time=$BTIME -c $BTHREADS --qos=$QOS \
      --export=QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},P=${BTHREADS},BDB=${BDB},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ},JOBNUM=${i} \
      ${SCRIPTS}/transblast.sh | awk '{print $4}'`
@@ -47,10 +47,10 @@ let FOLLOWUPNUM++
 if [ $NUM_TO_FIX -gt 0 ]; then
   #sbatch ...
   echo FIX MORE
-  FOLLOWDONE=`sbatch --dependency=${BLASTDONE} -J ${BASE}_tblastn_followup_${FOLLOWUPNUM} \
+  FOLLOWDONE=`sbatch --dependency=${BLASTDONE} -J ${JOBPRE}${BASE}_tblastn_followup_${FOLLOWUPNUM} \
      -o ${SLURMOUTDIR}/follow_up_${FOLLOWUPNUM}.slurm.%A.out \
      --mem=2g --time=6:00:00 -c 2 --qos=$QOS \
-     --export=BASE=${BASE},NJOBS=${NJOBS},SLURMOUTDIR=${SLURMOUTDIR},SLURMPRE=tblastn_followup_${FOLLOWUPNUM}.slurm,FOLLOWUPNUM=${FOLLOWUPNUM},BMEM=${BMEM},BTIME=${BTIME},BTHREADS=${BTHREADS},QOS=${QOS},SCRIPTS=${SCRIPTS},QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},BDB=${BDB},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ} \
+     --export=BASE=${BASE},NJOBS=${NJOBS},SLURMOUTDIR=${SLURMOUTDIR},SLURMPRE=tblastn.slurm,FOLLOWUPNUM=${FOLLOWUPNUM},BMEM=${BMEM},BTIME=${BTIME},BTHREADS=${BTHREADS},QOS=${QOS},SCRIPTS=${SCRIPTS},QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},BDB=${BDB},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ},JOBPRE=${JOBPRE} \
      ${SCRIPTS}/followup.sh | awk '{print $4}'`
 elif [ $NUM_TO_FIX -eq 0 ]; then
   #sbatch
@@ -59,7 +59,7 @@ elif [ $NUM_TO_FIX -eq 0 ]; then
   if [ ! -d $D ]; then mkdir $D; fi
   cd $D
   ## there should not be any dependencies by definition at this point
-  FOLLOWDONE=`sbatch -J ${BASE}_tblastn_analysis \
+  FOLLOWDONE=`sbatch -J ${JOBPRE}${BASE}_tblastn_analysis \
      -o ${SLURMOUTDIR}/analysis.slurm.%A.out \
      --mem=2g --time=6:00:00 -c 2 --qos=$QOS \
      --export=NJOBS=${NJOBS},BLASTDIR=${BLASTDIR} \

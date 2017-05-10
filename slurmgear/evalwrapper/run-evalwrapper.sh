@@ -74,6 +74,7 @@ LRCLEAN=false
 if $CLEANALL; then LRCLEAN=true; fi
 
 ############### TRANSCRIPT SECTION #################
+TRANJOBPRE=transcript
 TBLASTX=true
 TRANSNJOBS=100
 TRANSCLEAN=false
@@ -92,8 +93,13 @@ TRANS1=~/data/illumina/generalTranscriptome/trinity/trinity_out_dir/Trinity.fast
 TRANS2=/gpfs/data/sgerbi/jurban/flies/dmel/dmel-all-transcript-r6.14.fasta
 TRANS3=/gpfs/data/sgerbi/jurban/flies/anopheles_gambiae/anopheles-gambiae-pesttranscriptsagamp46.fa
 
+TRANJOBPRE1=${TRANJOBPRE}_sciara_
+TRANJOBPRE2=${TRANJOBPRE}_dmel_
+TRANJOBPRE3=${TRANJOBPRE}_mosquito_
+
 ############### PEPTIDE SECTION #################
 ## Evaluate with peptides
+PEPJOBPRE=peptide
 PEPNJOBS=100
 PEPCLEAN=false
 if $CLEANALL; then PEPCLEAN=true; fi
@@ -110,9 +116,13 @@ PEPRUN=${PEPSCRIPTS}/auto-pep.sh
 PEP2=/gpfs/data/sgerbi/jurban/flies/dmel/dmel-all-translation-r6.14.fasta 
 PEP3=/gpfs/data/sgerbi/jurban/flies/anopheles_gambiae/anopheles-gambiae-pestpeptidesagamp46.fa 
 
+PEPJOBPRE2=${PEPJOBPRE}_dmel_
+PEPJOBPRE3=${PEPJOBPRE}_mosquito_
+
 ############### KNOWN SEQUENCES SECTION #################
 ## Also evaluate Known Seqs
 ## USE TRANS variables (e.g. TRANSSCRIPTS etc) for everything other than these 4 things
+KNOWNJOBPRE=knownseqs_
 KNOWNTBLASTX=false
 KNOWNNJOBS=1
 KNOWNCLEAN=false
@@ -165,32 +175,32 @@ cd blast_analyses
 
 mkdir transcriptome
 cd transcriptome
-$TRANSRUN $TRANSSCRIPTS $TRANSCONFIG $TRANSCLEAN $ASMFOFN $TRANS1 $TRANSNJOBS $TBLASTX
+$TRANSRUN $TRANSSCRIPTS $TRANSCONFIG $TRANSCLEAN $ASMFOFN $TRANS1 $TRANSNJOBS $TBLASTX $TRANJOBPRE1
 cd ../
 
 mkdir dmel
 cd dmel
-$TRANSRUN $TRANSSCRIPTS $TRANSCONFIG $TRANSCLEAN $ASMFOFN $TRANS2 $TRANSNJOBS $TBLASTX
+$TRANSRUN $TRANSSCRIPTS $TRANSCONFIG $TRANSCLEAN $ASMFOFN $TRANS2 $TRANSNJOBS $TBLASTX $TRANJOBPRE2
 cd ../
 
 mkdir anopheles
 cd anopheles
-$TRANSRUN $TRANSSCRIPTS $TRANSCONFIG $TRANSCLEAN $ASMFOFN $TRANS2 $TRANSNJOBS $TBLASTX
+$TRANSRUN $TRANSSCRIPTS $TRANSCONFIG $TRANSCLEAN $ASMFOFN $TRANS2 $TRANSNJOBS $TBLASTX $TRANJOBPRE3
 cd ../
 
 mkdir dmel_peptides
 cd dmel_peptides
-$PEPRUN $PEPSCRIPTS $PEPCONFIG $PEPCLEAN $ASMFOFN $PEP2 $PEPNJOBS
+$PEPRUN $PEPSCRIPTS $PEPCONFIG $PEPCLEAN $ASMFOFN $PEP2 $PEPNJOBS $PEPJOBPRE2
 cd ../
 
 mkdir anopheles_peptides
 cd anopheles_peptides
-$PEPRUN $PEPSCRIPTS $PEPCONFIG $PEPCLEAN $ASMFOFN $PEP2 $PEPNJOBS
+$PEPRUN $PEPSCRIPTS $PEPCONFIG $PEPCLEAN $ASMFOFN $PEP2 $PEPNJOBS $PEPJOBPRE3
 cd ../
 
 mkdir knownseqs
 cd knownseqs
-$TRANSRUN $TRANSSCRIPTS $TRANSCONFIG $KNOWNCLEAN $ASMFOFN $KNOWNSEQS $KNOWNNJOBS $KNOWNTBLASTX
+$TRANSRUN $TRANSSCRIPTS $TRANSCONFIG $KNOWNCLEAN $ASMFOFN $KNOWNSEQS $KNOWNNJOBS $KNOWNTBLASTX $KNOWNJOBPRE
 cd ../
 
 #leave blast_analyses

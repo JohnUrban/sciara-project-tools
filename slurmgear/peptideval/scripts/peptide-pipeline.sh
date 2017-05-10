@@ -12,6 +12,7 @@ Arg5 = /Path/To/Reference.fasta
 Arg6 = Query Dir
 Arg7 = Prefix to fasta files in query dir
 Arg8 = Num Jobs -- equal to num files in query dir
+Arg9 = Job Prefix
 "; exit; fi
 
 MAIN=$PWD
@@ -24,6 +25,7 @@ ASM=$5
 QUERYDIR=$6
 PRE=$7
 NJOBS=$8
+JOBPRE=$9
 
 BASE=`basename $ASM .fasta`
 
@@ -47,7 +49,7 @@ D=blastdb
 if $MAKEBLASTDB; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
- MAKEDONE=`sbatch -J ${BASE}_makeblastdb -o ${OUT}/makeblastdb.slurm.%A.out --mem=$MMEM --time=$MTIME -c $MTHREADS --qos=$QOS --export=ASM=${ASM},DBTYPE=nucl,OUT=asm $SCRIPTS/makeblastdb.sh | awk '{print $4}'`
+ MAKEDONE=`sbatch -J ${JOBPRE}${BASE}_makeblastdb -o ${OUT}/makeblastdb.slurm.%A.out --mem=$MMEM --time=$MTIME -c $MTHREADS --qos=$QOS --export=ASM=${ASM},DBTYPE=nucl,OUT=asm $SCRIPTS/makeblastdb.sh | awk '{print $4}'`
  cd ../
 fi
 BDB=$(echo `readlink -f ${MAIN}/${D}`/asm)
@@ -57,7 +59,7 @@ BDB=$(echo `readlink -f ${MAIN}/${D}`/asm)
 ## BLAST
 ##############################################################################
 TASK=blastn
-BLASTDONE=`sbatch --dependency=afterok:${MAKEDONE} -a 1-$NJOBS -J ${BASE}_tblastn -o ${OUT}/tblastn.slurm.%A_%a.out --mem=$BMEM --time=$BTIME -c $BTHREADS --qos=$QOS \
+BLASTDONE=`sbatch --dependency=afterok:${MAKEDONE} -a 1-$NJOBS -J ${JOBPRE}${BASE}_tblastn -o ${OUT}/tblastn.slurm.%A_%a.out --mem=$BMEM --time=$BTIME -c $BTHREADS --qos=$QOS \
    --export=QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},P=${BTHREADS},BDB=${BDB},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ} \
    ${SCRIPTS}/tblastn-array.sh | awk '{print $4}'`
 
@@ -67,9 +69,9 @@ BLASTDONE=`sbatch --dependency=afterok:${MAKEDONE} -a 1-$NJOBS -J ${BASE}_tblast
 ## FOLLOW UP 1
 ##############################################################################
 FOLLOWUPNUM=1
-FOLLOWDONE=`sbatch --dependency=afterany:${BLASTDONE} -J ${BASE}_tblastn_followup_${FOLLOWUPNUM} \
+FOLLOWDONE=`sbatch --dependency=afterany:${BLASTDONE} -J ${JOBPRE}${BASE}_tblastn_followup_${FOLLOWUPNUM} \
    -o ${OUT}/follow_up_${FOLLOWUPNUM}.slurm.%A.out \
    --mem=2g --time=6:00:00 -c 2 --qos=$QOS \
-   --export=BASE=${BASE},NJOBS=${NJOBS},SLURMOUTDIR=${OUT},SLURMPRE=tblastn.slurm,FOLLOWUPNUM=${FOLLOWUPNUM},BMEM=${BMEM},BTIME=${BTIME},BTHREADS=${BTHREADS},QOS=${QOS},SCRIPTS=${SCRIPTS},QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},BDB=${BDB},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ} \
+   --export=BASE=${BASE},NJOBS=${NJOBS},SLURMOUTDIR=${OUT},SLURMPRE=tblastn.slurm,FOLLOWUPNUM=${FOLLOWUPNUM},BMEM=${BMEM},BTIME=${BTIME},BTHREADS=${BTHREADS},QOS=${QOS},SCRIPTS=${SCRIPTS},QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},BDB=${BDB},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ},JOBPRE=${JOBPRE} \
    ${SCRIPTS}/followup.sh | awk '{print $4}'`
 

@@ -5,3 +5,6 @@
 3. make various blast clean ups  - done
 
 4. make rnaseq cleanups - done
+
+5. fix follow up analyses....
+add specified names to blast analyses -o in order to determine if a job is transcriptome, dmel, etc

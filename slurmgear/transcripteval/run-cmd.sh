@@ -7,6 +7,7 @@
 ## FILL THIS IN:
 TRANSFASTA=
 NJOBS=100
+PRE="" ## When running multiple blast analyses - this will add prefix to job name to help distinguish. Need to add underscore if you want it.
 ## Also do TBLASTX in addition to BLASTN ???
 TBLASTX=true
 
@@ -55,7 +56,7 @@ RUN=${SCRIPTS}/auto-trans.sh
 
 ################ EXECUTE #####################
 
-$RUN $SCRIPTS $CONFIG $CLEAN $ASMFOFN $TRANSFASTA $NJOBS $TBLASTX
+$RUN $SCRIPTS $CONFIG $CLEAN $ASMFOFN $TRANSFASTA $NJOBS $TBLASTX $PRE
 
 ################ EXECUTE #####################
 

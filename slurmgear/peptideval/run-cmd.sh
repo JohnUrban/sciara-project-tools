@@ -7,6 +7,7 @@
 ## FILL THIS IN:
 PEPFASTA=
 NJOBS=100
+JOBPRE=""
 ## Also do TBLASTX in addition to BLASTN ???
 
 function help {
@@ -54,7 +55,7 @@ RUN=${SCRIPTS}/auto-pep.sh
 
 ################ EXECUTE #####################
 
-$RUN $SCRIPTS $CONFIG $CLEAN $ASMFOFN $PEPFASTA $NJOBS 
+$RUN $SCRIPTS $CONFIG $CLEAN $ASMFOFN $PEPFASTA $NJOBS $JOBPRE
 
 ################ EXECUTE #####################
 
