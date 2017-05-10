@@ -175,12 +175,12 @@ fi
 ##NOTE: Will need to come re-visit the entire stats section to allow independence of pb and ont...
 ##############################################################################
 
-STATDEP=""
-if $SNIFFLESPB; then STATDEP+="${SNIFFLESPBDONE}:" ; PBSNIFF=`readlink -f sniffles_pb/*_pacbio.bedpe` ; fi
+STATDEP=afterok
+if $SNIFFLESPB; then STATDEP+=":${SNIFFLESPBDONE}" ; PBSNIFF=`readlink -f sniffles_pb/*_pacbio.bedpe` ; fi
 
-if $SNIFFLESONT; then STATDEP+="${SNIFFLESONTDONE}:" ; ONTSNIFF=`readlink -f sniffles_ont/*_ont.bedpe` ; fi
+if $SNIFFLESONT; then STATDEP+=":${SNIFFLESONTDONE}" ; ONTSNIFF=`readlink -f sniffles_ont/*_ont.bedpe` ; fi
 
-if $SNIFFLESCOMBINED; then STATDEP+="${SNIFFLESCOMBDONE}" ; COMBSNIFF=`readlink -f sniffles_combined/*_combined.bedpe` ; fi
+if $SNIFFLESCOMBINED; then STATDEP+=":${SNIFFLESCOMBDONE}" ; COMBSNIFF=`readlink -f sniffles_combined/*_combined.bedpe` ; fi
 
 STATSDONE=`sbatch -J ${BASE}_snifflestats --dependency=afterok:${STATDEP} -o ${OUT}/snifflestats.slurm.%A.out --mem=32g --time=72:00:00 -c 4 --qos=$QOS \
   --export=ASM=${ASM},PBBAM=${PBBAM},PBFQ=${PACBIO},ONTBAM=${ONTBAM},ONTFQ=${ONT},COMBBAM=${COMBBAM},PBSNIFF=${PBSNIFF},ONTSNIFF=${ONTSNIFF},COMBSNIFF=${COMBSNIFF},SNIFFLESPB=${SNIFFLESPB},SNIFFLESONT=${SNIFFLESONT},SNIFFLESCOMBINED=${SNIFFLESCOMBINED},MAPPB=${MAPPB},MAPONT=${MAPONT} \

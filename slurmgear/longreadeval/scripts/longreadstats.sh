@@ -73,17 +73,17 @@ done
 ## NUM and SUM PREDICTED LENGTHS
 if $SNIFFLESPB; then
  grep -c -v ^# $PBSNIFF > pbnumsv
- grep -v ^# $PBSNIFF | awk '{s+=$NF}END{print s}' > pbsumsv
+ grep -v ^# $PBSNIFF | awk -v "s=0" '{s+=$NF}END{print s}' > pbsumsv
 fi
 
 if $SNIFFLESONT; then
  grep -c -v ^# $ONTSNIFF > ontnumsv
- grep -v ^# $ONTSNIFF | awk '{s+=$NF}END{print s}' > ontsumsv
+ grep -v ^# $ONTSNIFF | awk -v "s=0" '{s+=$NF}END{print s}' > ontsumsv
 fi
 
 if $SNIFFLESCOMBINED; then
  grep -c -v ^# $COMBSNIFF > combnumsv
- grep -v ^# $COMBSNIFF | awk '{s+=$NF}END{print s}' > combsumsv
+ grep -v ^# $COMBSNIFF | awk -v "s=0" '{s+=$NF}END{print s}' > combsumsv
 fi
 
 
