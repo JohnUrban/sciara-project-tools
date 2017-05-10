@@ -16,40 +16,44 @@ cd $D
 
 
 ## Gets number of alignments -- however each long read can be split into >1 aln, at least with bwa
-samtools view -c -F 4 $PBBAM > pacbio.numaln &
-samtools view -c -F 4 $ONTBAM > ont.numaln &
+if $MAPPB; then samtools view -c -F 4 $PBBAM > pacbio.numaln & fi
+if $MAPONT; then samtools view -c -F 4 $ONTBAM > ont.numaln & fi
 
 
 ##Gets number of uniq read names that aligned
-samtools view -F 4 $PBBAM | awk '{print $1}' | sort | uniq | wc -l > pacbio.numuniqaln &
-samtools view -F 4 $ONTBAM | awk '{print $1}' | sort | uniq | wc -l > ont.numuniqaln &
+if $MAPPB; then samtools view -F 4 $PBBAM | awk '{print $1}' | sort | uniq | wc -l > pacbio.numuniqaln & fi
+if $MAPONT; then samtools view -F 4 $ONTBAM | awk '{print $1}' | sort | uniq | wc -l > ont.numuniqaln & fi
 wait
 
 
 ## Gets number of alignments + non-aln -- i.e. number of entries in BAM
-samtools view -c $PBBAM > pacbio.numentries &
-samtools view -c $ONTBAM > ont.numentries &
+if $MAPPB; then samtools view -c $PBBAM > pacbio.numentries & fi
+if $MAPONT; then samtools view -c $ONTBAM > ont.numentries & fi
 
 
 ##Gets number of uniq read names that aligned or did not align --- num uniq entries -- should be equivalent to number of reads in input Fastq file -- should be same for all comparisons
-samtools view $PBBAM | awk '{print $1}' | sort | uniq | wc -l > pacbio.numuniqentries &
-samtools view $ONTBAM | awk '{print $1}' | sort | uniq | wc -l > ont.numuniqentries &
+if $MAPPB; then samtools view $PBBAM | awk '{print $1}' | sort | uniq | wc -l > pacbio.numuniqentries & fi
+if $MAPONT; then samtools view $ONTBAM | awk '{print $1}' | sort | uniq | wc -l > ont.numuniqentries & fi
 wait
 
 ## Sums MAPQ regardless of everything
-samtools view $PBBAM | awk '{s+=$5}END{print s}' > pacbio.sum.mapq &
-samtools view $ONTBAM | awk '{s+=$5}END{print s}' > ont.sum.mapq &
+if $MAPPB; then samtools view $PBBAM | awk '{s+=$5}END{print s}' > pacbio.sum.mapq & fi
+if $MAPONT; then samtools view $ONTBAM | awk '{s+=$5}END{print s}' > ont.sum.mapq & fi
 wait
 
 
 ##Gets all stats....
 #marginStats --printValuePerReadAlignment --identity $PBBAM $PBFQ $ASM > pacbio.marginstats &
 #marginStats --printValuePerReadAlignment --identity $ONTBAM $ONTFQ $ASM > ont.marginstats &
-
-wait
+#wait
 
 ## PCTs and RATIOs and Avg MAPQ
-for e in ont pacbio; do
+if $MAPPB && $MAPONT; then E="ont pacbio"; 
+elif $MAPPB; then E=pacbio; 
+elif $MAPONT; then E=ont; 
+fi
+
+for e in $E ; do
  ## PCTs\
  nualn=`cat ${e}.numuniqaln`
  nuent=`cat ${e}.numuniqentries`
@@ -66,26 +70,43 @@ for e in ont pacbio; do
 done
 
 ## SVs from Sniffles
-## NUM
-grep -c -v ^# $PBSNIFF > pbnumsv
-grep -c -v ^# $ONTSNIFF > ontnumsv
-grep -c -v ^# $COMBSNIFF > combnumsv
-## SUM PREDICTED LENGTHS
+## NUM and SUM PREDICTED LENGTHS
+if $SNIFFLESPB; then
+ grep -c -v ^# $PBSNIFF > pbnumsv
+ grep -v ^# $PBSNIFF | awk '{s+=$NF}END{print s}' > pbsumsv
+fi
+
+if $SNIFFLESONT; then
+ grep -c -v ^# $ONTSNIFF > ontnumsv
+ grep -v ^# $ONTSNIFF | awk '{s+=$NF}END{print s}' > ontsumsv
+fi
+
+if $SNIFFLESCOMBINED; then
+ grep -c -v ^# $COMBSNIFF > combnumsv
+ grep -v ^# $COMBSNIFF | awk '{s+=$NF}END{print s}' > combsumsv
+fi
+
+
 ###awk '{print $NF}' $PBSNIFF | grep -v pred | awkSum > pbsumsv
 ###awk '{print $NF}' $ONTSNIFF | grep -v pred | awkSum > ontsumsv
 ###awk '{print $NF}' $COMBSNIFF | grep -v pred | awkSum > combsumsv
-grep -v ^# $PBSNIFF | awk '{s+=$NF}END{print s}' > pbsumsv
-grep -v ^# $ONTSNIFF | awk '{s+=$NF}END{print s}' > ontsumsv
-grep -v ^# $COMBSNIFF | awk '{s+=$NF}END{print s}' > combsumsv
 
 
 ## PUT ALL IN ONE FILE
-PRE=ont
-ORDEREDONT="${PRE}.numaln  ${PRE}.numentries ${PRE}.numuniqaln ${PRE}.numuniqentries ${PRE}.sum.mapq ${PRE}.pctaln ${PRE}.alnratio ${PRE}.avg.mapq"
-PRE=pacbio
-ORDEREDPB="${PRE}.numaln  ${PRE}.numentries ${PRE}.numuniqaln ${PRE}.numuniqentries ${PRE}.sum.mapq ${PRE}.pctaln ${PRE}.alnratio ${PRE}.avg.mapq"
-ORDEREDSV="ontnumsv pbnumsv combnumsv ontsumsv pbsumsv combsumsv"
-ORDEREDFILES="$ORDEREDONT $ORDEREDPB $ORDEREDSV"
+if $MAPONT; then
+ PRE=ont
+ ORDEREDONT="${PRE}.numaln  ${PRE}.numentries ${PRE}.numuniqaln ${PRE}.numuniqentries ${PRE}.sum.mapq ${PRE}.pctaln ${PRE}.alnratio ${PRE}.avg.mapq"
+fi
+if $MAPPB; then
+ PRE=pacbio
+ ORDEREDPB="${PRE}.numaln  ${PRE}.numentries ${PRE}.numuniqaln ${PRE}.numuniqentries ${PRE}.sum.mapq ${PRE}.pctaln ${PRE}.alnratio ${PRE}.avg.mapq"
+fi
+
+if $SNIFFLESONT; then ORDEREDNUMSV[1]=ontnumsv; ORDEREDSUMSV[1]=ontsumsv; fi  
+if $SNIFFLESPB; then ORDEREDNUMSV[2]=pbnumsv; ORDEREDSUMSV[2]=pbsumsv; fi  
+if $SNIFFLESCOMBINED; then ORDEREDNUMSV[3]=combnumsv; ORDEREDSUMSV[3]=combsumsv; fi  
+
+ORDEREDFILES="$ORDEREDONT $ORDEREDPB ${ORDEREDNUMSV[@]} ${ORDEREDSUMSV[@]}"
 
 for f in ${ORDEREDFILES}; do
   echo -e $f"\t"`cat $f`

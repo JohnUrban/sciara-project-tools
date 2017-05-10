@@ -106,14 +106,17 @@ ONTBAM=`readlink -f ${MAIN}/${D}/ont2d.bam` ##not necessarily only 2d -- just us
 ##############################################################################
 ## SNIFFLES PACBIO
 ##############################################################################
+OUTPRE=pb
 D=sniffles_pb
 if $SNIFFLESPB; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
  if $MAPPB; then
-  SNIFFLESPBDONE=`sbatch -J ${BASE}_sniffles_pb --dependency=afterok:${MAPPBDONE} -o ${OUT}/snifflesPB.slurm.%A.out --mem=$SMEM --time=$STIME -c $STHREADS --qos=$QOS --export=BAM=$PBBAM,BEDPE=${BASE}_pacbio,MINSUPPORT=${MINSUPPORT_PACBIO} ${SCRIPTS}/sniffles.sh | awk '{print $4}'`
+  SNIFFLESPBDONE=`sbatch -J ${BASE}_sniffles_pb --dependency=afterok:${MAPPBDONE} -o ${OUT}/snifflesPB.slurm.%A.out --mem=$SMEM --time=$STIME -c $STHREADS --qos=$QOS \
+    --export=BAM=$PBBAM,BEDPE=${BASE}_pacbio,MINSUPPORT=${MINSUPPORT_PACBIO},OUTPRE=${OUTPRE} ${SCRIPTS}/sniffles.sh | awk '{print $4}'`
  else
-  SNIFFLESPBDONE=`sbatch -J ${BASE}_sniffles_pb -o ${OUT}/snifflesPB.slurm.%A.out --mem=$SMEM --time=$STIME -c $STHREADS --qos=$QOS --export=BAM=$PBBAM,BEDPE=${BASE}_pacbio,MINSUPPORT=${MINSUPPORT_PACBIO} ${SCRIPTS}/sniffles.sh | awk '{print $4}'`
+  SNIFFLESPBDONE=`sbatch -J ${BASE}_sniffles_pb -o ${OUT}/snifflesPB.slurm.%A.out --mem=$SMEM --time=$STIME -c $STHREADS --qos=$QOS \
+    --export=BAM=$PBBAM,BEDPE=${BASE}_pacbio,MINSUPPORT=${MINSUPPORT_PACBIO},OUTPRE=${OUTPRE} ${SCRIPTS}/sniffles.sh | awk '{print $4}'`
  fi
  cd ../
  CLEANPBDEP=${CLEANPBDEP}:${SNIFFLESPBDONE}
@@ -122,14 +125,17 @@ fi
 ##############################################################################
 ## SNIFFLES ONT
 ##############################################################################
+OUTPRE=ont
 D=sniffles_ont
 if $SNIFFLESONT; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
  if $MAPONT; then
-  SNIFFLESONTDONE=`sbatch -J ${BASE}_sniffles_ont --dependency=afterok:${MAPONTDONE} -o ${OUT}/snifflesONT.slurm.%A.out --mem=$SMEM --time=$STIME -c $STHREADS --qos=$QOS --export=BAM=$ONTBAM,BEDPE=${BASE}_ont,MINSUPPORT=${MINSUPPORT_ONT} ${SCRIPTS}/sniffles.sh | awk '{print $4}'`
+  SNIFFLESONTDONE=`sbatch -J ${BASE}_sniffles_ont --dependency=afterok:${MAPONTDONE} -o ${OUT}/snifflesONT.slurm.%A.out --mem=$SMEM --time=$STIME -c $STHREADS --qos=$QOS \
+    --export=BAM=$ONTBAM,BEDPE=${BASE}_ont,MINSUPPORT=${MINSUPPORT_ONT},OUTPRE=${OUTPRE} ${SCRIPTS}/sniffles.sh | awk '{print $4}'`
  else
-  SNIFFLESONTDONE=`sbatch -J ${BASE}_sniffles_ont -o ${OUT}/snifflesONT.slurm.%A.out --mem=$SMEM --time=$STIME -c $STHREADS --qos=$QOS --export=BAM=$ONTBAM,BEDPE=${BASE}_ont,MINSUPPORT=${MINSUPPORT_ONT} ${SCRIPTS}/sniffles.sh | awk '{print $4}'`
+  SNIFFLESONTDONE=`sbatch -J ${BASE}_sniffles_ont -o ${OUT}/snifflesONT.slurm.%A.out --mem=$SMEM --time=$STIME -c $STHREADS --qos=$QOS \
+    --export=BAM=$ONTBAM,BEDPE=${BASE}_ont,MINSUPPORT=${MINSUPPORT_ONT},OUTPRE=${OUTPRE} ${SCRIPTS}/sniffles.sh | awk '{print $4}'`
  fi
  cd ../
  CLEANONTDEP=${CLEANONTDEP}:${SNIFFLESONTDONE}
@@ -139,25 +145,49 @@ fi
 ##############################################################################
 ## SNIFFLES COMBINED
 ##############################################################################
+OUTPRE=comb
 D=mreads
 if $SNIFFLESCOMBINED; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
  if $MAPONT || $MAPPB ; then
-    COMBINEDONE=`sbatch -J ${BASE}_merge_reads --dependency=${COMBINEDEP} -o ${OUT}/merge.slurm.%A.out --mem=$CMEM --time=$CTIME -c $CTHREADS --qos=$QOS --export=P=${CTHREADS},PBBAM=${PBBAM},ONTBAM=${ONTBAM} ${SCRIPTS}/merge.sh | awk '{print $4}'`
+    COMBINEDONE=`sbatch -J ${BASE}_merge_reads --dependency=${COMBINEDEP} -o ${OUT}/merge.slurm.%A.out --mem=$CMEM --time=$CTIME -c $CTHREADS --qos=$QOS \
+      --export=P=${CTHREADS},PBBAM=${PBBAM},ONTBAM=${ONTBAM} ${SCRIPTS}/merge.sh | awk '{print $4}'`
  else
-    COMBINEDONE=`sbatch -J ${BASE}_merge_reads -o ${OUT}/merge.slurm.%A.out --mem=$CMEM --time=$CTIME -c $CTHREADS --qos=$QOS --export=P=${CTHREADS},PBBAM=${PBBAM},ONTBAM=${ONTBAM} ${SCRIPTS}/merge.sh | awk '{print $4}'`
+    COMBINEDONE=`sbatch -J ${BASE}_merge_reads -o ${OUT}/merge.slurm.%A.out --mem=$CMEM --time=$CTIME -c $CTHREADS --qos=$QOS \
+      --export=P=${CTHREADS},PBBAM=${PBBAM},ONTBAM=${ONTBAM} ${SCRIPTS}/merge.sh | awk '{print $4}'`
  fi
  cd ../
  COMBBAM=`readlink -f ${MAIN}/${D}/combined.bam` 
  D=sniffles_combined
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
- SNIFFLESCOMBDONE=`sbatch -J ${BASE}_sniffles_combined --dependency=afterok:${COMBINEDONE} -o ${OUT}/snifflesCOMBINED.slurm.%A.out --mem=$SMEM --time=$STIME -c $STHREADS --qos=$QOS --export=BAM=${COMBBAM},BEDPE=${BASE}_combined,MINSUPPORT=${MINSUPPORT_PACBIO} ${SCRIPTS}/sniffles.sh | awk '{print $4}'`
+ SNIFFLESCOMBDONE=`sbatch -J ${BASE}_sniffles_combined --dependency=afterok:${COMBINEDONE} -o ${OUT}/snifflesCOMBINED.slurm.%A.out --mem=$SMEM --time=$STIME -c $STHREADS --qos=$QOS \
+    --export=BAM=${COMBBAM},BEDPE=${BASE}_combined,MINSUPPORT=${MINSUPPORT_PACBIO},OUTPRE=${OUTPRE} ${SCRIPTS}/sniffles.sh | awk '{print $4}'`
  cd ../
  CLEANONTDEP=${CLEANONTDEP}:${SNIFFLESCOMBDONE}
  CLEANPBDEP=${CLEANPBDEP}:${SNIFFLESCOMBDONE}
 fi
+
+
+##############################################################################
+## STATS
+##NOTE: Will need to come re-visit the entire stats section to allow independence of pb and ont...
+##############################################################################
+
+STATDEP=""
+if $SNIFFLESPB; then STATDEP+="${SNIFFLESPBDONE}:" ; PBSNIFF=`readlink -f sniffles_pb/*_pacbio.bedpe` ; fi
+
+if $SNIFFLESONT; then STATDEP+="${SNIFFLESONTDONE}:" ; ONTSNIFF=`readlink -f sniffles_ont/*_ont.bedpe` ; fi
+
+if $SNIFFLESCOMBINED; then STATDEP+="${SNIFFLESCOMBDONE}" ; COMBSNIFF=`readlink -f sniffles_combined/*_combined.bedpe` ; fi
+
+STATSDONE=`sbatch -J ${BASE}_snifflestats --dependency=afterok:${STATDEP} -o ${OUT}/snifflestats.slurm.%A.out --mem=32g --time=72:00:00 -c 4 --qos=$QOS \
+  --export=ASM=${ASM},PBBAM=${PBBAM},PBFQ=${PACBIO},ONTBAM=${ONTBAM},ONTFQ=${ONT},COMBBAM=${COMBBAM},PBSNIFF=${PBSNIFF},ONTSNIFF=${ONTSNIFF},COMBSNIFF=${COMBSNIFF},SNIFFLESPB=${SNIFFLESPB},SNIFFLESONT=${SNIFFLESONT},SNIFFLESCOMBINED=${SNIFFLESCOMBINED},MAPPB=${MAPPB},MAPONT=${MAPONT} \
+  ${SCRIPTS}/longreadstats.sh | awk '{print $4}'`
+
+CLEANONTDEP=${CLEANONTDEP}:${STATSDONE}
+CLEANPBDEP=${CLEANPBDEP}:${STATSDONE}
 
 
 
@@ -183,6 +213,7 @@ if $ALEPB; then
  CLEANPBDEP=${CLEANPBDEP}:${ALEPBDONE}
 fi
 
+
 ##############################################################################
 ## ALE ONT
 ##############################################################################
@@ -203,19 +234,6 @@ fi
 
 
 
-##############################################################################
-## STATS
-##NOTE: Will need to come re-visit the entire stats section to allow independence of pb and ont...
-##############################################################################
-
-STATDEP=${SNIFFLESPBDONE}:${SNIFFLESONTDONE}:${SNIFFLESCOMBDONE}
-PBSNIFF=`readlink -f sniffles_pb/*_pacbio.bedpe`
-ONTSNIFF=`readlink -f sniffles_ont/*_ont.bedpe`
-COMBSNIFF=`readlink -f sniffles_combined/*_combined.bedpe`
-STATSDONE=`sbatch -J ${BASE}_snifflestats --dependency=afterok:${STATDEP} -o ${OUT}/snifflestats.slurm.%A.out --mem=32g --time=72:00:00 -c 4 --qos=$QOS --export=ASM=${ASM},PBBAM=${PBBAM},PBFQ=${PACBIO},ONTBAM=${ONTBAM},ONTFQ=${ONT},COMBBAM=${COMBBAM},PBSNIFF=${PBSNIFF},ONTSNIFF=${ONTSNIFF},COMBSNIFF=${COMBSNIFF} ${SCRIPTS}/longreadstats.sh | awk '{print $4}'`
-
-CLEANONTDEP=${CLEANONTDEP}:${STATSDONE}
-CLEANPBDEP=${CLEANPBDEP}:${STATSDONE}
 
 ##############################################################################
 ## CLEAN UP -- THIS CLEAN UP ONLY FOR BAM USED FOR SNIFFLES AND ALE

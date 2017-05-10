@@ -8,3 +8,11 @@
 
 5. fix follow up analyses....
 add specified names to blast analyses -o in order to determine if a job is transcriptome, dmel, etc
+--- done -- I think
+
+6. longread stats -- need to restructure 
+--> readstats when done mapping reads
+--> sniffles states when done with sniffles
+--> leave param file or touchfiles to represent if an analysis was done
+--> can use those in followup value collection for tables....
+if [ ! -z $A ]; then echo yes; fi
