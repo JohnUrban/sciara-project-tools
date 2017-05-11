@@ -43,7 +43,7 @@ samtools view -F 4 ${PRE}.bam | awk 'OFS="\t" {s+=$5}END{print NR,s,s/NR}' >> ma
 
 # GET INFO ON HOW MANY PAIRS MAP TO DIFFERENT CONTIGS
 echo same_ctg diff_ctg total_pairs pct_same pct_diff | awk 'OFS="\t" {print $1,$2,$3,$4,$5}' > pairinfo.0.txt
-bedtools bamtobed -bedpe -i ${PRE}.bam 2> bamtobed.err | awk '{diff+=$1!=$4; same+=$1==$4; total+=1}END{print same, diff, total, 100.0*same/total, 100.0*diff/total}' >> pairinfo.txt
+bedtools bamtobed -bedpe -i ${PRE}.bam 2> bamtobed.err | awk '{diff+=$1!=$4; same+=$1==$4; total+=1}END{print same, diff, total, 100.0*same/total, 100.0*diff/total}' >> pairinfo.0.txt
 
 # GET INFO ON HOW MANY PAIRS MAP TO DIFFERENT CONTIGS - filtered
 # This allows one to get rid of noise from multireads

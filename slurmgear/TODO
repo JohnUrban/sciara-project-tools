@@ -22,4 +22,12 @@ if [ ! -z $A ]; then echo yes; fi
 7. run on canu vs falcon
 
 8. begin updating longtable scripts....
+shortread - need to get pilon info
+longread - ignore combined, ignore lap, get reapr, frc, and ale info...
+     - re-design how read info and sniffles info obtained
+transcriptome - get blastn and tblastx results
+dmel - get blastn, tblastx, and tblastn results
+anoph - get blastn, tblastx, and tblastn results
+known - get blastn results
+rnaseq - get bt2 numbers, mapq info, pair info for 0 and 2....
 

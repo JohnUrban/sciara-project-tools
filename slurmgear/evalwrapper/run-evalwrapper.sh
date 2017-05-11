@@ -155,51 +155,59 @@ RNAFOFN=`readlink -f $RNAFOFN`
 ##############################################
 ##############################################
 ################ EXECUTE #####################
-
+echo shortread
 mkdir shortread
 cd shortread
 bash $SHORTAUTO $ASMFOFN $LR1 $LR2 $R1 $R2 $EvalThese $SHORTSCRIPTS
 cd ../
 
+echo bionano
 mkdir bionano
 cd bionano
 $BIONANORUN $BIONANOCLEAN $BIONANOCONFIG $ASMFOFN $MAPSFOFN $REC_ENZ $REC_SEQ $BIONANOSCRIPTS
 cd ../
 
+echo longread
 mkdir longread
 cd longread 
 bash $AUTOLR $LRCLEAN $LRCONFIG $ASMFOFN $LRSCRIPTS $ONT $PACBIO $ONT1 $ONT2 $PACBIO1 $PACBIO2
 cd ../
 
-
+echo blast_analyses
 mkdir blast_analyses
 cd blast_analyses
 
+echo transcriptome
 mkdir transcriptome
 cd transcriptome
 $TRANSRUN $TRANSSCRIPTS $TRANSCONFIG $TRANSCLEAN $ASMFOFN $TRANS1 $TRANSNJOBS $TBLASTX $TRANJOBPRE1
 cd ../
 
+echo dmel
 mkdir dmel
 cd dmel
 $TRANSRUN $TRANSSCRIPTS $TRANSCONFIG $TRANSCLEAN $ASMFOFN $TRANS2 $TRANSNJOBS $TBLASTX $TRANJOBPRE2
 cd ../
 
+echo anopheles
 mkdir anopheles
 cd anopheles
 $TRANSRUN $TRANSSCRIPTS $TRANSCONFIG $TRANSCLEAN $ASMFOFN $TRANS2 $TRANSNJOBS $TBLASTX $TRANJOBPRE3
 cd ../
 
+echo dmel_peptides
 mkdir dmel_peptides
 cd dmel_peptides
 $PEPRUN $PEPSCRIPTS $PEPCONFIG $PEPCLEAN $ASMFOFN $PEP2 $PEPNJOBS $PEPJOBPRE2
 cd ../
 
+echo anopheles_peptides
 mkdir anopheles_peptides
 cd anopheles_peptides
 $PEPRUN $PEPSCRIPTS $PEPCONFIG $PEPCLEAN $ASMFOFN $PEP2 $PEPNJOBS $PEPJOBPRE3
 cd ../
 
+echo knownseqs
 mkdir knownseqs
 cd knownseqs
 $TRANSRUN $TRANSSCRIPTS $TRANSCONFIG $KNOWNCLEAN $ASMFOFN $KNOWNSEQS $KNOWNNJOBS $KNOWNTBLASTX $KNOWNJOBPRE
@@ -208,6 +216,7 @@ cd ../
 #leave blast_analyses
 cd ../
 
+echo rnaseq
 mkdir rnaseq
 cd rnaseq
 $RNARUN $RNASCRIPTS $RNACONFIG $RNACLEAN $ASMFOFN $RNAFOFN
