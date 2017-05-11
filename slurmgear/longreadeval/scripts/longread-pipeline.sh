@@ -182,7 +182,7 @@ if $SNIFFLESONT; then STATDEP+=":${SNIFFLESONTDONE}" ; ONTSNIFF=`readlink -f sni
 
 if $SNIFFLESCOMBINED; then STATDEP+=":${SNIFFLESCOMBDONE}" ; COMBSNIFF=`readlink -f sniffles_combined/*_combined.bedpe` ; fi
 
-STATSDONE=`sbatch -J ${BASE}_snifflestats --dependency=afterok:${STATDEP} -o ${OUT}/snifflestats.slurm.%A.out --mem=32g --time=72:00:00 -c 4 --qos=$QOS \
+STATSDONE=`sbatch -J ${BASE}_snifflestats --dependency=${STATDEP} -o ${OUT}/snifflestats.slurm.%A.out --mem=32g --time=72:00:00 -c 4 --qos=$QOS \
   --export=ASM=${ASM},PBBAM=${PBBAM},PBFQ=${PACBIO},ONTBAM=${ONTBAM},ONTFQ=${ONT},COMBBAM=${COMBBAM},PBSNIFF=${PBSNIFF},ONTSNIFF=${ONTSNIFF},COMBSNIFF=${COMBSNIFF},SNIFFLESPB=${SNIFFLESPB},SNIFFLESONT=${SNIFFLESONT},SNIFFLESCOMBINED=${SNIFFLESCOMBINED},MAPPB=${MAPPB},MAPONT=${MAPONT} \
   ${SCRIPTS}/longreadstats.sh | awk '{print $4}'`
 
