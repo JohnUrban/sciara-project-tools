@@ -129,6 +129,9 @@ KNOWNTBLASTX=false
 KNOWNNJOBS=1
 KNOWNCLEAN=false
 if $CLEANALL; then KNOWNCLEAN=true; fi
+
+KNOWNCONFIG=${TRANSCONFIGS}/known-config-sciara.cfg 
+
 KNOWNSEQS=/gpfs/data/sgerbi/jurban/sciaraknownseqs/allCoprophilaNTSeqOnNCBI.fa
 
 
@@ -210,7 +213,7 @@ cd ../
 echo knownseqs
 mkdir knownseqs
 cd knownseqs
-$TRANSRUN $TRANSSCRIPTS $TRANSCONFIG $KNOWNCLEAN $ASMFOFN $KNOWNSEQS $KNOWNNJOBS $KNOWNTBLASTX $KNOWNJOBPRE
+$TRANSRUN $TRANSSCRIPTS $KNOWNCONFIG $KNOWNCLEAN $ASMFOFN $KNOWNSEQS $KNOWNNJOBS $KNOWNTBLASTX $KNOWNJOBPRE
 cd ../
 
 #leave blast_analyses
