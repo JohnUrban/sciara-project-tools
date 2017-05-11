@@ -36,6 +36,8 @@ SHORTCONFIG=${SHORTSCRIPTS}/configs/${EvalThese}
 
 ############### BIONANO MALIGNER SECTION #################
 BIONANOCLEAN=false
+if $CLEANALL; then BIONANOCLEAN=true; fi
+
 REC_ENZ=BssSI
 REC_SEQ=CACGAG
 

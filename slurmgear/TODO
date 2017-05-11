@@ -16,3 +16,10 @@ add specified names to blast analyses -o in order to determine if a job is trans
 --> leave param file or touchfiles to represent if an analysis was done
 --> can use those in followup value collection for tables....
 if [ ! -z $A ]; then echo yes; fi
+
+-- done-ish: 
+
+7. run on canu vs falcon
+
+8. begin updating longtable scripts....
+

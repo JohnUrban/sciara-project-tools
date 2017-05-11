@@ -35,5 +35,5 @@ echo -e 1e4xScore/Cov"\t"$scorecov >> allstats.txt
 echo -e Score/Num"\t"$scorenum >> allstats.txt
 echo -e Span/Asm"\t"$spanasm >> allstats.txt
 echo -e Cov/Asm"\t"$covasm >> allstats.txt
-echo -e Cov/Span"\t"$covspan >>$1/allstats.txt
+echo -e Cov/Span"\t"$covspan >> allstats.txt
 echo -e Cov/Num"\t"$covnum >> allstats.txt
