@@ -88,6 +88,7 @@ TRANSCONFIGS=${TRANSBASE}/configs/
 TRANSFOFNS=${TRANSBASE}/fofns/
 
 TRANSCONFIG=${TRANSCONFIGS}/trans-config-sciara.cfg ## does both blastn and tblastx
+OTHERSPP_TRANSCONFIG=${TRANSCONFIGS}/other-spp-trans-config-sciara.cfg
 TRANSFOFN=${TRANSFOFNS}/
 TRANSRUN=${TRANSSCRIPTS}/auto-trans.sh
 
