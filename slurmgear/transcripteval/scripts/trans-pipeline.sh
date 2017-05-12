@@ -73,9 +73,8 @@ BDB=$(echo `readlink -f ${MAIN}/${D}`/asm)
 ##############################################################################
 ## BLAST
 ##############################################################################
-TASK=blastn
 BLASTDONE=`sbatch --dependency=afterok:${MAKEDONE} -a 1-$NJOBS -J ${JOBPRE}${BASE}_blast_trans -o ${OUT}/blast_trans.slurm.%A_%a.out --mem=$BMEM --time=$BTIME -c $BTHREADS --qos=$QOS \
-   --export=QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},P=${BTHREADS},BDB=${BDB},TASK=${TASK},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ} \
+   --export=QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},P=${BTHREADS},BDB=${BDB},TASK=${TASK},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ},BLASTEXTRA=${BLASTEXTRA} \
    ${SCRIPTS}/transblast-array.sh | awk '{print $4}'`
 
 
@@ -90,7 +89,7 @@ FOLLOWUPNUM=1
 FOLLOWDONE=`sbatch --dependency=afterany:${BLASTDONE} -J ${JOBPRE}${BASE}_blast_trans_followup_${FOLLOWUPNUM} \
    -o ${OUT}/follow_up_${FOLLOWUPNUM}.slurm.%A.out \
    --mem=2g --time=6:00:00 -c 2 --qos=$QOS \
-   --export=BASE=${BASE},NJOBS=${NJOBS},SLURMOUTDIR=${OUT},SLURMPRE=blast_trans.slurm,FOLLOWUPNUM=${FOLLOWUPNUM},BMEM=${BMEM},BTIME=${BTIME},BTHREADS=${BTHREADS},QOS=${QOS},SCRIPTS=${SCRIPTS},QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},BDB=${BDB},TASK=${TASK},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ},JOBPRE=${JOBPRE} \
+   --export=BASE=${BASE},NJOBS=${NJOBS},SLURMOUTDIR=${OUT},SLURMPRE=blast_trans.slurm,FOLLOWUPNUM=${FOLLOWUPNUM},BMEM=${BMEM},BTIME=${BTIME},BTHREADS=${BTHREADS},QOS=${QOS},SCRIPTS=${SCRIPTS},QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},BDB=${BDB},TASK=${TASK},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ},JOBPRE=${JOBPRE},TASK=${TASK},BLASTEXTRA=${BLASTEXTRA} \
    ${SCRIPTS}/followup.sh | awk '{print $4}'`
 
 
