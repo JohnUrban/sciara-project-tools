@@ -15,6 +15,7 @@ echo WORDSIZE $WORDSIZE
 echo CULL $CULL
 echo MAXTARGSEQ ${MAXTARGSEQ}
 echo JOBNUM / SLURM_ARRAY_TASK_ID $SLURM_ARRAY_TASK_ID
+echo TBLASTEXTRA ${TBLASTEXTRA}
 echo; date; echo
 
 
@@ -22,7 +23,8 @@ CMD="tblastx -strand plus -db $BDB -query ${QUERYDIR}/${PRE}.${SLURM_ARRAY_TASK_
  -evalue $EVAL -word_size $WORDSIZE -culling_limit $CULL \
  -max_target_seqs $MAXTARGSEQ -num_threads $P \
  -out ${BLASTDIR}/${PRE}.${SLURM_ARRAY_TASK_ID}.blastout \
- -outfmt '6 qseqid sseqid pident length qstart qend sstart send evalue bitscore qlen slen sstrand' "
+ -outfmt '6 qseqid sseqid pident length qstart qend sstart send evalue bitscore qlen slen sstrand' \
+ ${TBLASTEXTRA}"
 
 echo $CMD
 
@@ -31,7 +33,8 @@ tblastx -strand plus -db $BDB -query ${QUERYDIR}/${PRE}.${SLURM_ARRAY_TASK_ID}.f
  -evalue $EVAL -word_size $WORDSIZE -culling_limit $CULL \
  -max_target_seqs $MAXTARGSEQ -num_threads $P \
  -out ${BLASTDIR}/${PRE}.${SLURM_ARRAY_TASK_ID}.blastout \
- -outfmt '6 qseqid sseqid pident length qstart qend sstart send evalue bitscore qlen slen sstrand'
+ -outfmt '6 qseqid sseqid pident length qstart qend sstart send evalue bitscore qlen slen sstrand' \
+ ${TBLASTEXTRA}
 
 
 echo; date

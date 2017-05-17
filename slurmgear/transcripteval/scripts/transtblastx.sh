@@ -15,6 +15,7 @@ echo WORDSIZE $WORDSIZE
 echo CULL $CULL
 echo MAXTARGSEQ ${MAXTARGSEQ}
 echo JOBNUM $JOBNUM
+echo TBLASTEXTRA ${TBLASTEXTRA}
 echo; date; echo
 
 
@@ -22,7 +23,8 @@ CMD="tblastx -strand plus -db $BDB -query ${QUERYDIR}/${PRE}.${JOBNUM}.fa \
  -evalue $EVAL -word_size $WORDSIZE -culling_limit $CULL \
  -max_target_seqs $MAXTARGSEQ -num_threads $P \
  -out ${BLASTDIR}/${PRE}.${JOBNUM}.blastout \
- -outfmt '6 qseqid sseqid pident length qstart qend sstart send evalue bitscore qlen slen sstrand' "
+ -outfmt '6 qseqid sseqid pident length qstart qend sstart send evalue bitscore qlen slen sstrand' \
+ ${TBLASTEXTRA}"
 
 echo $CMD
 
@@ -31,6 +33,7 @@ tblastx -strand plus -db $BDB -query ${QUERYDIR}/${PRE}.${JOBNUM}.fa \
  -evalue $EVAL -word_size $WORDSIZE -culling_limit $CULL \
  -max_target_seqs $MAXTARGSEQ -num_threads $P \
  -out ${BLASTDIR}/${PRE}.${JOBNUM}.blastout \
- -outfmt '6 qseqid sseqid pident length qstart qend sstart send evalue bitscore qlen slen sstrand'
+ -outfmt '6 qseqid sseqid pident length qstart qend sstart send evalue bitscore qlen slen sstrand' \
+ ${TBLASTEXTRA}
 
 echo; date

@@ -34,7 +34,7 @@ blastn -task $TASK -db $BDB -query ${QUERYDIR}/${PRE}.${JOBNUM}.fa \
  -evalue $EVAL -word_size $WORDSIZE -culling_limit $CULL \
  -max_target_seqs $MAXTARGSEQ -num_threads $P \
  -out ${BLASTDIR}/${PRE}.${JOBNUM}.blastout \
- -outfmt '6 qseqid sseqid pident length qstart qend sstart send evalue bitscore qlen slen sstrand' \ 
+ -outfmt '6 qseqid sseqid pident length qstart qend sstart send evalue bitscore qlen slen sstrand' \
  ${BLASTEXTRA}
 
 echo; date
