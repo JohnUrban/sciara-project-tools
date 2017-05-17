@@ -24,6 +24,8 @@ OnlyReapr=eval.reapronly.cfg
 OnlyReaprNoClean=eval.reapronly.noclean.cfg
 OnlyReaprNoCleanAggressive=eval.reapronly.noclean.aggressive.cfg
 OnlyPilon=pilon.eval.cfg
+AleModule=alemodule.eval.cfg ## builds bt2, maps reads, runs ale
+
 
 ## FILL IN WITH CORRECT VARIABLE
 EvalThese=$ALL
