@@ -23,6 +23,7 @@ OnlyLap=eval.laponly.cfg
 OnlyReapr=eval.reapronly.cfg
 OnlyReaprNoClean=eval.reapronly.noclean.cfg
 OnlyReaprNoCleanAggressive=eval.reapronly.noclean.aggressive.cfg
+OnlyPilon=pilon.eval.cfg
 
 ## FILL IN WITH CORRECT VARIABLE
 EvalThese=$ALL
