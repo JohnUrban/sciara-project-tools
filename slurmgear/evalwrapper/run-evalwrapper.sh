@@ -72,7 +72,11 @@ LRBASE=/users/jurban/software/sciaratools/sciara-project-tools/slurmgear/longrea
 LRSCRIPTS=${LRBASE}/scripts/
 AUTOLR=${LRSCRIPTS}/auto-lrpipe.sh
 LRCONFIGS=${LRBASE}/configs/
-LRCONFIG=${LRCONFIGS}/longread-config-sciara.cfg
+LR_DEFAULT_CFG=longread-config-sciara.cfg
+LR_ALE_MODULE_CFG=ale-module-longread-config-sciara.cfg
+
+LRCONFIG=${LRCONFIGS}/${LR_DEFAULT_CFG}
+
 
 ## OTHER OPTIONS
 LRCLEAN=false
