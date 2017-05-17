@@ -7,6 +7,9 @@ CLEANALL=true
 ## GETTING ABS PATH OF ASMFOFN
 ASMFOFN=`readlink -f $ASMFOFN`
 
+RENAME=true
+
+
 ###################  SHORT READ  ###########################
 # specify paths to lap read sample (LR1,LR2) and all reads (R1,R2)-- give dummy answers if will not be using (that will serve as place-holders)
 LR1=/users/jurban/data/scratch/lap/sample-1.5m/downsampled.1.fastq
@@ -166,6 +169,19 @@ RNAFOFN=`readlink -f $RNAFOFN`
 ##############################################
 ##############################################
 ################ EXECUTE #####################
+if $RENAME; then echo renaming....;
+ mkdir renamed_asms
+ while read fasta; do
+  b=`basename $fasta`
+  fasta_name_changer.py -f $fasta -r contig -n > renamed_asms/${b}
+ done < $ASMFOFN
+ for f in renamed_asms/*; do
+  readlink -f $f; done > renamed.fofn
+ ASMFOFN=`readlink -f renamed.fofn`
+else
+ echo Skip renaming....
+fi
+
 echo shortread
 mkdir shortread
 cd shortread
