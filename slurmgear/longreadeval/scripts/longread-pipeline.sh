@@ -53,8 +53,15 @@ if $BUILDBWA || [ ! -d $D ]; then
   if [ -d $D ]; then rm -r $D; fi
   mkdir $D
   cd $D
-  IDXDEP=`sbatch -J ${BASE}_buildbwa -o ${OUT}/bwaidx.slurm.%A.out --mem=$BIMEM --time=$BITIME -c $BITHREADS --qos=$QOS \
-    --export=ASM=${ASM},BASE=${BASE},CONVERT_REF_N_TO_ACGT=${CONVERT_REF_N_TO_ACGT} ${SCRIPTS}/bwa-idx.sh | awk '{print $4}'`
+  if ${CONVERT_REF_N_TO_ACGT}; then 
+    CONVERTDONE=`sbatch -J ${BASE}_convertN -o ${OUT}/convertN.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=${QOS} \
+      --export=ASM=${ASM},OUTFASTA=tmp.fasta ${SCRIPTS}/convertN.sh | awk '{print $4}'`
+    ASM=${PWD}/tmp.fasta
+    IDXDEP=`sbatch --dependency=afterok:${CONVERTDONE} -J ${BASE}_buildbwa -o ${OUT}/bwaidx.slurm.%A.out --mem=$BIMEM --time=$BITIME -c $BITHREADS --qos=$QOS \
+      --export=ASM=${ASM},BASE=${BASE},CONVERT_REF_N_TO_ACGT=${CONVERT_REF_N_TO_ACGT} ${SCRIPTS}/bwa-idx.sh | awk '{print $4}'`
+  else
+    IDXDEP=`sbatch -J ${BASE}_buildbwa -o ${OUT}/bwaidx.slurm.%A.out --mem=$BIMEM --time=$BITIME -c $BITHREADS --qos=$QOS \
+      --export=ASM=${ASM},BASE=${BASE},CONVERT_REF_N_TO_ACGT=${CONVERT_REF_N_TO_ACGT} ${SCRIPTS}/bwa-idx.sh | awk '{print $4}'`
   cd ../
   RMIDX+=":${IDXDEP}"
 fi
