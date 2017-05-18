@@ -53,7 +53,8 @@ if $BUILDBWA || [ ! -d $D ]; then
   if [ -d $D ]; then rm -r $D; fi
   mkdir $D
   cd $D
-  IDXDEP=`sbatch -J ${BASE}_buildbwa -o ${OUT}/bwaidx.slurm.%A.out --mem=$BIMEM --time=$BITIME -c $BITHREADS --qos=$QOS --export=ASM=${ASM},BASE=${BASE} ${SCRIPTS}/bwa-idx.sh | awk '{print $4}'`
+  IDXDEP=`sbatch -J ${BASE}_buildbwa -o ${OUT}/bwaidx.slurm.%A.out --mem=$BIMEM --time=$BITIME -c $BITHREADS --qos=$QOS \
+    --export=ASM=${ASM},BASE=${BASE},CONVERT_REF_N_TO_ACGT=${CONVERT_REF_N_TO_ACGT} ${SCRIPTS}/bwa-idx.sh | awk '{print $4}'`
   cd ../
   RMIDX+=":${IDXDEP}"
 fi
