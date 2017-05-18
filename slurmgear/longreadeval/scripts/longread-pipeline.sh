@@ -62,6 +62,7 @@ if $BUILDBWA || [ ! -d $D ]; then
   else
     IDXDEP=`sbatch -J ${BASE}_buildbwa -o ${OUT}/bwaidx.slurm.%A.out --mem=$BIMEM --time=$BITIME -c $BITHREADS --qos=$QOS \
       --export=ASM=${ASM},BASE=${BASE},CONVERT_REF_N_TO_ACGT=${CONVERT_REF_N_TO_ACGT} ${SCRIPTS}/bwa-idx.sh | awk '{print $4}'`
+  fi
   cd ../
   RMIDX+=":${IDXDEP}"
 fi
