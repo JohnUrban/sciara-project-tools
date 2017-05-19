@@ -113,25 +113,30 @@ for name in list(names):
     readlen = readlengths[name][0]
     if ALN:
         nctg = len( contigs[name] )
+        aln_n = len( alnlengths[name] )
         alnlen = sum( alnlengths[name] )
         edit = sum( editdists[name] )
         alnscore = np.mean( alnscores[name] )
         mapq = np.mean( mapqs[name] )
         if UN:
+            aln_n2 = aln_n + len( UN_alnscores[name] )
             alnscore2 = np.mean( alnscores[name]+UN_alnscores[name] )
             mapq2 = np.mean( mapqs[name]+UN_mapqs[name] )
         else:
+            aln_n2 = aln_n
             alnscore2 = alnscore
             mapq2 = mapq
     elif UN:
         nctg = 0
         alnlen = 0
+        aln_n = 0
         edit = readlen
         alnscore = 0
         mapq = 0
+        aln_n2 = 0
         alnscore2 = 0
         mapq2 = 0
-    out.write( ('\t').join([str(e) for e in [name, nctg, alnlen, edit, alnscore, mapq, alnscore2, mapq2]]) + '\n' )
+    out.write( ('\t').join([str(e) for e in [name, nctg, aln_n, alnlen, edit, alnscore, mapq, aln_n2, alnscore2, mapq2]]) + '\n' )
     #additional analysis
     if nctg == 0: 
         num_0_ctg += 1
