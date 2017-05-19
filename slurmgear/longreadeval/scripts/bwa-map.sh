@@ -78,7 +78,7 @@ for line in sys.stdin:
     name = line[0]
     names.add(name)
     readlengths[name].append( sum([int(e) for e in re.findall('(\d+)[MIS=X]', line[5])])  )
-    if line[1] != '*':
+    if line[1] != '4':
         alnlengths[name].append( sum([int(e) for e in re.findall('(\d+)[MI=X]', line[5])]) )
         editdists[name].append( int(line[11].split(':')[2])  )
         alnscores[name].append( int(line[13].split(':')[2])  )
