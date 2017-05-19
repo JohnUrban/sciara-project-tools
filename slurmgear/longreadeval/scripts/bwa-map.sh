@@ -88,16 +88,17 @@ for line in sys.stdin:
         UN_alnscores[name].append( 0  )
         UN_mapqs[name].append( 0  )
 
-    out = open('per-read.txt','w')
+    out = open('$PRE-per-read.txt','w')
     num_0_ctg = 0
     num_1_ctg = 0
     num_multi_ctg = 0
     readlensum = 0
     alnlensum = 0
+    alnscoresum = 0
+    alnscoresum2 = 0
     mapqsum = 0
-    editsum = 0
     mapqsum2 = 0
-    editsum2 = 0
+    editsum = 0
     numaln = 0
     numaln_un = 0
     numunaln = 0
@@ -150,7 +151,7 @@ for line in sys.stdin:
 
     #final analysis
     out.close()
-    out = open('per-read-stats.txt','w')
+    out = open('$PRE-per-read-stats.txt','w')
     out.write( 'num_0_ctg\t'+str(num_0_ctg)+'\n' )
     out.write( 'num_1_ctg\t'+str(num_1_ctg)+'\n' )
     out.write( 'num_multi_ctg\t'+str(num_multi_ctg)+'\n' )
