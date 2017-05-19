@@ -78,11 +78,11 @@ for line in sys.stdin:
     name = line[0]
     names.add(name)
     readlengths[name].append( sum([int(e) for e in re.findall('(\d+)[MIS=X]', line[5])])  )
-    if line[1] != "*":
+    if line[1] != '*':
         alnlengths[name].append( sum([int(e) for e in re.findall('(\d+)[MI=X]', line[5])]) )
-        editdists[name].append( int(line[11].split(":")[2])  )
-        alnscores[name].append( int(line[13].split(":")[2])  )
-        mapqs[name].append( line[4]  )
+        editdists[name].append( int(line[11].split(':')[2])  )
+        alnscores[name].append( int(line[13].split(':')[2])  )
+        mapqs[name].append( int(line[4])  )
         contigs[name].add( line[2]  )
     else:
         UN_alnscores[name].append( 0  )
@@ -125,7 +125,7 @@ for line in sys.stdin:
             mapq = 0
             alnscore2 = 0
             mapq2 = 0
-        out.write( ("\t").join([str(e) for e in [name, nctg, alnlen, edit, alnscore, mapq, alnscore2, mapq2]]) + '\n' )
+        out.write( ('\t').join([str(e) for e in [name, nctg, alnlen, edit, alnscore, mapq, alnscore2, mapq2]]) + '\n' )
         #additional analysis
         if nctg == 0: 
             num_0_ctg += 1
@@ -137,8 +137,9 @@ for line in sys.stdin:
         alnlensum += alnlen
         mapqsum += mapq
         editsum += edit
+        alnscoresum += alnscore
         mapqsum2 += mapq2
-        editsum2 += edit2
+        alnscoresum2 += alnscore2
         if ALN and UN:
             numaln += 1
             numaln_un += 1
@@ -156,9 +157,10 @@ for line in sys.stdin:
     out.write( 'readlensum\t'+str(readlensum)+'\n' )
     out.write( 'alnlensum\t'+str(alnlensum)+'\n' )
     out.write( 'mapqsum\t'+str(mapqsum)+'\n' )
-    out.write( 'editsum\t'+str(editsum)+'\n' )
     out.write( 'mapqsum2\t'+str(mapqsum2)+'\n' )
-    out.write( 'editsum2\t'+str(editsum2)+'\n' )
+    out.write( 'alnscoresum\t'+str(alnscoresum)+'\n' )
+    out.write( 'alnscoresum2\t'+str(alnscoresum2)+'\n' )
+    out.write( 'editsum\t'+str(editsum)+'\n' )
     out.write( 'numaln\t'+str(numaln)+'\n' )
     out.write( 'numaln_un\t'+str(numaln_un)+'\n' )
     out.write( 'numunaln\t'+str(numunaln)+'\n' )
