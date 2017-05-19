@@ -85,87 +85,95 @@ for line in sys.stdin:
         mapqs[name].append( int(line[4])  )
         contigs[name].add( line[2]  )
     else:
-        UN_alnscores[name].append( 0  )
-        UN_mapqs[name].append( 0  )
+        UN_alnscores[name].append( 0 )
+        UN_mapqs[name].append( 0 )
 
-    out = open('$PRE-per-read.txt','w')
-    num_0_ctg = 0
-    num_1_ctg = 0
-    num_multi_ctg = 0
-    readlensum = 0
-    alnlensum = 0
-    alnscoresum = 0
-    alnscoresum2 = 0
-    mapqsum = 0
-    mapqsum2 = 0
-    editsum = 0
-    numaln = 0
-    numaln_un = 0
-    numunaln = 0
-    for name in list(names):
-        ALN = name in alnlengths
-        UN = name in UN_alnscores
-        readlen = readlengths[name][0]
-        if ALN:
-            nctg = len( contigs[name] )
-            alnlen = sum( alnlengths[name] )
-            edit = sum( editdists[name] )
-            alnscore = np.mean( alnscores[name] )
-            mapq = np.mean( mapqs[name] )
-            if UN:
-                alnscore2 = np.mean( alnscores[name]+UN_alnscores[name] )
-                mapq2 = np.mean( mapqs[name]+UN_mapqs[name] )
-            else:
-                alnscore2 = alnscore
-                mapq2 = mapq
-        elif UN:
-            nctg = 0
-            alnlen = 0
-            edit = readlen
-            alnscore = 0
-            mapq = 0
-            alnscore2 = 0
-            mapq2 = 0
-        out.write( ('\t').join([str(e) for e in [name, nctg, alnlen, edit, alnscore, mapq, alnscore2, mapq2]]) + '\n' )
-        #additional analysis
-        if nctg == 0: 
-            num_0_ctg += 1
-        elif nctg == 1: 
-            num_1_ctg += 1
-        elif nctg > 1: 
-            num_multi_ctg += 1
-        readlensum += readlen
-        alnlensum += alnlen
-        mapqsum += mapq
-        editsum += edit
-        alnscoresum += alnscore
-        mapqsum2 += mapq2
-        alnscoresum2 += alnscore2
-        if ALN and UN:
-            numaln += 1
-            numaln_un += 1
-        elif ALN:
-            numaln += 1
-        elif UN:
-            numunaln += 1
 
-    #final analysis
-    out.close()
-    out = open('$PRE-per-read-stats.txt','w')
-    out.write( 'num_0_ctg\t'+str(num_0_ctg)+'\n' )
-    out.write( 'num_1_ctg\t'+str(num_1_ctg)+'\n' )
-    out.write( 'num_multi_ctg\t'+str(num_multi_ctg)+'\n' )
-    out.write( 'readlensum\t'+str(readlensum)+'\n' )
-    out.write( 'alnlensum\t'+str(alnlensum)+'\n' )
-    out.write( 'mapqsum\t'+str(mapqsum)+'\n' )
-    out.write( 'mapqsum2\t'+str(mapqsum2)+'\n' )
-    out.write( 'alnscoresum\t'+str(alnscoresum)+'\n' )
-    out.write( 'alnscoresum2\t'+str(alnscoresum2)+'\n' )
-    out.write( 'editsum\t'+str(editsum)+'\n' )
-    out.write( 'numaln\t'+str(numaln)+'\n' )
-    out.write( 'numaln_un\t'+str(numaln_un)+'\n' )
-    out.write( 'numunaln\t'+str(numunaln)+'\n' )
-    out.close()
+#initate stats vars
+num_0_ctg = 0
+num_1_ctg = 0
+num_multi_ctg = 0
+readlensum = 0
+alnlensum = 0
+alnscoresum = 0
+alnscoresum2 = 0
+mapqsum = 0
+mapqsum2 = 0
+editsum = 0
+numaln = 0
+numaln_un = 0
+numunaln = 0
+
+#initiate per-read outfile
+out = open('$PRE-per-read.txt','w')
+
+for name in list(names):
+    ALN = name in alnlengths
+    UN = name in UN_alnscores
+    readlen = readlengths[name][0]
+    if ALN:
+        nctg = len( contigs[name] )
+        alnlen = sum( alnlengths[name] )
+        edit = sum( editdists[name] )
+        alnscore = np.mean( alnscores[name] )
+        mapq = np.mean( mapqs[name] )
+        if UN:
+            alnscore2 = np.mean( alnscores[name]+UN_alnscores[name] )
+            mapq2 = np.mean( mapqs[name]+UN_mapqs[name] )
+        else:
+            alnscore2 = alnscore
+            mapq2 = mapq
+    elif UN:
+        nctg = 0
+        alnlen = 0
+        edit = readlen
+        alnscore = 0
+        mapq = 0
+        alnscore2 = 0
+        mapq2 = 0
+    out.write( ('\t').join([str(e) for e in [name, nctg, alnlen, edit, alnscore, mapq, alnscore2, mapq2]]) + '\n' )
+    #additional analysis
+    if nctg == 0: 
+        num_0_ctg += 1
+    elif nctg == 1: 
+        num_1_ctg += 1
+    elif nctg > 1: 
+        num_multi_ctg += 1
+    readlensum += readlen
+    alnlensum += alnlen
+    mapqsum += mapq
+    editsum += edit
+    alnscoresum += alnscore
+    mapqsum2 += mapq2
+    alnscoresum2 += alnscore2
+    if ALN and UN:
+        numaln += 1
+        numaln_un += 1
+    elif ALN:
+        numaln += 1
+    elif UN:
+        numunaln += 1
+
+#close per-read outfile
+out.close()
+
+
+#final analysis - open stats out file and write
+out = open('$PRE-per-read-stats.txt','w')
+out.write( 'num_0_ctg\t'+str(num_0_ctg)+'\n' )
+out.write( 'num_1_ctg\t'+str(num_1_ctg)+'\n' )
+out.write( 'num_multi_ctg\t'+str(num_multi_ctg)+'\n' )
+out.write( 'readlensum\t'+str(readlensum)+'\n' )
+out.write( 'alnlensum\t'+str(alnlensum)+'\n' )
+out.write( 'mapqsum\t'+str(mapqsum)+'\n' )
+out.write( 'mapqsum2\t'+str(mapqsum2)+'\n' )
+out.write( 'alnscoresum\t'+str(alnscoresum)+'\n' )
+out.write( 'alnscoresum2\t'+str(alnscoresum2)+'\n' )
+out.write( 'editsum\t'+str(editsum)+'\n' )
+out.write( 'numaln\t'+str(numaln)+'\n' )
+out.write( 'numaln_un\t'+str(numaln_un)+'\n' )
+out.write( 'numunaln\t'+str(numunaln)+'\n' )
+out.close()
 " 
 
 
