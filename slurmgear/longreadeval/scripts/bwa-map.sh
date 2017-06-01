@@ -1,8 +1,14 @@
 #!/bin/bash
 
 source ~/software/bwa/source.sh
-
 BAM=${TYPE}.bam
+
+echo MTHREADS $MTHREADS
+echo TYPE $TYPE
+echo BAM $BAM
+echo BWAIDX $BWAIDX 
+echo FASTQ $FASTQ
+
 bwa mem -t $MTHREADS -M -x $TYPE $BWAIDX $FASTQ | samtools sort -T $TYPE --threads $MTHREADS -o ${BAM}
 
 
