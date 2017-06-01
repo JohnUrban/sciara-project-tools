@@ -86,7 +86,8 @@ for line in sys.stdin:
     name = line[0]
     names.add(name)
     if line[1] != '4':
-        rlen = sum([int(e) for e in re.findall('(\d+)[MIS=X]', line[5])])
+        ##rlen = sum([int(e) for e in re.findall('(\d+)[MIS=X]', line[5])])
+        rlen = sum([int(e) for e in re.findall('(\d+)[MISH=X]', line[5])])
         readlengths[name].append( rlen  )
         totalaln += 1
         alnlengths[name].append( sum([int(e) for e in re.findall('(\d+)[MI=X]', line[5])]) )
