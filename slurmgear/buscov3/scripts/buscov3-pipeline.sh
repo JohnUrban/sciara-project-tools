@@ -31,7 +31,7 @@ OUT=`readlink -f $MAIN`/$SLURMOUTDIR
 ## BUSCO V3 LOOP
 ##############################################################################
 
-for DIR in metazoa arthropoda insecta endopterygota diptera; do
+for DIR in eukaryota metazoa arthropoda insecta endopterygota diptera; do
 
  L=`echo $DIR | awk '{print toupper($0)}'`
  LINEAGE=${!L}

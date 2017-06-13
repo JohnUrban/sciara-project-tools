@@ -3,6 +3,7 @@ shortread assessments included a busco v1.22 assessment.
 This will include the latest version (v3) and orthodb stuff (odb9).
 
 It will allow assessment of any or all (default) of the following BUSCO levels:
+- eukaryota
 - metazoa
 - arthropoda (only 1 used in short read assessment)
 - insecta
