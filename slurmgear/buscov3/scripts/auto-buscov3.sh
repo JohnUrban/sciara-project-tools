@@ -28,6 +28,6 @@ while read f; do
   cd $b;
   $PIPELINE $SCRIPTS $CONFIG $CLEAN $QOS $REF
   cd ../
-done < $FOFN
+done < $ASMFOFN
 
 
