@@ -3,7 +3,6 @@
 ## for use with busco.loop.slurm.in or eval script
 ## Need: FASTA, OUT, CPU
 
-module load python/3.4.1  ## may no longer need this one
 module load boost/1.55.0
 module load bamtools/2.3.0
 module load blast/2.2.30+
