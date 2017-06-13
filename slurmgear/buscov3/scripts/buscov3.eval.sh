@@ -22,7 +22,7 @@ export PATH=/users/jurban/data/software/buscov3/busco/scripts:$PATH
 
 
 
-for VAR in FASTA OUT CPU LINEAGE MODE PATH; do echo $VAR ${!VAR}; done
+for VAR in FASTA OUT CPU LINEAGE MODE PATH; do echo $VAR ${!VAR}; echo; done; echo
 
 run_BUSCO.py --in $FASTA -o $OUT -l $LINEAGE -m $MODE --cpu $CPU
 

@@ -43,7 +43,7 @@ for DIR in metazoa arthropoda insecta endopterygota diptera; do
  if $RUN; then
   if [ ! -d $DIR ]; then mkdir $DIR; fi
   cd $DIR
-  DONE=`sbatch -J ${BASE}_buscov3_${DIR} -o ${OUT}/${DIR}.slurm.%A.out --mem=$BMEM --time=$BTIME -c $BTHREADS --qos=$QOS --export=FASTA=${REF},OUT=${BASE},CPU=${BTHREADS},LINEAGE=${LINEAGE} ${SCRIPTS}/buscov3.eval.sh | awk '{print $4}'`
+  DONE=`sbatch -J ${BASE}_buscov3_${DIR} -o ${OUT}/${DIR}.slurm.%A.out --mem=$BMEM --time=$BTIME -c $BTHREADS --qos=$QOS --export=FASTA=${ASM},OUT=${BASE},CPU=${BTHREADS},LINEAGE=${LINEAGE},MODE=${MODE} ${SCRIPTS}/buscov3.eval.sh | awk '{print $4}'`
   if $CLEAN; then
    echo ....ADD CLEANING FUNCITONALITY....
   fi
