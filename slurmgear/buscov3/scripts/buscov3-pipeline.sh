@@ -45,7 +45,7 @@ for DIR in eukaryota metazoa arthropoda insecta endopterygota diptera; do
   cd $DIR
   DONE=`sbatch -J ${BASE}_buscov3_${DIR} -o ${OUT}/${DIR}.slurm.%A.out --mem=$BMEM --time=$BTIME -c $BTHREADS --qos=$QOS --export=FASTA=${ASM},OUT=${BASE},CPU=${BTHREADS},LINEAGE=${LINEAGE},MODE=${MODE} ${SCRIPTS}/buscov3.eval.sh | awk '{print $4}'`
   if $CLEAN; then
-   echo ....ADD CLEANING FUNCITONALITY....
+    MOP=`sbatch --dependency=afterok:${DONE} -J ${BASE}_buscov3_${DIR}_clean -o ${OUT}/clean_${DIR}.slurm.%A.out --mem=1g --time=1:00:00 -c 1 --qos=$QOS ${SCRIPTS}/buscov3.clean.sh | awk '{print $4}'` 
   fi
   cd ../
  fi

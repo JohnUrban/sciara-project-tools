@@ -34,7 +34,7 @@ if [ ! -f $ASMFOFN ]; then echo; echo "    ASMFOFN ERROR: FILE NOT FOUND"; echo 
 
 
 
-CLEAN=false
+CLEAN=true
 
 BASE=/users/jurban/software/sciaratools/sciara-project-tools/slurmgear/buscov3
 SCRIPTS=${BASE}/scripts/
