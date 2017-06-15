@@ -165,6 +165,19 @@ RNAFOFN=`readlink -f $RNAFOFN`
 
 
 
+############### BUSCO V3 SECTION #################
+BUSCOV3CLEAN=true
+BUSCOV3BASE=/users/jurban/software/sciaratools/sciara-project-tools/slurmgear/buscov3
+BUSCOV3SCRIPTS=${BUSCOV3BASE}/scripts/
+BUSCOV3CONFIGS=${BUSCOV3BASE}/configs/
+BUSCOV3FOFNS=${BUSCOV3BASE}/fofns/
+BUSCOV3CONFIG=${BUSCOV3CONFIGS}/buscov3-config-sciara.cfg
+BUSCOV3RUN=${SCRIPTS}/auto-buscov3.sh
+
+
+
+
+
 ##############################################
 ##############################################
 ##############################################
@@ -247,6 +260,12 @@ echo rnaseq
 mkdir rnaseq
 cd rnaseq
 $RNARUN $RNASCRIPTS $RNACONFIG $RNACLEAN $ASMFOFN $RNAFOFN
+cd ../
+
+echo buscov3
+mkdir buscov3
+cd buscov3
+$BUSCOV3RUN $BUSCOV3SCRIPTS $BUSCOV3CONFIG $BUSCOV3CLEAN $ASMFOFN 
 cd ../
 
 ################ EXECUTE #####################
