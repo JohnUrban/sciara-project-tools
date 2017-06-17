@@ -12,7 +12,7 @@ sniffles -m $BAM -b $BEDPE.bedpe --min_support $MINSUPPORT
 
 ## SVs from Sniffles
 ## NUM
-grep -c -v ^# $$BEDPE.bedpe > numsv
+grep -c -v ^# $BEDPE.bedpe > numsv
 
 ## SUM PREDICTED LENGTHS
 grep -v ^# $BEDPE.bedpe | awk -v "s=0" '{s+=$NF}END{print s}' > sumsv
