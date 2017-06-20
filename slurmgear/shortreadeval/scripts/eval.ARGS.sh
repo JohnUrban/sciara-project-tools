@@ -206,10 +206,10 @@ if $CLEANREAPR; then
  cd reapr
  # if RUNREAPR, dep on REAPRDONE
  if $RUNREAPR; then
-   sbatch -J ${BASE}_reapr_clean${JOBSFX} --dependency=afterok:${REAPRDONE} -o ${OUT}/reapr.clean.slurm.%A.out --mem=8g --time=06:00:00 -c 2 --qos=$QOS ${SCRIPTS}/reapr.clean.sh 
+   sbatch -J ${BASE}_reapr_clean${JOBSFX} --dependency=afterok:${REAPRDONE} -o ${OUT}/reapr.clean.slurm.%A.out --mem=8g --time=06:00:00 -c 2 --qos=$QOS --export=G=${G} ${SCRIPTS}/reapr.clean.sh 
  # else doesnt dep on REAPRDONE
  else
-   sbatch -J ${BASE}_reapr_clean -o ${OUT}/reapr.clean.slurm.%A.out --mem=8g --time=06:00:00 -c 2 --qos=$QOS ${SCRIPTS}/reapr.clean.sh 
+   sbatch -J ${BASE}_reapr_clean -o ${OUT}/reapr.clean.slurm.%A.out --mem=8g --time=06:00:00 -c 2 --qos=$QOS --export=G=${G} ${SCRIPTS}/reapr.clean.sh 
  fi
  cd ../
 fi
