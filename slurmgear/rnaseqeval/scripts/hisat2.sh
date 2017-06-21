@@ -35,6 +35,15 @@ echo
 ## OK - Making intermediate BAM so that I can have option of keeping it
 hisat2 -p ${P} --dta -x ${HIDX} -1 $R1LIST -2 $R2LIST --rna-strandness $STRANDEDNESS --reorder 2> mapreads.err > ${PRE}.bam
 samtools view -bSh -q 0 -F 256 ${PRE}.bam | bedtools bamtobed -bedpe -i - 2> bamtobed.err | awk 'OFS="\n" {diff+=$1!=$4; same+=$1==$4; diff2+=$1!=$4&&$8>=2; atleastonemapped+=$1!="."||$4!="."; bothmapped+=$1!="."&&$4!="."; bothmappeddiff+=$1!="."&&$4!="."&&$1!=$4; total+=1; MAPQ+=$8}END{print "same_contig\t"same, "different_contig\t"diff, "different_contig_both_mapped\t"bothmappeddiff, "different_contig_qge2\t"diff2, "only_one_mapped\t"atleastonemapped-bothmapped, "both_mapped\t"bothmapped, "total_pairs\t"total, "pct_pairs_same_ctg\t"100.0*same/total, "pct_pairs_not_same_ctg\t"100.0*diff/total, "pct_pairs_with_1-2mappedmates_not_same_ctg\t"100.0*diff/(atleastonemapped), "pct_pairs_bothmapped_not_same_ctg\t"100.0*bothmappeddiff/bothmapped, "pct_pairs_not_same_ctg_qge2\t"100.0*diff2/total, "pct_pairs_with_2mappedmates_not_same_ctg_qge2\t"100.0*diff/(bothmapped), "sum_min_mapq\t"MAPQ, "avg_min_mapq_all_pairs\t"MAPQ/total, "avg_min_mapq_pairs_bothmatesmapped\t"MAPQ/bothmapped}' > info.txt
+conc1=`grep "aligned concordantly exactly 1 time" mapreads.err | awk '{print $1}'`
+conc2=`grep "aligned concordantly >1 times" mapreads.err | awk '{print $1}'`
+conc=`echo $conc1 $conc2 | awk '{print $1+$2}'`
+disc=`grep "aligned discordantly 1 time" mapreads.err | awk '{print $1}'`
+nbothmapped=`grep -w both_mapped info.txt | awk '{print $2}'`
+echo -e concordant_pairs"\t"${conc} >> info.txt
+echo -e discordant_pairs"\t"${disc} >> info.txt
+echo pct_of_mapped_pairs_that_are_concordant ${conc} ${nbothmapped} | awk 'OFS="\t" {print $1, 100.0*$2/$3}' >> info.txt
+echo pct_of_mapped_pairs_that_are_discordant ${disc} ${nbothmapped} | awk 'OFS="\t" {print $1, 100.0*$2/$3}' >> info.txt
 
 # CLEAN
 if $CLEAN; then
