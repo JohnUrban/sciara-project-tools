@@ -2,6 +2,7 @@ import sys, datetime
 from CovBedClass import *
 from pk2txt import bdgmsg, newmsg
 
+
 def protocol1(late, early, pseudocount=0.1):
     late.median_normalize_data()
     if early:
@@ -10,6 +11,7 @@ def protocol1(late, early, pseudocount=0.1):
     return late
 
 def protocol2(late, early, bw=10000, pseudocount=0.1):
+    print late.get_median()
     late.ksmooth_counts(bw=bw)
     late.median_normalize_data()
     if early:
@@ -33,6 +35,21 @@ def protocol4(late, early, bw=10000, pseudocount=0.1):
         early.median_normalize_data()
         late.normalize_to_other(early, pseudocount)
     late.ksmooth_counts(bw=bw)
+    return late
+
+def protocol5(late, early, bw=10000, pseudocount=0.1):
+    #smoothing only --  late/early before smooth
+    if early:
+        late.normalize_to_other(early, pseudocount)
+    late.ksmooth_counts(bw=bw)
+    return late
+
+def protocol6(late, early, bw=10000, pseudocount=0.1):
+    #smoothing only --  late/early AFTER smooth
+    late.ksmooth_counts(bw=bw)
+    if early:
+        early.ksmooth_counts(bw=bw)
+        late.normalize_to_other(early, pseudocount)
     return late
 
 ##TODO - allow imputing values locally when a bin is 0 -- i.e. if surrounded by 2 bins with values >0, take average.
@@ -87,6 +104,10 @@ def normalize(latestage, protocol=1, earlystage=False, pseudo=0.1, bandwidth=250
             newmsg("following normalization protocol 3"+emsg)
         elif protocol == 4:
             newmsg("following normalization protocol 4"+emsg)
+        elif protocol == 5:
+            newmsg("following normalization protocol 5"+emsg)
+        elif protocol == 6:
+            newmsg("following normalization protocol 6"+emsg)
     if protocol == 1:
         late = protocol1(late, early, pseudo)
     elif protocol == 2:
@@ -95,6 +116,10 @@ def normalize(latestage, protocol=1, earlystage=False, pseudo=0.1, bandwidth=250
         late = protocol3(late, early, bandwidth, pseudo)
     elif protocol == 4:
         late = protocol4(late, early, bandwidth, pseudo)
+    elif protocol == 5:
+        late = protocol5(late, early, bandwidth, pseudo)
+    elif protocol == 6:
+        late = protocol6(late, early, bandwidth, pseudo)
     return late
 
 
@@ -108,5 +133,9 @@ def run(parser, args):
         protocol=3
     elif args.protocol4:
         protocol=4
+    elif args.protocol5:
+        protocol=5
+    elif args.protocol6:
+        protocol=6
     late = normalize(latestage=args.latestage, protocol=protocol, earlystage=args.earlystage, pseudo=args.pseudo, bandwidth=args.bandwidth, quiet=args.quiet, impute=args.impute)
     sys.stdout.write( late.get_bdg(late.count, args.collapsed) )

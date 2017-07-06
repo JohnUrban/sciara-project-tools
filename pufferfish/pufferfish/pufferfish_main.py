@@ -243,6 +243,19 @@ Then late stage is normalized to early stage if available.
 Then late/early is smoothed with bandwidth given by --bandwidth.
 Then the HMM is run.
 Note: if early is not present, this is same as protocol 3.''')
+
+    parser_puffcn_protocol.add_argument('-5', '--protocol5', action='store_true', default=False,
+                                        help='''Late stage is normalized to early stage if available.
+Then late/early is smoothed with bandwidth given by --bandwidth. (i.e. L/E -> smooth)
+Then the HMM is run.
+Note: if early is not present, this is same as protocol 6.''')
+
+    parser_puffcn_protocol.add_argument('-6', '--protocol6', action='store_true', default=False,
+                                        help='''Late stage (and early stage if present) bin counts are first smoothed with bandwidth given by --bandwidth.
+Then late stage is normalized to early stage if available. (i.e. smooth -> L/E)
+Then the HMM is run.
+Note: if early is not present, this is same as protocol 5.''')
+    
     parser_puffcn.add_argument('-m', '--emodel', type=str, default='normal',
                                help='''Specify emissions model to assume for HMM. Options: normal, exponential. Default: normal.''')
     parser_puffcn.add_argument('-p', '--path', type=str, default='viterbi',
@@ -308,6 +321,19 @@ Then late stage is normalized to early stage if available.
 Then late/early is smoothed with bandwidth given by --bandwidth.
 Then the HMM is run.
 Note: if early is not present, this is same as protocol 3.''')
+
+    parser_summits_protocol.add_argument('-5', '--protocol5', action='store_true', default=False,
+                                        help='''Late stage is normalized to early stage if available.
+Then late/early is smoothed with bandwidth given by --bandwidth. (i.e. L/E -> smooth)
+Then the HMM is run.
+Note: if early is not present, this is same as protocol 6.''')
+
+    parser_summits_protocol.add_argument('-6', '--protocol6', action='store_true', default=False,
+                                        help='''Late stage (and early stage if present) bin counts are first smoothed with bandwidth given by --bandwidth.
+Then late stage is normalized to early stage if available. (i.e. smooth -> L/E)
+Then the HMM is run.
+Note: if early is not present, this is same as protocol 5.''')
+    
     parser_summits.add_argument('-ps', '--pseudo', type=float, default=0.1,
                                help=''' Before normalizing late to early, add this pseudocount to all counts in order to avoid division by zero.
 Should be between 0 and 1.
@@ -380,6 +406,18 @@ Then late stage is normalized to early stage if available.
 Then late/early is smoothed with bandwidth given by --bandwidth.
 Then the HMM is run.
 Note: if early is not present, this is same as protocol 3.''')
+
+    parser_normalize_protocol.add_argument('-5', '--protocol5', action='store_true', default=False,
+                                        help='''Late stage is normalized to early stage if available.
+Then late/early is smoothed with bandwidth given by --bandwidth. (i.e. L/E -> smooth)
+Then the HMM is run.
+Note: if early is not present, this is same as protocol 6.''')
+
+    parser_normalize_protocol.add_argument('-6', '--protocol6', action='store_true', default=False,
+                                        help='''Late stage (and early stage if present) bin counts are first smoothed with bandwidth given by --bandwidth.
+Then late stage is normalized to early stage if available. (i.e. smooth -> L/E)
+Then the HMM is run.
+Note: if early is not present, this is same as protocol 5.''')
     
     parser_normalize.add_argument('-c', '--collapsed', action='store_true', default=False,
                                help='''Return collapsed variable-step bedGraph instead of expanded single-step bedGraph.

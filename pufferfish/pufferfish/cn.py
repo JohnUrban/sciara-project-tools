@@ -1,7 +1,7 @@
 import sys, datetime
 from CovBedClass import *
 from pk2txt import bdgmsg, newmsg
-from normalize import protocol1, protocol2, protocol3, protocol4, normalize
+from normalize import protocol1, protocol2, protocol3, protocol4, protocol5, protocol6, normalize
 
 def hmm7(late, path, emodel):
     states = {}
@@ -75,6 +75,10 @@ def run(parser, args):
         protocol=3
     elif args.protocol4:
         protocol=4
+    elif args.protocol5:
+        protocol=5
+    elif args.protocol6:
+        protocol=6
     
     late = normalize(latestage=args.latestage, protocol=protocol, earlystage=args.earlystage, pseudo=args.pseudo, bandwidth=args.bandwidth, quiet=args.quiet)
 

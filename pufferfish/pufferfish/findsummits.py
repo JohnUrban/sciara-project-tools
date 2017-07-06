@@ -95,6 +95,10 @@ def run(parser, args):
         protocol=3
     elif args.protocol4:
         protocol=4
+    elif args.protocol5:
+        protocol=5
+    elif args.protocol6:
+        protocol=6
     
     late = normalize(latestage=args.latestage, protocol=protocol, earlystage=args.earlystage, pseudo=args.pseudo, bandwidth=args.bandwidth, quiet=args.quiet)
 
