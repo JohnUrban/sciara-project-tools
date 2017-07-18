@@ -42,6 +42,10 @@ QOS1=epscor-condo
 QOS2=biomed-sb-condo
 SCRIPTS=`abspath.py ${0} --split | awk '{print $1}'`
 minPctIdentity=75
+MAKEFAKEQUALS=false
+GAPSONLY=false
+SPANONLY=false
+
 
 ## Currently these defaults do not have corresponding options for changing
 minMatch=8
