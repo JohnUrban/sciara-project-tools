@@ -5,8 +5,9 @@
 
 function help {
     echo "
-        Usage: ${0} -s:a:m:q:x:M:T:C:SGQCh
+        Usage: ${0} -r:s:a:m:q:x:M:T:C:SGQCh
         There are currently no required arguments.
+        -r with argument = path to fastq file of long reads
         -s with argument = path to SCRIPTS DIR
         -a with argument = path to ASM FOFN (Default: input.fofn)
         -m with argument = minPctIdentity for BLASR; (Default: 75)
@@ -32,19 +33,30 @@ ASMFOFN=input.fofn
 MAKEFAKEQUALS=false
 SPANONLY=false
 GAPSONLY=false
-minPctIdentity=75
 HELP=false
 JTHREADS=48
 JMEM=60g
 JTIME=24:00:00
 IMAX=9
 SCRIPTS=`abspath.py ${0} --split | awk '{print $1}'`
+minPctIdentity=75
+
+## Currently these defaults do not have corresponding options for changing
+minMatch=8
+sdpTupleSize=8
+bestn=1
+nCandidates=10
+maxScore=-500
+nproc=48
+SLURMOUTDIR=slurmout
+
 
 #### OPTIONS AND COMMANDLINE ARGS
 ##        c) CONFIG=$OPTARG;;
 
 while getopts "s:a:m:q:x:M:T:C:SGQCh" arg; do
     case $arg in
+        r) READS=$OPTARG;;
         s) SCRIPTS=$OPTARG;;
         a) ASMFOFN=$OPTARG;;
         m) minPctIdentity=$OPTARG;;
@@ -69,7 +81,7 @@ if ${HELP}; then help; exit; fi
 ##PIPELINE=${SCRIPTS}/pbjelly-pipeline.sh
 
 i=0
-while read f; do
+while read ASM; do
   i=$(( $i+1 ))
   if [ $i -eq $IMAX ]; then QOS=${QOS2}; i=0; else QOS=${QOS1}; fi
   REF=`readlink -f $f` 
@@ -81,7 +93,7 @@ while read f; do
     ##$PIPELINE $SCRIPTS $CONFIG $CLEAN $QOS $REF
     MAIN=$PWD
     if [ ! -d $SLURMOUTDIR ]; then mkdir $SLURMOUTDIR; fi
-    OUT=`readlink -f $MAIN`/$SLURMOUTDIR
+    OUT=${MAIN}/${SLURMOUTDIR}
     ## make Protocol.xml
     READS_BASEDIR=`abspath.py ${READS} | awk '{print $1}'`
     READS_BASENAME=`basename ${READS}`
