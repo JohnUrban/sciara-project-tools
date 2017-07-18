@@ -91,9 +91,9 @@ while getopts "r:s:a:m:q:x:M:T:C:SGQCh23456" arg; do
         h) HELP=true;;
         2) RUNSETUP=false;;
         3) RUNSETUP=false; RUNMAPPING=false;;
-        4) RUNSETUP=false; RUNMAPPING=false; RUNSUPPORT;;
-        5) RUNSETUP=false; RUNMAPPING=false; RUNSUPPORT; RUNEXTRACTION=false;;
-        6) RUNSETUP=false; RUNMAPPING=false; RUNSUPPORT; RUNEXTRACTION=false; RUNASSEMBLY=false;;
+        4) RUNSETUP=false; RUNMAPPING=false; RUNSUPPORT=false;;
+        5) RUNSETUP=false; RUNMAPPING=false; RUNSUPPORT=false; RUNEXTRACTION=false;;
+        6) RUNSETUP=false; RUNMAPPING=false; RUNSUPPORT=false; RUNEXTRACTION=false; RUNASSEMBLY=false;;
         *) help; exit;;
     esac
 done
