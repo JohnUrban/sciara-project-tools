@@ -1,7 +1,10 @@
 #!/bin/bash
 
-echo inside script now $0
 
+## ECHO OUT VARIABLES
+for var in PROTOCOL MAKEFAKEQUALS GAPSONLY SPANONLY THREADS; do echo -e ${var} ${!var}; done
+
+## DEFINE FUNCTIONS
 function start {
 echo Start ${1} >> JellyApply.log
 date >> JellyApply.log
@@ -34,6 +37,8 @@ fi
 ## if using fastq, may want the following as a solution
 ## fastq2faqual.py --fastq /path/to/polished_assembly.fastq --fa --qual --out ${outpre}
 
+
+## SOME ARGUMENTS
 SETUPARGS=""
 MAPARGS=""
 SUPPORTARGS=""
@@ -44,6 +49,10 @@ OUTPUTARGS=""
 if ${GAPSONLY}; then SUPPORTARGS+="--capturedOnly "; fi
 if ${SPANONLY}; then SUPPORTARGS+="--spanOnly "; fi
 
+
+
+
+## RUNNING
 run setup ${PROTOCOL} ${SETUPARGS}
 run mapping ${PROTOCOL} ${MAPARGS} 
 run support ${PROTOCOL} ${SUPPORTARGS}
