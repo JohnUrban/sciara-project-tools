@@ -1,0 +1,8 @@
+<jellyProtocol>
+    <reference>/gpfs/scratch/jurban/pb/pbj/withallpbreads/pbout/hgap3.fasta</reference>  
+    <outputDir>/users/jurban/scratch/pb/pbj/withpbreads/pbout</outputDir>
+    <blasr>-minMatch 8 -sdpTupleSize 8 -minPctIdentity 65 -bestn 1 -nCandidates 10 -maxScore -500 -nproc 48 -noSplitSubreads</blasr>
+    <input baseDir="/gpfs/scratch/jurban/pac_bio_data/filt/">
+        <job>all_subreads.fastq</job>
+    </input>
+</jellyProtocol>

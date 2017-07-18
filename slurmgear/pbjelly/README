@@ -1,0 +1,7 @@
+Assumes PBSuite_15.8.24 or otherwise compatible version.
+
+Default blasr line =
+<blasr>-minMatch 8 -sdpTupleSize 8 -minPctIdentity 75 -bestn 1 -nCandidates 10 -maxScore -500 -nproc 48 -noSplitSubreads</blasr>
+
+I go down to 65 minPctIdentity (especially after a round or 2 requiring higher)
+<blasr>-minMatch 8 -sdpTupleSize 8 -minPctIdentity 65 -bestn 1 -nCandidates 10 -maxScore -500 -nproc 48 -noSplitSubreads</blasr>
