@@ -44,11 +44,13 @@ SETUPARGS=""
 MAPARGS=""
 SUPPORTARGS=""
 EXTRACTARGS=""
-ASSEMBLYARGS="--nproc=${THREADS}"
+ASSEMBLYARGS='-x "--nproc=${THREADS}"'
 OUTPUTARGS=""
 
-if ${GAPSONLY}; then SUPPORTARGS+="--capturedOnly "; fi
-if ${SPANONLY}; then SUPPORTARGS+="--spanOnly "; fi
+TMPSUPP=""
+if ${GAPSONLY}; then TMPSUPP+="--capturedOnly "; fi
+if ${SPANONLY}; then TMPSUPP+="--spanOnly "; fi
+if ${GAPSONLY} || ${SPANONLY}; then SUPPORTARGS+='-x "${TMPSUPP}"'
 
 
 
