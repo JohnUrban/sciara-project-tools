@@ -28,7 +28,7 @@ gapsadded=0
 for fa in SeqIO.parse(args.fasta, 'fasta'):
     seq = str(fa.seq)
     length = len(seq)
-    if length >= args.minctglen and gapsadded <= args.num:
+    if length >= args.minctglen and gapsadded < args.num:
         start = random.randint(0,length-args.maxlen)
         end = start + random.randint(args.minlen, args.maxlen)
         gaplen = end-start
