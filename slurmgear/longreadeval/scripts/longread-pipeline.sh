@@ -54,7 +54,7 @@ if $BUILDBWA || [ ! -d $D ]; then
   mkdir $D
   cd $D
   if ${CONVERT_REF_N_TO_ACGT}; then 
-    CONVERTDONE=`sbatch -J ${BASE}_convertN -o ${OUT}/convertN.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --qos=${QOS} \
+    CONVERTDONE=`sbatch -J ${BASE}_convertN -o ${OUT}/convertN.slurm.%A.out --mem=4g --time=12:00:00 -c 1 --qos=${QOS} \
       --export=ASM=${ASM},OUTFASTA=tmp.fasta ${SCRIPTS}/convertN.sh | awk '{print $4}'`
     ASM=${PWD}/tmp.fasta
     IDXDEP=`sbatch --dependency=afterok:${CONVERTDONE} -J ${BASE}_buildbwa -o ${OUT}/bwaidx.slurm.%A.out --mem=$BIMEM --time=$BITIME -c $BITHREADS --qos=$QOS \
