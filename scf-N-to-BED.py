@@ -4,7 +4,7 @@ import re
 from Bio import SeqIO
 
 # Parse command-line arguments
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description="Description: Takes in Fasta. Outputs BED of N-gap locations.")
 parser.add_argument("fasta")
 parser.add_argument("-l", "--length", type=int, default=25, help='''Do not report as gap if less than this length. Default=25.''')
 args = parser.parse_args()
