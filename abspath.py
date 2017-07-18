@@ -8,6 +8,7 @@ parser = argparse.ArgumentParser(description="""
     
     """, formatter_class= argparse.RawTextHelpFormatter)
 parser.add_argument('files', metavar='FILES', nargs='+', help='The input files - as many as you want.')
+parser.add_argument('-r', '--realpath', action='store_true', default=False, help='''Return realpath instead, where realpath eliminates symbolic links.''')
 parser.add_argument('-b', '--basename', action='store_true', default=False, help='''Return basename instead.''')
 parser.add_argument('-s', '--split', action='store_true', default=False, help='''Return path to dir and basename separately/split.''')
 
@@ -22,6 +23,8 @@ if len(args.files) == 1 and (args.files[0] == '-' or args.files[0] == 'stdin'):
 for fpath in args.files:
     if args.basename:
         print os.path.basename(fpath)
+    elif args.realpath:
+        print os.path.realpath(fpath)
     elif args.split:
         print ("\t").join( os.path.split(os.path.abspath(fpath)) )
     else: #abspath
