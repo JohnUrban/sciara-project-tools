@@ -198,7 +198,8 @@ fi
 echo shortread
 mkdir shortread
 cd shortread
-bash $SHORTAUTO $ASMFOFN $LR1 $LR2 $R1 $R2 $EvalThese $SHORTSCRIPTS
+##bash $SHORTAUTO $ASMFOFN $LR1 $LR2 $R1 $R2 $EvalThese $SHORTSCRIPTS
+bash $SHORTAUTO $ASMFOFN $LR1 $LR2 $R1 $R2 $SHORTCONFIG $SHORTSCRIPTS
 cd ../
 
 echo bionano

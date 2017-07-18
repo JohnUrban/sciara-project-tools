@@ -69,7 +69,8 @@ CONFIG=${SCRIPTS}/configs/${EvalThese}
 
 ################ EXECUTE #####################
 
-bash $AUTO $ASMFOFN $LR1 $LR2 $R1 $R2 $EvalThese $SCRIPTS
+##bash $AUTO $ASMFOFN $LR1 $LR2 $R1 $R2 $EvalThese $SCRIPTS
+bash $AUTO $ASMFOFN $LR1 $LR2 $R1 $R2 $CONFIG $SCRIPTS
 
 ################ EXECUTE #####################
 ## Read in options

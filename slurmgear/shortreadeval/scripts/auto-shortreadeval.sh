@@ -6,13 +6,14 @@ LR1=$2
 LR2=$3
 R1=$4
 R2=$5
-EvalThese=$6
+##EvalThese=$6
+CONFIG=$6
 SCRIPTS=$7
 
 
 ## paths
 EVAL=${SCRIPTS}/eval.ARGS.sh
-CONFIG=${SCRIPTS}/configs/${EvalThese}
+##CONFIG=${SCRIPTS}/configs/${EvalThese}
 
 
 ## Process
