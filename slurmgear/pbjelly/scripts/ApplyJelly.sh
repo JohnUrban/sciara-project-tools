@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo inside script now $0
+
 function start {
 echo Start ${1} >> JellyApply.log
 date >> JellyApply.log
@@ -49,4 +51,3 @@ run extraction ${PROTOCOL} ${EXTRACTARGS}
 run assembly ${PROTOCOL} ${ASSEMBLYARGS}
 run output ${PROTOCOL} ${OUTPUTARGS}
 
-EXPORTS='PROTOCOL=${PROTOCOL},MAKEFAKEQUALS=${MAKEFAKEQUALS},GAPSONLY=${GAPSONLY},SPANONLY=${SPANONLY}'
