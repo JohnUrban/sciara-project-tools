@@ -5,7 +5,7 @@
 
 function help {
     echo "
-        Usage: ${0} -r:s:a:m:q:x:M:T:C:SGQCh
+        Usage: ${0} -r:s:a:m:q:x:M:T:C:SGQCh23456
         Currently, only required arg is -r READS.
         -r with argument = abs path to fastq file of long reads or path from HOME; do not give relative path from pwd unless it is in pwd or subdir.
         -s with argument = path to SCRIPTS DIR
@@ -22,6 +22,11 @@ function help {
         -Q Tells it to make fake quals from assembly fastas. Usually this is needed unless the assembly is fastq.
         -C Tells it to clean up when done. 
         -h help - returns this message; also returns this when no arguments given
+        -2 start from step 2: mapping
+        -3 start from step 3: support
+        -4 start from step 4: extraction
+        -5 start from step 5: assembly
+        -6 start from step 6: output
 "
 }
 
@@ -45,7 +50,13 @@ minPctIdentity=75
 MAKEFAKEQUALS=false
 GAPSONLY=false
 SPANONLY=false
-
+RUNSETUP=true
+RUNMAPPING=true
+RUNSUPPORT=true
+RUNSUPPORT=true
+RUNEXTRACTION=true
+RUNASSEMBLY=true
+RUNOUTPUT=true
 
 ## Currently these defaults do not have corresponding options for changing
 minMatch=8
@@ -56,12 +67,12 @@ maxScore=-500
 nproc=48
 SLURMOUTDIR=slurmout
 
-
+EXIT=false
 
 #### OPTIONS AND COMMANDLINE ARGS
 ##        c) CONFIG=$OPTARG;;
 
-while getopts "r:s:a:m:q:x:M:T:C:SGQCh" arg; do
+while getopts "r:s:a:m:q:x:M:T:C:SGQCh23456" arg; do
     case $arg in
         r) READS=$OPTARG;;
         s) SCRIPTS=$OPTARG;;
@@ -78,9 +89,15 @@ while getopts "r:s:a:m:q:x:M:T:C:SGQCh" arg; do
         Q) MAKEFAKEQUALS=true;;
         C) CLEAN=true;;
         h) HELP=true;;
+        2) RUNSETUP=false;;
+        3) RUNSETUP=false; RUNMAPPING=false;;
+        4) RUNSETUP=false; RUNMAPPING=false; RUNSUPPORT;;
+        5) RUNSETUP=false; RUNMAPPING=false; RUNSUPPORT; RUNEXTRACTION=false;;
+        6) RUNSETUP=false; RUNMAPPING=false; RUNSUPPORT; RUNEXTRACTION=false; RUNASSEMBLY=false;;
         *) help; exit;;
     esac
 done
+
 
 if ${HELP}; then help; exit; fi
 
@@ -115,7 +132,7 @@ while read REF; do
     ASM=`readlink -f input_assembly.fasta`
     ${SCRIPTS}/get-pbjelly-protocol.py -r ${ASM} -o ${PWD} -b ${READS_BASEDIR} -f ${READS_BASENAME} --minMatch ${minMatch} --sdpTupleSize ${sdpTupleSize} --minPctIdentity ${minPctIdentity} --bestn ${bestn} --nCandidates ${nCandidates} --maxScore ${maxScore} --nproc ${nproc} > Protocol.xml
     PROTOCOL=`abspath.py Protocol.xml`
-    EXPORTS=`echo PROTOCOL=${PROTOCOL},MAKEFAKEQUALS=${MAKEFAKEQUALS},GAPSONLY=${GAPSONLY},SPANONLY=${SPANONLY},THREADS=${JTHREADS},ASM=${ASM}`
+    EXPORTS=`echo PROTOCOL=${PROTOCOL},MAKEFAKEQUALS=${MAKEFAKEQUALS},GAPSONLY=${GAPSONLY},SPANONLY=${SPANONLY},THREADS=${JTHREADS},ASM=${ASM},RUNSETUP=${RUNSETUP},RUNMAPPING=${RUNMAPPING},RUNSUPPORT=${RUNSUPPORT},RUNEXTRACTION=${RUNEXTRACTION},RUNASSEMBLY=${RUNASSEMBLY},RUNOUTPUT=${RUNOUTPUT}`
     PBJDONE=`sbatch -J ${B}_pbjelly -o ${OUT}/pbjelly.slurm.%A.out --mem=$JMEM --time=$JTIME -c $JTHREADS --qos=$QOS \
       --export=${EXPORTS} ${SCRIPTS}/ApplyJelly.sh | awk '{print $4}'`
   cd ../
