@@ -7,7 +7,7 @@ function help {
     echo "
         Usage: ${0} -r:s:a:m:q:x:M:T:C:SGQCh
         Currently, only required arg is -r READS.
-        -r with argument = path to fastq file of long reads
+        -r with argument = abs path to fastq file of long reads or path from HOME; do not give relative path from pwd unless it is in pwd or subdir.
         -s with argument = path to SCRIPTS DIR
         -a with argument = path to ASM FOFN (Default: input.fofn)
         -m with argument = minPctIdentity for BLASR; (Default: 75)
@@ -113,9 +113,11 @@ while read REF; do
     ## make Protocol.xml
     READS_BASEDIR=`abspath.py ${READS} --split | awk '{print $1}'`
     READS_BASENAME=`basename ${READS}`
+    cp ${ASM} input_assembly.fasta
+    ASM=`readlink -f input_assembly.fasta`
     ${SCRIPTS}/get-pbjelly-protocol.py -r ${ASM} -o ${PWD} -b ${READS_BASEDIR} -f ${READS_BASENAME} --minMatch ${minMatch} --sdpTupleSize ${sdpTupleSize} --minPctIdentity ${minPctIdentity} --bestn ${bestn} --nCandidates ${nCandidates} --maxScore ${maxScore} --nproc ${nproc} > Protocol.xml
     PROTOCOL=`abspath.py Protocol.xml`
-    EXPORTS=`echo PROTOCOL=${PROTOCOL},MAKEFAKEQUALS=${MAKEFAKEQUALS},GAPSONLY=${GAPSONLY},SPANONLY=${SPANONLY},THREADS=${JTHREADS}`
+    EXPORTS=`echo PROTOCOL=${PROTOCOL},MAKEFAKEQUALS=${MAKEFAKEQUALS},GAPSONLY=${GAPSONLY},SPANONLY=${SPANONLY},THREADS=${JTHREADS},REF=${REF}`
     PBJDONE=`sbatch -J ${B}_pbjelly -o ${OUT}/pbjelly.slurm.%A.out --mem=$JMEM --time=$JTIME -c $JTHREADS --qos=$QOS \
       --export=${EXPORTS} ${SCRIPTS}/ApplyJelly.sh | awk '{print $4}'`
   cd ../

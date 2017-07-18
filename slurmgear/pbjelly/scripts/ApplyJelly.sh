@@ -30,8 +30,9 @@ function run {
 
 
 touch JellyApply.log
-if ${MAKEFAKEQUALS}; then 
-  fakeQuals.py $2.fasta $2.qual
+if ${MAKEFAKEQUALS}; then
+  BASE=`basename $REF .fasta` 
+  fakeQuals.py ${REF} ${BASE}.qual
 fi
 
 ## if using fastq, may want the following as a solution
