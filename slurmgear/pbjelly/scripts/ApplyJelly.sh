@@ -43,10 +43,10 @@ fi
 
 ## SOME ARGUMENTS
 SETUPARGS=""
-MAPARGS=`echo x ${THREADS} | awk '{print "-"$1" \"-nproc "$2"\""}'`
+MAPARGS=`echo x ${THREADS} | awk '{print "-"$1" \"-nproc="$2"\""}'`
 SUPPORTARGS=""
 EXTRACTARGS=""
-ASSEMBLYARGS=`echo x ${THREADS} | awk '{print "-"$1" \"--nproc "$2"\""}'`
+ASSEMBLYARGS=`echo x ${THREADS} | awk '{print "-"$1" \"--nproc="$2"\""}'`
 OUTPUTARGS=""
 
 TMPSUPP=""
