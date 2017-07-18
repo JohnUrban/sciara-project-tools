@@ -38,6 +38,8 @@ JTHREADS=48
 JMEM=60g
 JTIME=24:00:00
 IMAX=9
+QOS1=epscor-condo
+QOS2=biomed-sb-condo
 SCRIPTS=`abspath.py ${0} --split | awk '{print $1}'`
 minPctIdentity=75
 
@@ -79,6 +81,7 @@ if ${HELP}; then help; exit; fi
 
 ##source $CONFIG
 ##PIPELINE=${SCRIPTS}/pbjelly-pipeline.sh
+
 
 i=0
 while read REF; do
