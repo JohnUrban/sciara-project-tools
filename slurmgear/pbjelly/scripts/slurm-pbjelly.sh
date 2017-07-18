@@ -96,12 +96,12 @@ done < $ASMFOFN
 
 
 ## SUBMIT BATCH JOBS
+READS_BASEDIR=`abspath.py ${READS} --split | awk '{print $1}'`
+READS_BASENAME=`basename ${READS}`
 i=0
 while read REF; do
   i=$(( $i+1 ))
   if [ $i -eq $IMAX ]; then QOS=${QOS2}; i=0; else QOS=${QOS1}; fi
-  ASM=`readlink -f $REF` 
-  if [[ "$ASM" == *.fa ]]; then B=`basename $ASM .fa`; 
   elif [[ "$ASM" == *.fasta ]]; then B=`basename $ASM .fasta`; fi
   echo $B; 
   if [ ! -d $B ]; then mkdir $B; fi
@@ -111,9 +111,7 @@ while read REF; do
     if [ ! -d $SLURMOUTDIR ]; then mkdir $SLURMOUTDIR; fi
     OUT=${MAIN}/${SLURMOUTDIR}
     ## make Protocol.xml
-    READS_BASEDIR=`abspath.py ${READS} --split | awk '{print $1}'`
-    READS_BASENAME=`basename ${READS}`
-    cp ${ASM} input_assembly.fasta
+    cp ${REF} input_assembly.fasta
     ASM=`readlink -f input_assembly.fasta`
     ${SCRIPTS}/get-pbjelly-protocol.py -r ${ASM} -o ${PWD} -b ${READS_BASEDIR} -f ${READS_BASENAME} --minMatch ${minMatch} --sdpTupleSize ${sdpTupleSize} --minPctIdentity ${minPctIdentity} --bestn ${bestn} --nCandidates ${nCandidates} --maxScore ${maxScore} --nproc ${nproc} > Protocol.xml
     PROTOCOL=`abspath.py Protocol.xml`
