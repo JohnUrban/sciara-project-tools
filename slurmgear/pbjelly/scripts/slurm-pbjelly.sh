@@ -81,12 +81,12 @@ if ${HELP}; then help; exit; fi
 ##PIPELINE=${SCRIPTS}/pbjelly-pipeline.sh
 
 i=0
-while read ASM; do
+while read REF; do
   i=$(( $i+1 ))
   if [ $i -eq $IMAX ]; then QOS=${QOS2}; i=0; else QOS=${QOS1}; fi
-  REF=`readlink -f $f` 
-  if [[ "$f" == *.fa ]]; then B=`basename $f .fa`; 
-  elif [[ "$f" == *.fasta ]]; then B=`basename $f .fasta`; fi
+  ASM=`readlink -f $REF` 
+  if [[ "$ASM" == *.fa ]]; then B=`basename $ASM .fa`; 
+  elif [[ "$ASM" == *.fasta ]]; then B=`basename $ASM .fasta`; fi
   echo $B; 
   if [ ! -d $B ]; then mkdir $B; fi
   cd $B;
