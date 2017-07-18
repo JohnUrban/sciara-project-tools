@@ -55,7 +55,7 @@ if ${SPANONLY}; then TMPSUPP+="--spanOnly "; fi
 if ${GAPSONLY} || ${SPANONLY}; then SUPPORTARGS+=`echo x ${TMPSUPP} | awk '{print "-"$1" \""$2" "$3"\""}'` ; fi
 
 ## ECHO OUT VARIABLES
-for var in SETUPARGS SUPPORTARGS EXTRACTARGS ASSEMBLYARGS ASSEMBLYARGS; do
+for var in SETUPARGS MAPARGS SUPPORTARGS EXTRACTARGS ASSEMBLYARGS OUTPUTARGS; do
    echo -e ${var} ${!var}; 
 done
 
