@@ -25,8 +25,10 @@ function run {
  step=${1}
  protocol=${2}
  args=${3}
+ echo args $args
+ echo argsnew ${@:3}
  start ${1}
- Jelly.py ${step} ${protocol} ${args} 2>>JellyApply.log 
+ Jelly.py ${step} ${protocol} ${@:3} 2>>JellyApply.log 
  end ${1}
 }
 
