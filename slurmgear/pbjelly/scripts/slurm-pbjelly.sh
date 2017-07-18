@@ -102,7 +102,7 @@ while read REF; do
     if [ ! -d $SLURMOUTDIR ]; then mkdir $SLURMOUTDIR; fi
     OUT=${MAIN}/${SLURMOUTDIR}
     ## make Protocol.xml
-    READS_BASEDIR=`abspath.py ${READS} | awk '{print $1}'`
+    READS_BASEDIR=`abspath.py ${READS} --split | awk '{print $1}'`
     READS_BASENAME=`basename ${READS}`
     ${SCRIPTS}/get-pbjelly-protocol.py -r ${ASM} -o ${PWD} -b ${READS_BASEDIR} -f ${READS_BASENAME} --minMatch ${minMatch} --sdpTupleSize ${sdpTupleSize} --minPctIdentity ${minPctIdentity} --bestn ${bestn} --nCandidates ${nCandidates} --maxScore ${maxScore} --nproc ${nproc} > Protocol.xml
     PROTOCOL=`abspath.py Protocol.xml`
