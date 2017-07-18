@@ -1,5 +1,5 @@
 #!/bin/bash
-
+module load blasr
 
 ## ECHO OUT VARIABLES
 for var in PROTOCOL MAKEFAKEQUALS GAPSONLY SPANONLY THREADS; do echo -e ${var} ${!var}; done
