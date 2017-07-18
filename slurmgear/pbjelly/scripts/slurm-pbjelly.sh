@@ -57,6 +57,7 @@ nproc=48
 SLURMOUTDIR=slurmout
 
 
+
 #### OPTIONS AND COMMANDLINE ARGS
 ##        c) CONFIG=$OPTARG;;
 
@@ -87,6 +88,14 @@ if ${HELP}; then help; exit; fi
 ##PIPELINE=${SCRIPTS}/pbjelly-pipeline.sh
 
 
+## CHECK FILENAMES TO MAKE SURE THEY ARE NAMED CORRECTLY
+while read REF; do 
+  if [[ "$REF" != *.fasta ]]; then echo "All files need to have .fasta extension for PBJelly. Not .fa, etc."; exit; fi
+done < $ASMFOFN
+
+
+
+## SUBMIT BATCH JOBS
 i=0
 while read REF; do
   i=$(( $i+1 ))
