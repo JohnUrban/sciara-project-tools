@@ -102,7 +102,7 @@ i=0
 while read REF; do
   i=$(( $i+1 ))
   if [ $i -eq $IMAX ]; then QOS=${QOS2}; i=0; else QOS=${QOS1}; fi
-  if [[ "$REF" == *.fasta ]]; then B=`basename $ASM .fasta`; fi
+  if [[ "$REF" == *.fasta ]]; then B=`basename $REF .fasta`; fi
   echo $B; 
   if [ ! -d $B ]; then mkdir $B; fi
   cd $B;
