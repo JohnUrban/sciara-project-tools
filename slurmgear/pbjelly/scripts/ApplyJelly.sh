@@ -28,6 +28,7 @@ function run {
  echo args $args
  echo argsnew ${@:3}
  start ${1}
+ echo "Jelly.py ${step} ${protocol} ${@:3} 2>>JellyApply.log"
  Jelly.py ${step} ${protocol} ${@:3} 2>>JellyApply.log 
  end ${1}
 }
