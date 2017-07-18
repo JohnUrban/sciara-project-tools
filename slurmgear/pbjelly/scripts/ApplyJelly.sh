@@ -45,12 +45,13 @@ MAPARGS=""
 SUPPORTARGS=""
 EXTRACTARGS=""
 ASSEMBLYARGS='-x "--nproc=${THREADS}"'
+ASSEMBLYARGS=`echo x ${THREADS} | awk '{print "-"$1" \"--ncproc "$2"\""}'`
 OUTPUTARGS=""
 
 TMPSUPP=""
 if ${GAPSONLY}; then TMPSUPP+="--capturedOnly "; fi
 if ${SPANONLY}; then TMPSUPP+="--spanOnly "; fi
-if ${GAPSONLY} || ${SPANONLY}; then SUPPORTARGS+='-x "${TMPSUPP}"'
+if ${GAPSONLY} || ${SPANONLY}; then SUPPORTARGS+=`echo x ${TMPSUPP} | awk '{print "-"$1" \""$2" "$3"\""}'` ; fi
 
 
 
