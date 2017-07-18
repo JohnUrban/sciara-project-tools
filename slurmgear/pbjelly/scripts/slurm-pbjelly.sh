@@ -6,7 +6,7 @@
 function help {
     echo "
         Usage: ${0} -r:s:a:m:q:x:M:T:C:SGQCh
-        There are currently no required arguments.
+        Currently, only required arg is -r READS.
         -r with argument = path to fastq file of long reads
         -s with argument = path to SCRIPTS DIR
         -a with argument = path to ASM FOFN (Default: input.fofn)
@@ -54,7 +54,7 @@ SLURMOUTDIR=slurmout
 #### OPTIONS AND COMMANDLINE ARGS
 ##        c) CONFIG=$OPTARG;;
 
-while getopts "s:a:m:q:x:M:T:C:SGQCh" arg; do
+while getopts "r:s:a:m:q:x:M:T:C:SGQCh" arg; do
     case $arg in
         r) READS=$OPTARG;;
         s) SCRIPTS=$OPTARG;;
