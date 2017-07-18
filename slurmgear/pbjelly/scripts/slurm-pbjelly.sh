@@ -103,7 +103,7 @@ while read REF; do
     ${SCRIPTS}/get-pbjelly-protocol.py -r ${ASM} -o ${PWD} -b ${READS_BASEDIR} -f ${READS_BASENAME} --minMatch ${minMatch} --sdpTupleSize ${sdpTupleSize} --minPctIdentity ${minPctIdentity} --bestn ${bestn} --nCandidates ${nCandidates} --maxScore ${maxScore} --nproc ${nproc} > Protocol.xml
     PROTOCOL=`abspath.py Protocol.xml`
     EXPORTS='PROTOCOL=${PROTOCOL},MAKEFAKEQUALS=${MAKEFAKEQUALS},GAPSONLY=${GAPSONLY},SPANONLY=${SPANONLY},THREADS=${JTHREADS}'
-    MAKEDONE=`sbatch -J ${BASE}_pbjelly -o ${OUT}/pbjelly.slurm.%A.out --mem=$JMEM --time=$JTIME -c $JTHREADS --qos=$QOS \
+    PBJDONE=`sbatch -J ${B}_pbjelly -o ${OUT}/pbjelly.slurm.%A.out --mem=$JMEM --time=$JTIME -c $JTHREADS --qos=$QOS \
       --export=${EXPORTS} ${SCRIPTS}/ApplyJelly.sh | awk '{print $4}'`
   cd ../
 done < $ASMFOFN
