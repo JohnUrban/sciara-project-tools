@@ -41,10 +41,9 @@ fi
 
 ## SOME ARGUMENTS
 SETUPARGS=""
-MAPARGS=""
+MAPARGS=`echo x ${THREADS} | awk '{print "-"$1" \"--ncproc "$2"\""}'`
 SUPPORTARGS=""
 EXTRACTARGS=""
-ASSEMBLYARGS='-x "--nproc=${THREADS}"'
 ASSEMBLYARGS=`echo x ${THREADS} | awk '{print "-"$1" \"--ncproc "$2"\""}'`
 OUTPUTARGS=""
 
