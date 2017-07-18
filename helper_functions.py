@@ -7,13 +7,16 @@ def gc(x):
     return 100.0*c/len(x)
 
 def complement(seq):
-    ''' assumes uppercase '''
     c=""
     for b in seq:
             if b == "A": c += "T"
+            elif b == 'a': c+= 't'
             elif b == "C": c += "G"
+            elif b == "c": c += "g"
             elif b == "G": c += "C"
+            elif b == "g": c += "c"
             elif b == "T": c += "A"
+            elif b == "t": c += "a"
     return c    
 
 def revcomp(seq):
