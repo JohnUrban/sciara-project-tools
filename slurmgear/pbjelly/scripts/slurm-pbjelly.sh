@@ -6,6 +6,7 @@
 function help {
     echo "
         Usage: ${0} -s:a:m:q:x:M:T:C:SGQCh
+        There are currently no required arguments.
         -s with argument = path to SCRIPTS DIR
         -a with argument = path to ASM FOFN (Default: input.fofn)
         -m with argument = minPctIdentity for BLASR; (Default: 75)
@@ -37,6 +38,7 @@ JTHREADS=48
 JMEM=60g
 JTIME=24:00:00
 IMAX=9
+SCRIPTS=`abspath.py ${0} --split | awk '{print $1}'`
 
 #### OPTIONS AND COMMANDLINE ARGS
 ##        c) CONFIG=$OPTARG;;
