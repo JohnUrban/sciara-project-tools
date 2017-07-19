@@ -68,10 +68,15 @@ if ${RUNSETUP}; then run setup ${PROTOCOL} ${SETUPARGS}; fi
 if ${RUNMAPPING}; then run mapping ${PROTOCOL} ${MAPARGS} ; fi
 #######if ${RUNSUPPORT}; then run support ${PROTOCOL} ${SUPPORTARGS}; fi
 if ${RUNSUPPORT}; then 
-    if ${GAPSONLY} && ${SPANONLY}; then run support ${PROTOCOL} '-x "--capturedOnly --spanOnly"';
-    elif ${GAPSONLY}; then run support ${PROTOCOL} '-x "--capturedOnly"';
-    elif ${SPANONLY}; then run support ${PROTOCOL} '-x "--spanOnly"';
+    start support
+    if ${GAPSONLY} && ${SPANONLY}; then 
+       Jelly.py support ${PROTOCOL} -x "--capturedOnly --spanOnly" 2>>JellyApply.log ;
+    elif ${GAPSONLY}; then 
+      Jelly.py support ${PROTOCOL} -x "--capturedOnly" 2>>JellyApply.log ;
+    elif ${SPANONLY}; then 
+      Jelly.py support ${PROTOCOL} -x "--spanOnly" 2>>JellyApply.log ;
     fi
+    end support
 fi
 if ${RUNEXTRACTION}; then run extraction ${PROTOCOL} ${EXTRACTARGS}; fi
 if ${RUNASSEMBLY}; then run assembly ${PROTOCOL} ${ASSEMBLYARGS} ; fi
