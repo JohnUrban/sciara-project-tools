@@ -75,6 +75,8 @@ if ${RUNSUPPORT}; then
       Jelly.py support ${PROTOCOL} -x "--capturedOnly" 2>>JellyApply.log ;
     elif ${SPANONLY}; then 
       Jelly.py support ${PROTOCOL} -x "--spanOnly" 2>>JellyApply.log ;
+    else
+      Jelly.py support ${PROTOCOL} 2>>JellyApply.log
     fi
     end support
 fi
