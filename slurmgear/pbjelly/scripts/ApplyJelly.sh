@@ -66,7 +66,13 @@ done
 ## RUNNING
 if ${RUNSETUP}; then run setup ${PROTOCOL} ${SETUPARGS}; fi
 if ${RUNMAPPING}; then run mapping ${PROTOCOL} ${MAPARGS} ; fi
-if ${RUNSUPPORT}; then run support ${PROTOCOL} ${SUPPORTARGS}; fi
+#######if ${RUNSUPPORT}; then run support ${PROTOCOL} ${SUPPORTARGS}; fi
+if ${RUNSUPPORT}; then 
+    if ${GAPSONLY} && ${SPANONLY}; then run support ${PROTOCOL} '-x "--capturedOnly --spanOnly"';
+    elif ${GAPSONLY}; then run support ${PROTOCOL} '-x "--capturedOnly"';
+    elif ${SPANONLY}; then run support ${PROTOCOL} '-x "--spanOnly"';
+    fi
+fi
 if ${RUNEXTRACTION}; then run extraction ${PROTOCOL} ${EXTRACTARGS}; fi
 if ${RUNASSEMBLY}; then run assembly ${PROTOCOL} ${ASSEMBLYARGS} ; fi
 if ${RUNOUTPUT}; then run output ${PROTOCOL} ${OUTPUTARGS} ; fi
