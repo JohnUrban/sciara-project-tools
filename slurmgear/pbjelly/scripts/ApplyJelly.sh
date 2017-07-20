@@ -36,12 +36,21 @@ function run {
 
 touch JellyApply.log
 if ${MAKEFAKEQUALS}; then
+  start "making quals"
   BASE=`basename ${ASM} .fasta` 
   fakeQuals.py ${ASM} ${BASE}.qual
+  end "making quals"
 fi
 
 ## if using fastq, may want the following as a solution
 ## fastq2faqual.py --fastq /path/to/polished_assembly.fastq --fa --qual --out ${outpre}
+
+
+
+## Docment where gaps are
+start "documenting gaps before running PBJelly"
+scf-N-to-BED.py ${ASM} > gaps.bed
+end "documenting gaps before running PBJelly"
 
 
 ## SOME ARGUMENTS
