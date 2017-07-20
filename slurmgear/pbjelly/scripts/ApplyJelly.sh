@@ -49,7 +49,7 @@ fi
 
 ## Docment where gaps are
 start "documenting gaps before running PBJelly"
-scf-N-to-BED.py ${ASM} > gaps.bed
+scf-N-to-BED.py ${ASM} | awk 'OFS="\t" {print $1,$2,$3,$3-$2}' > gaps.bed
 end "documenting gaps before running PBJelly"
 
 
