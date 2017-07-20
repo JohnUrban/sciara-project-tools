@@ -48,7 +48,7 @@ BLASR = E.blasr
 IN = E.input
 IN_JOB = E.job
 
-blasrline = "-minMatch " + args.minMatch + " -sdpTupleSize " + args.sdpTupleSize + " -minPctIdentity " + args.minPctIdentity + " -bestn " + args.bestn + " -nCandidates 10 -maxScore " + args.maxScore + " -nproc " + args.nproc + " -noSplitSubreads"
+blasrline = "-minMatch " + args.minMatch + " -sdpTupleSize " + args.sdpTupleSize + " -minPctIdentity " + args.minPctIdentity + " -bestn " + args.bestn + " -nCandidates " + args.nCandidates + " -maxScore " + args.maxScore + " -nproc " + args.nproc + " -noSplitSubreads"
 
 the_doc = JELLY(
         REF(args.reference),
