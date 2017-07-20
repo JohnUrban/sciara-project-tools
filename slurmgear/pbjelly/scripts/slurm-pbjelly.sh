@@ -5,12 +5,15 @@
 
 function help {
     echo "
-        Usage: ${0} -r:s:a:m:q:x:M:T:C:SGQCh23456
+        Usage: ${0} -r:s:a:p:m:t:n:q:x:M:T:C:SGQCh23456
         Currently, only required arg is -r READS.
         -r with argument = abs path to fastq file of long reads or path from HOME; do not give relative path from pwd unless it is in pwd or subdir.
         -s with argument = path to SCRIPTS DIR
         -a with argument = path to ASM FOFN (Default: input.fofn)
-        -m with argument = minPctIdentity for BLASR; (Default: 75)
+        -p with argument = minPctIdentity for BLASR; (Default: 75)
+        -m with argument = minMatch for BLASR; (Default: 8)
+        -t with argument = sdpTupleSize for BLASR; (Default: 8)
+        -n with argument = nCandidates for BLASR; (Default: 10)
         -q with argument = Primary QOS for sbatch. (Default: epscor-condo)
         -x with argument = Secondary QOS for sbatch. (Default: biomed-sb-condo)
         -I with argument = Higher numbers skew this toward using primary QOS more than secondary. Setting to 2 would be even split. (Default: 9)
@@ -47,6 +50,9 @@ QOS1=epscor-condo
 QOS2=biomed-sb-condo
 SCRIPTS=`abspath.py ${0} --split | awk '{print $1}'`
 minPctIdentity=75
+minMatch=8
+sdpTupleSize=8
+nCandidates=10
 MAKEFAKEQUALS=false
 GAPSONLY=false
 SPANONLY=false
@@ -59,10 +65,7 @@ RUNASSEMBLY=true
 RUNOUTPUT=true
 
 ## Currently these defaults do not have corresponding options for changing
-minMatch=8
-sdpTupleSize=8
 bestn=1
-nCandidates=10
 maxScore=-500
 nproc=48
 SLURMOUTDIR=slurmout
@@ -72,12 +75,15 @@ EXIT=false
 #### OPTIONS AND COMMANDLINE ARGS
 ##        c) CONFIG=$OPTARG;;
 
-while getopts "r:s:a:m:q:x:M:T:C:SGQCh23456" arg; do
+while getopts "r:s:a:p:m:t:n:q:x:M:T:C:SGQCh23456" arg; do
     case $arg in
         r) READS=$OPTARG;;
         s) SCRIPTS=$OPTARG;;
         a) ASMFOFN=$OPTARG;;
-        m) minPctIdentity=$OPTARG;;
+        p) minPctIdentity=$OPTARG;;
+        m) minMatch=$OPTARG;;
+        t) sdpTupleSize=$OPTARG;;
+        n) nCandidates=$OPTARG;;
         q) QOS1=$OPTARG;;
         x) QOS2=$OPTARG;;
         I) IMAX=$OPTARG;;
