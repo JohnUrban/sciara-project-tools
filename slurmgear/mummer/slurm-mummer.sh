@@ -97,6 +97,7 @@ elif [[ "$READSFASTA" == *.fasta ]]; then PRE=`basename $READSFASTA .fasta`; fi
 facount=`grep -c ">" $READSFASTA`
 count=`echo $facount+$NJOBS | bc`
 nlines=`echo $count/$NJOBS | bc`
+for var in READSDIR READSFASTA facount count nlines; do echo ${var} ${!var}; done
 splitFastA.py -f $READSFASTA -n $nlines -o $READSDIR
 
 ## SUBMIT BATCH JOBS
