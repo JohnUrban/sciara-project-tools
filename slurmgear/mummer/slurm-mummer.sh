@@ -88,10 +88,10 @@ done
 if ${HELP}; then help; exit; fi
 
 
-READSDIR=`readlink -f $TMP`
-
 
 ## SPLIT UP READS FASTA INTO MULTIPLE FILES
+if [ ! -d ${READSDIR} ]; then mkdir ${READSDIR}; fi
+READSDIR=`readlink -f ${READSDIR}`
 if [[ "$READSFASTA" == *.fa ]]; then PRE=`basename $READSFASTA .fa`;
 elif [[ "$READSFASTA" == *.fasta ]]; then PRE=`basename $READSFASTA .fasta`; fi
 facount=`grep -c ">" $READSFASTA`
