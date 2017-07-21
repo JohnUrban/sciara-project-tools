@@ -114,7 +114,7 @@ while read REF; do
     OUT=${MAIN}/${SLURMOUTDIR}
     ASM=`readlink -f ${REF}`
     EXPORTS=`echo PROTOCOL=REF=${ASM},MUMMER=${MUMMER},READSDIR=${READSDIR},PRE=${PRE},NJOBS=${NJOBS},minMatchLength=${minMatchLength},PREFIX=${PREFIX},breakLen=${breakLen},mincluster=${mincluster},maxgap=${maxgap},identity=${identity},minAlnLen=${minAlnLen}`
-    MUMMERDONE=`sbatch --dependency=afterok:${MAKEDONE} -a 1-$NJOBS -J ${BASE}_mummer -o ${OUT}/mummer.slurm.%A_%a.out --mem=$MEM --time=$TIME -c $THREADS --qos=$QOS \
+    MUMMERDONE=`sbatch --dependency=afterok:${MAKEDONE} -a 1-$NJOBS -J ${BASE}_mummer -o ${OUT}/mummer.slurm.%A_%a.out --mem=$JMEM --time=$JTIME -c $JTHREADS --qos=$QOS \
       --export=${EXPORTS} ${SCRIPTS}/run-mummer.sh | awk '{print $4}'`
   cd ../
 done < $ASMFOFN
