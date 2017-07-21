@@ -119,6 +119,7 @@ while read REF; do
     EXPORTS=`echo REF=${ASM},MUMMER=${MUMMER},READSDIR=${READSDIR},PRE=${PRE},NJOBS=${NJOBS},minMatchLength=${minMatchLength},PREFIX=${PREFIX},breakLen=${breakLen},mincluster=${mincluster},maxgap=${maxgap},identity=${identity},minAlnLen=${minAlnLen}`
     MUMMERDONE=`sbatch -a 1-$NJOBS -J ${B}_mummer -o ${OUT}/mummer.slurm.%A_%a.out --mem=$JMEM --time=$JTIME -c $JTHREADS --qos=$QOS \
       --export=${EXPORTS} ${SCRIPTS}/run-mummer.sh | awk '{print $4}'`
+    COMBDONE=`sbatch --dependency=afterok:${MUMMERDONE} -J ${B}_combine_mummer -o ${OUT}/combine.slurm.%A.out --mem=1g --time=1:00:00 -c 1 --qos=${QOS} ${SCRIPTS}/combine-coords.sh | awk '{print $4}'`
   cd ../
 done < $ASMFOFN
 
