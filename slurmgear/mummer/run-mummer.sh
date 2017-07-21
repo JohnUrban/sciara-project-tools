@@ -1,8 +1,8 @@
 #!/bin/bash
 
-mkdir nuc
-mkdir delfil
-mkdir coords
+for var in READSDIR PRE SLURM_ARRAY_TASK_ID MUMMER minMatchLength PREFIX breakLen mincluster maxgap REF QUERY identity minAlnLen; do
+  echo -e ${var} "\t" ${!var}
+done
 
 echo NUCMER
 ##default breaklen = 200
