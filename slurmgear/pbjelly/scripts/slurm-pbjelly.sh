@@ -111,11 +111,42 @@ if ${HELP}; then help; exit; fi
 ##PIPELINE=${SCRIPTS}/pbjelly-pipeline.sh
 
 
+## MAKE SURE READS ARE PRESENTED AS FASTQ OR AS FASTA WITH QUAL IN SAME DIR
+READSNOTRIGHT=false
+if [[ "$READS" != *.fastq ]] && [[ "$READS" != *.fq ]]; then
+  if [[ "$READS" == *.fasta ]] || [[ "$READS" == *.fa ]]; then
+    if [[ "$READS" == *.fasta ]]; then RBASE=`basename ${READS} .fasta`; fi
+    if [[ "$READS" == *.fa ]]; then RBASE=`basename ${READS} .fa`; fi
+    RPATH=`abspath.py ${READS} --split | awk '{print $1}'`
+    QUAL=${RPATH}/${RBASE}.qual
+    if [ ! -f ${QUAL} ]; then READSNOTRIGHT=true; fi
+  else
+    READSNOTRIGHT=true
+  fi
+fi
+
+if $READSNOTRIGHT; then
+    echo "
+    READS FILE: ${READS}
+    Either:
+       1. Was not a fastq file with extension fastq or fq.
+       2. Was not a fasta file with extension fasta/fa 
+       3. Was a fasta file BUT did not have accompanying qual file.
+    If fasta, Qual file should be in same dir as: 
+       ${QUAL}
+    Either turn fasta into fastq (fa2fq.py reads.fasta > reads.fastq) or make qual file.
+    Use fakeQuals.py from pbsuite: fakeQuals.py reads.fasta reads.qual
+    "
+    exit
+fi
+exit
+
+
+
 ## CHECK FILENAMES TO MAKE SURE THEY ARE NAMED CORRECTLY
 while read REF; do 
   if [[ "$REF" != *.fasta ]]; then echo "All files need to have .fasta extension for PBJelly. Not .fa, etc."; exit; fi
 done < $ASMFOFN
-
 
 
 ## SUBMIT BATCH JOBS
