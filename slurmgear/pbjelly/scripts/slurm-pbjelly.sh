@@ -141,7 +141,6 @@ if $READSNOTRIGHT; then
     "
     exit
 fi
-exit
 
 
 
