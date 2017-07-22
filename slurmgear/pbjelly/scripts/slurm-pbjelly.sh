@@ -30,6 +30,8 @@ function help {
         -4 start from step 4: extraction
         -5 start from step 5: assembly
         -6 start from step 6: output
+
+        PBJelly uses BLASR and m4 alignment format: qName tName score percentSimilarity qStrand qStart qEnd qLength tStrand tStart tEnd tLength mapQV
 "
 }
 
