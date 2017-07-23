@@ -124,12 +124,16 @@ done
 ##############################################################################
 if ${HELP}; then help; exit; fi
 
+
+
 ##############################################################################
 ## EXPORT MALIGNER PATHS
 ##############################################################################
 ## EXPORT MALIGNER INTO ENV
 export PATH=${MALIGNER}/bin/:${MALIGNER}/build/bin/:$PATH
 export PYTHONPATH=${MALIGNER}/lib/:$PYTHONPATH
+
+
 
 ##### PIPELINE FUNCTIONS
 ##############################################################################
@@ -162,10 +166,10 @@ function map_align {
        DEPENDS=--dependency=afterok:${CONVDEP}
      fi
      while read mapfilename; do
-       b=`basename $mapfilename`
-       CLEAN1DEP+=:`sbatch -J ${BASE}_${b} $DEPENDS -o ${OUT}/${b}.slurm.%A.out --mem=$JMEM --time=$JTIME -c $JTHREADS --qos=$QOS \
+       mapfilebase=`basename $mapfilename`
+       CLEAN1DEP+=:`sbatch -J ${BASE}_${mapfilebase} $DEPENDS -o ${OUT}/${mapfilebase}.slurm.%A.out --mem=$JMEM --time=$JTIME -c $JTHREADS --qos=$QOS \
           --export=ASM_MAP=${ASM_MAP},SMOOTH_MAPS=${mapfilename},REC_SEQ=${REC_SEQ} ${SCRIPTS}/maligner_dp.for_slurm_mapalign.sh | awk '{print $4}'`
-     done < $FOFN 
+     done < $MAPSFOFN 
      cd ../
     fi
     export CLEAN1DEP
@@ -258,7 +262,6 @@ while read ASM; do
   echo $B; 
   if [ ! -d $BASE ]; then mkdir $BASE; fi
   cd $BASE;
-    ###asmout=${b}${NEWSUFFIX}
     MAIN=$PWD
     if [ ! -d $SLURMOUTDIR ]; then mkdir $SLURMOUTDIR; fi
     OUT=${MAIN}/${SLURMOUTDIR}
