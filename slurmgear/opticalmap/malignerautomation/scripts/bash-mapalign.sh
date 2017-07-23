@@ -160,7 +160,8 @@ function convert_queries {
         if [[ "$fastaloc" == *.fasta ]]; then BASE=`basename ${fastaloc} .fasta`; 
         elif [[ "$fastaloc" == *.fa ]]; then BASE=`basename ${fastaloc} .fa`;
         else BASE=query; fi
-        echo ${PWD}/fastaloc_${i}.${BASE}.${REC_ENZ}.smoothed.maps
+        ##OUT_PFX=${PWD}/fastaloc_${i}.${BASE}.${REC_ENZ}
+        OUT_PFX=fastaloc_${i}.${BASE}.${REC_ENZ}
         make_insilico_map -o $OUT_PFX $fastaloc $REC_SEQ
         smooth_maps_file -m $MIN_FRAG_SIZE ${OUT_PFX}.maps > ${OUT_PFX}.smoothed.maps ;
       done < $FASTAFOFN >> ${MAPSFOFN}
