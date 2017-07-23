@@ -75,7 +75,13 @@ done
 
 ## RUNNING
 if ${RUNSETUP}; then run setup ${PROTOCOL} ${SETUPARGS}; fi
-if ${RUNMAPPING}; then run mapping ${PROTOCOL} ${MAPARGS} ; fi
+##if ${RUNMAPPING}; then run mapping ${PROTOCOL} ${MAPARGS} ; fi
+if ${RUNMAPPING}; then 
+  start mapping; 
+  Jelly.py mapping ${PROTOCOL} -x "-n ${THREADS}" 2>>JellyApply.log ;
+  end mapping; 
+fi
+
 #######if ${RUNSUPPORT}; then run support ${PROTOCOL} ${SUPPORTARGS}; fi
 if ${RUNSUPPORT}; then 
     start support
