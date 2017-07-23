@@ -173,7 +173,7 @@ while read ASM; do
   if [ ! -d $BASE ]; then mkdir $BASE; fi
   cd $BASE;
     MAIN=$PWD
-    if [ ! -d $SLURMOUTDIR ]; then mkdir $SLURMOUTDIR; fi
+    if $SUBMITTOSLURM && [ ! -d $SLURMOUTDIR ]; then mkdir $SLURMOUTDIR; fi
     OUT=${MAIN}/${SLURMOUTDIR}
     ASM=`readlink -f ${ASM}`
     ### PIPELINE
