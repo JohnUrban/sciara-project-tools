@@ -218,7 +218,8 @@ function map_align {
          --max-alignments $MAX_ALIGNMENTS_PER_QUERY \
          ${SMOOTH_MAPS} \
          ${ASM_MAP} \
-         2>&1 1> ${OUT_PFX}.aln | tee ${OUT_PFX}.log
+         1> ${OUT_PFX}.aln 2> ${OUT_PFX}.log
+         ###2>&1 1> ${OUT_PFX}.aln | tee ${OUT_PFX}.log
      done < $MAPSFOFN 
      cd ../
     fi
