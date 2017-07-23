@@ -60,7 +60,7 @@ SCRIPTS=`abspath.py ${0} --split | awk '{print $1}'`
 ##############################################################################
 while getopts "R:Q:e:r:d:1:2:3:4:5:6:7:8:9:h" arg; do
     case $arg in
-        R) ASM=$OPTARG;;
+        R) ASM_MAP=$OPTARG;;
         Q) SMOOTH_MAPS=$OPTARG;;
         e) REC_ENZ=$OPTARG;;
         r) REC_SEQ=$OPTARG;;
