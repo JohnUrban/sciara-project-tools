@@ -162,8 +162,8 @@ function convert_queries {
         else BASE=query; fi
         ##OUT_PFX=${PWD}/fastaloc_${i}.${BASE}.${REC_ENZ}
         OUT_PFX=fastaloc_${i}.${BASE}.${REC_ENZ}
-        make_insilico_map -o $OUT_PFX $fastaloc $REC_SEQ
-        smooth_maps_file -m $MIN_FRAG_SIZE ${OUT_PFX}.maps > ${OUT_PFX}.smoothed.maps ;
+        make_insilico_map -o $OUT_PFX $fastaloc $REC_SEQ 2>> log
+        smooth_maps_file -m $MIN_FRAG_SIZE ${OUT_PFX}.maps > ${OUT_PFX}.smoothed.maps 2>>log ;
       done < $FASTAFOFN >> ${MAPSFOFN}
       cd ../
     fi
@@ -178,12 +178,11 @@ function convert_asm {
       if [ -d $D ]; then rm -r $D; fi
       mkdir $D
       cd $D
-      if $HASFASTAFOFN; then DEPENDS=--dependency=afterok:${QCONVDEP} ; else DEPENDS=""; fi
       # outputs
       ASM_OUT_PFX=${BASE}.${REC_ENZ}
       # convert the asm fasta file to the Maligner maps format and smooth the maps file by merging consecutive fragments that are less than 1kb
-      make_insilico_map -o $ASM_OUT_PFX $ASM $REC_SEQ
-      smooth_maps_file -m $MIN_FRAG_SIZE ${ASM_OUT_PFX}.maps > ${ASM_OUT_PFX}.smoothed.maps
+      make_insilico_map -o $ASM_OUT_PFX $ASM $REC_SEQ 2>> log
+      smooth_maps_file -m $MIN_FRAG_SIZE ${ASM_OUT_PFX}.maps > ${ASM_OUT_PFX}.smoothed.maps 2>>log
       cd ../
     fi
     export ASM_MAP=`readlink -f asm_map/`/${BASE}.${REC_ENZ}.smoothed.maps
@@ -344,12 +343,12 @@ while read ASM; do
     ASM=`readlink -f ${ASM}`
     ### PIPELINE
     CLEAN1DEP=afterok
-    convert_asm
-    map_align
-    merge_maps
-    score_map_alns
-    map_alns_to_bdg
-    clean_up_map_aln
+    echo convert_asm; convert_asm
+    echo map_align; map_align
+    echo merge_maps; merge_maps
+    echo score_map_alns; score_map_alns
+    echo map_alns_to_bdg; map_alns_to_bdg
+    echo clean_up_map_aln; clean_up_map_aln
   cd ../
 done < $ASMFOFN
 
