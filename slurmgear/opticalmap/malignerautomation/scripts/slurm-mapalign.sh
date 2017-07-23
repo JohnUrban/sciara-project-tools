@@ -154,7 +154,7 @@ function convert_queries {
       mkdir $D
       cd $D
       QCONVDEP=`sbatch -J convertqueries -o ${D}/convertqueriestomaps.slurm.%A.out --mem=8g --time=4:00:00 -c 2 --qos=$QOS \
-       --export=ASM_FASTA=${fastaloc},BASE=${BASE},REC_ENZ=${REC_ENZ},REC_SEQ=${REC_SEQ},MIN_FRAG_SIZE=${MIN_FRAG_SIZE},FASTAFOFN=${FASTAFOFN},MAPSFOFN=${MAPSFOFN} \
+       --export=REC_ENZ=${REC_ENZ},REC_SEQ=${REC_SEQ},MIN_FRAG_SIZE=${MIN_FRAG_SIZE},FASTAFOFN=${FASTAFOFN},MAPSFOFN=${MAPSFOFN} \
        ${SCRIPTS}/fa2map-while.sh | awk '{print $4}'`
       cd ../
     fi
@@ -298,6 +298,7 @@ while read ASM; do
     ASM=`readlink -f ${ASM}`
     ### PIPELINE
     CLEAN1DEP=afterok
+    convert_queries
     convert_asm
     map_align
     merge_maps
