@@ -58,7 +58,7 @@ SCRIPTS=`abspath.py ${0} --split | awk '{print $1}'`
 ##############################################################################
 ## GET OPTS
 ##############################################################################
-while getopts "m:f:e:r:d:s:a:q:x:I:M:T:C:1:2:3:4:5:6:7:8:9:0hS" arg; do
+while getopts "R:Q:e:r:d:1:2:3:4:5:6:7:8:9:h" arg; do
     case $arg in
         R) ASM=$OPTARG;;
         Q) SMOOTH_MAPS=$OPTARG;;
