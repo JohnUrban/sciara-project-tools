@@ -133,7 +133,7 @@ if ${HELP}; then help; exit; fi
 ##############################################################################
 HASMAPSFOFN=false
 HASFASTAFOFN=false
-if [ -f $MAPSFOFN ]; then HASMAPSFOFN=true; MAPSFOFN=`readlink -f ${MAPSFOFN}`; fi
+if [ -f $MAPSFOFN ]; then HASMAPSFOFN=true; MAPSFOFN=`readlink -f ${MAPSFOFN}`; else touch maps.fofn; MAPSFOFN=`readlink -f maps.fofn`; fi
 if [ -f $FASTAFOFN ]; then HASFASTAFOFN=true; FASTAFOFN=`readlink -f ${FASTAFOFN}`; fi
 if [ $HASMAPSFOFN  == false ] && [ $HASFASTAFOFN  == false ]; then echo "Could not find MAPSFOFN nor FASTAFOFN file(s). Exiting..."; exit; fi
 
