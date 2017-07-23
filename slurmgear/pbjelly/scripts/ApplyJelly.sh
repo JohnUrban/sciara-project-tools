@@ -55,7 +55,8 @@ end "documenting gaps before running PBJelly"
 
 ## SOME ARGUMENTS
 SETUPARGS=""
-MAPARGS=`echo x ${THREADS} | awk '{print "-"$1" \"-nproc="$2"\""}'`
+##MAPARGS=`echo x ${THREADS} | awk '{print "-"$1" \"--nproc="$2"\""}'`
+MAPARGS=`echo x ${THREADS} | awk '{print "-"$1" \"-n "$2"\""}'`
 SUPPORTARGS=""
 EXTRACTARGS=""
 ASSEMBLYARGS=`echo x ${THREADS} | awk '{print "-"$1" \"--nproc="$2"\""}'`
