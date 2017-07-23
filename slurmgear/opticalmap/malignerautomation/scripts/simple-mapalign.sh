@@ -60,7 +60,7 @@ SCRIPTS=`abspath.py ${0} --split | awk '{print $1}'`
 ##############################################################################
 while getopts "R:Q:e:r:d:1:2:3:4:5:6:7:8:9:h" arg; do
     case $arg in
-        R) ASM_MAP=$OPTARG;;
+        R) ASM=$OPTARG;;
         Q) SMOOTH_MAPS=$OPTARG;;
         e) REC_ENZ=$OPTARG;;
         r) REC_SEQ=$OPTARG;;
@@ -106,7 +106,7 @@ export PYTHONPATH=${MALIGNER}/lib/:$PYTHONPATH
 if [[ "$ASM" == *.fasta ]]; then BASE=`basename $ASM .fasta`; fi
 if [[ "$ASM" == *.fa ]]; then BASE=`basename $ASM .fa`; fi
 MAIN=$PWD
-ASM=`readlink -f ${ASM}`
+ASM_MAP=`readlink -f ${ASM}`
 BASE2=`basename $SMOOTH_MAPS`
 RMAP_OUT_PFX=${BASE2}
 OUT_PFX=${BASE2}
