@@ -197,12 +197,8 @@ function map_align {
      D=aln
      if [ ! -d $D ]; then mkdir $D; fi
      cd $D
-     DEPENDS=""
-     if $CONVERTASM; then
-       DEPENDS=--dependency=afterok:${CONVDEP}
-     fi
      while read SMOOTH_MAPS; do
-       mapfilebase=`basename $mapfilename`
+       mapfilebase=`basename $SMOOTH_MAPS`
        BASE2=`basename $SMOOTH_MAPS`
        RMAP_OUT_PFX=${BASE2}
        OUT_PFX=${BASE2}
