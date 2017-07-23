@@ -132,7 +132,7 @@ HASMAPSFOFN=false
 HASFASTAFOFN=false
 if [ -f $MAPSFOFN ]; then HASMAPSFOFN=true; MAPSFOFN=`readlink -f ${MAPSFOFN}`; fi
 if [ -f $FASTAFOFN ]; then HASFASTAFOFN=true; FASTAFOFN=`readlink -f ${FASTAFOFN}`; fi
-if [ $HASMAPSFOFN  == false ] && [ $HASFASTAFOFN  == false ]; then echo Could not find MAPSFOFN nor FASTAFOFN file(s). Exiting..."; exit; fi
+if [ $HASMAPSFOFN  == false ] && [ $HASFASTAFOFN  == false ]; then echo "Could not find MAPSFOFN nor FASTAFOFN file(s). Exiting..."; exit; fi
 
 
 ##############################################################################
