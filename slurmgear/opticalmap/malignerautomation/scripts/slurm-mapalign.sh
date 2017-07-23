@@ -177,7 +177,7 @@ function map_align {
      while read mapfilename; do
        mapfilebase=`basename $mapfilename`
        CLEAN1DEP+=:`sbatch -J ${BASE}_${mapfilebase} $DEPENDS -o ${OUT}/${mapfilebase}.slurm.%A.out --mem=$JMEM --time=$JTIME -c $JTHREADS --qos=$QOS \
-          --export=ASM_MAP=${ASM_MAP},SMOOTH_MAPS=${mapfilename},REC_SEQ=${REC_SEQ} ${SCRIPTS}/maligner_dp.for_slurm_mapalign.sh | awk '{print $4}'`
+          --export=ASM_MAP=${ASM_MAP},SMOOTH_MAPS=${mapfilename},REC_SEQ=${REC_SEQ},PATH=${PATH} ${SCRIPTS}/maligner_dp.for_slurm_mapalign.sh | awk '{print $4}'`
      done < $MAPSFOFN 
      cd ../
     fi
