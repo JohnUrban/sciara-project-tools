@@ -6,7 +6,7 @@
 
 function help {
     echo "
-        Usage: ${0} -m:f:e:r:d:s:a:q:x:I:M:T:C:1:2:3:4:5:6:7:8:9:0h
+        Usage: ${0} -m:f:e:r:d:s:a:q:x:I:M:T:C:1:2:3:4:5:6:7:8:9:0hS
         -m with argument = maps.fofn file (has paths to all maps to be aligned to assembly) (Default: maps.fofn)
         -f with argument = fasta.fofn file -- alternative to -m/maps.fofn. Contains paths to fastas to be aligned to assembly after being converted to maps. If both maps.fofn and fasta.fofn files available, they will be combined after convrsion of fastas. (Default: fasta.fofn).
         -e with argument = REC_ENZYME (Default: BssSI)
@@ -31,6 +31,7 @@ function help {
         -9 with argument = MAX_ALIGNMENTS_PER_QUERY for maligner (Default: 1)
         -h help - returns this message; also returns this when no arguments given
         -0 Clean when done.
+        -S SUBMIT JOBS TO SLURM.
 
        In general, provide abs paths or paths from HOME rather than relative path from pwd unless it is in pwd or subdir.
 "
@@ -65,6 +66,7 @@ JTHREADS=2
 JMEM=8g
 JTIME=12:00:00
 MALIGNER=~/data/software/maligner/maligner
+SUBMITTOSLURM=false
 
 ## DO NOT HAVE OPTIONS TO TURN OFF YET
 CONVERTASM=true
@@ -88,7 +90,7 @@ EXIT=false
 ##############################################################################
 ## GET OPTS
 ##############################################################################
-while getopts "m:f:e:r:d:s:a:q:x:I:M:T:C:1:2:3:4:5:6:7:8:9:0h" arg; do
+while getopts "m:f:e:r:d:s:a:q:x:I:M:T:C:1:2:3:4:5:6:7:8:9:0hS" arg; do
     case $arg in
         m) MAPSFOFN=$OPTARG;;
         f) FASTAFOFN=$OPTARG;;
@@ -114,6 +116,7 @@ while getopts "m:f:e:r:d:s:a:q:x:I:M:T:C:1:2:3:4:5:6:7:8:9:0h" arg; do
         9) MAX_ALIGNMENTS_PER_QUERY=$OPTARG;;
         0) CLEAN=true;;
         h) HELP=true;;
+        S) SUBMITTOSLURM=true;;
         *) help; exit;;
     esac
 done
@@ -315,7 +318,10 @@ function clean_up_map_aln {
 
 
 
-
+##############################################################################
+## SUBMIT TO SLURM???
+##############################################################################
+if $SUBMITTOSLURM; then source ${SCRIPTS}/slurm-mapalign-functions.sh; fi
 
 ##############################################################################
 ## RUNN PIPELINE
