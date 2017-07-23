@@ -125,6 +125,15 @@ done
 if ${HELP}; then help; exit; fi
 
 
+##############################################################################
+## PROCESS ARGS WHERE NECESSARY
+##############################################################################
+HASMAPSFOFN=false
+HASFASTAFOFN=false
+if [ -f $MAPSFOFN ]; then HASMAPSFOFN=true; MAPSFOFN=`readlink -f ${MAPSFOFN}`; fi
+if [ -f $FASTAFOFN ]; then HASFASTAFOFN=true; FASTAFOFN=`readlink -f ${FASTAFOFN}`; fi
+if [ $HASMAPSFOFN  == false ] && [ $HASFASTAFOFN  == false ]; then echo Could not find MAPSFOFN nor FASTAFOFN file(s). Exiting..."; exit; fi
+
 
 ##############################################################################
 ## EXPORT MALIGNER PATHS
@@ -251,15 +260,17 @@ function clean_up_map_aln {
 
 
 
-
+## LOOP
+##############################################################################
 ## SUBMIT BATCH JOBS
+##############################################################################
 i=0
 while read ASM; do
   i=$(( $i+1 ))
   if [ $i -eq $IMAX ]; then QOS=${QOS2}; i=0; else QOS=${QOS1}; fi
   if [[ "$ASM" == *.fasta ]]; then BASE=`basename $ASM .fasta`; fi
   if [[ "$ASM" == *.fa ]]; then BASE=`basename $ASM .fa`; fi
-  echo $B; 
+  echo $BASE; 
   if [ ! -d $BASE ]; then mkdir $BASE; fi
   cd $BASE;
     MAIN=$PWD
