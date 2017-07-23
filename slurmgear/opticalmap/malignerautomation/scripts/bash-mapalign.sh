@@ -321,7 +321,11 @@ function clean_up_map_aln {
 ##############################################################################
 ## SUBMIT TO SLURM???
 ##############################################################################
-if $SUBMITTOSLURM; then source ${SCRIPTS}/slurm-mapalign-functions.sh; fi
+if $SUBMITTOSLURM; then 
+  source ${SCRIPTS}/slurm-mapalign-functions.sh; 
+else 
+  source ${SCRIPTS}/bash-mapalign-functions.sh; 
+fi
 
 ##############################################################################
 ## RUNN PIPELINE
