@@ -153,7 +153,7 @@ function convert_queries {
       if [ -d $D ]; then rm -r $D; fi
       mkdir $D
       cd $D
-      QCONVDEP=`sbatch -J convertqueries -o ${D}/convertqueriestomaps.slurm.%A.out --mem=8g --time=4:00:00 -c 2 --qos=$QOS \
+      QCONVDEP=`sbatch -J convertqueries -o convertqueriestomaps.slurm.%A.out --mem=8g --time=4:00:00 -c 2 --qos=$QOS \
        --export=REC_ENZ=${REC_ENZ},REC_SEQ=${REC_SEQ},MIN_FRAG_SIZE=${MIN_FRAG_SIZE},FASTAFOFN=${FASTAFOFN},MAPSFOFN=${MAPSFOFN} \
        ${SCRIPTS}/fa2map-while.sh | awk '{print $4}'`
       cd ../
@@ -170,7 +170,7 @@ function convert_asm {
       if [ -d $D ]; then rm -r $D; fi
       mkdir $D
       cd $D
-      if $HASFASTAFOFN; then DEPENDS=--dependency=afterok:${QCOVDEP} ; else DEPENDS=""; fi
+      if $HASFASTAFOFN; then DEPENDS=--dependency=afterok:${QCONVDEP} ; else DEPENDS=""; fi
       CONVDEP=`sbatch ${DEPENDS} -J ${BASE}_convertasm -o ${OUT}/convertasm.slurm.%A.out --mem=8g --time=2:00:00 -c 2 --qos=$QOS \
          --export=ASM_FASTA=${ASM},BASE=${BASE},REC_ENZ=${REC_ENZ},REC_SEQ=${REC_SEQ},MIN_FRAG_SIZE=${MIN_FRAG_SIZE} ${SCRIPTS}/fa2map-for-slurm-mapalign.sh | awk '{print $4}'`
       cd ../
