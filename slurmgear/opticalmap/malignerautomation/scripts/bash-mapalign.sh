@@ -160,11 +160,11 @@ function convert_queries {
         if [[ "$fastaloc" == *.fasta ]]; then BASE=`basename ${fastaloc} .fasta`; 
         elif [[ "$fastaloc" == *.fa ]]; then BASE=`basename ${fastaloc} .fa`;
         else BASE=query; fi
-        ##OUT_PFX=${PWD}/fastaloc_${i}.${BASE}.${REC_ENZ}
+        echo ${PWD}/fastaloc_${i}.${BASE}.${REC_ENZ} >> ${MAPSFOFN}
         OUT_PFX=fastaloc_${i}.${BASE}.${REC_ENZ}
         make_insilico_map -o $OUT_PFX $fastaloc $REC_SEQ 2>> log
         smooth_maps_file -m $MIN_FRAG_SIZE ${OUT_PFX}.maps > ${OUT_PFX}.smoothed.maps 2>>log ;
-      done < $FASTAFOFN >> ${MAPSFOFN}
+      done < $FASTAFOFN 
       cd ../
     fi
 }
@@ -322,7 +322,7 @@ function clean_up_map_aln {
 ##############################################################################
 ## FIRST CONVERT QUERIES IF NEED BE
 QOS=${QOS1}
-convert_queries
+echo convert_queries; convert_queries
 ## LOOP
 i=0
 while read ASM; do
