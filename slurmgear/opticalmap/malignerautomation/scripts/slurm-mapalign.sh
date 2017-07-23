@@ -153,6 +153,16 @@ function convert_queries {
       if [ -d $D ]; then rm -r $D; fi
       mkdir $D
       cd $D
+      ## Add names of future smooth mapped files to maps.fofn now so jobs are launched for them later
+      i=0
+      while read fastaloc; do
+        let i++
+        if [[ "$fastaloc" == *.fasta ]]; then BASE=`basename ${fastaloc} .fasta`; 
+        elif [[ "$fastaloc" == *.fa ]]; then BASE=`basename ${fastaloc} .fa`;
+        else BASE=query; fi
+        echo fastaloc_${i}.${BASE}.${REC_ENZ}.smoothed.maps
+      done < $FASTAFOFN >> ${MAPSFOFN}
+      ## SUBMIT JOB
       QCONVDEP=`sbatch -J convertqueries -o convertqueriestomaps.slurm.%A.out --mem=8g --time=4:00:00 -c 2 --qos=$QOS \
        --export=REC_ENZ=${REC_ENZ},REC_SEQ=${REC_SEQ},MIN_FRAG_SIZE=${MIN_FRAG_SIZE},FASTAFOFN=${FASTAFOFN},MAPSFOFN=${MAPSFOFN} \
        ${SCRIPTS}/fa2map-while.sh | awk '{print $4}'`
