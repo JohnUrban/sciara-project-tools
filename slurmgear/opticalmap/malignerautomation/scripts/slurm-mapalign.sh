@@ -283,6 +283,7 @@ function clean_up_map_aln {
 ## SUBMIT BATCH JOBS
 ##############################################################################
 ## FIRST CONVERT QUERIES IF NEED BE
+QOS=${QOS1}
 convert_queries
 ## LOOP
 i=0
