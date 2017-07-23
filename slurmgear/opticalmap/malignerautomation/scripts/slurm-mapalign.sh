@@ -160,7 +160,7 @@ function convert_queries {
         if [[ "$fastaloc" == *.fasta ]]; then BASE=`basename ${fastaloc} .fasta`; 
         elif [[ "$fastaloc" == *.fa ]]; then BASE=`basename ${fastaloc} .fa`;
         else BASE=query; fi
-        echo fastaloc_${i}.${BASE}.${REC_ENZ}.smoothed.maps
+        echo ${PWD}/fastaloc_${i}.${BASE}.${REC_ENZ}.smoothed.maps
       done < $FASTAFOFN >> ${MAPSFOFN}
       ## SUBMIT JOB
       QCONVDEP=`sbatch -J convertqueries -o convertqueriestomaps.slurm.%A.out --mem=8g --time=4:00:00 -c 2 --qos=$QOS \
