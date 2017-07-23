@@ -279,10 +279,12 @@ function clean_up_map_aln {
 
 
 
-## LOOP
 ##############################################################################
 ## SUBMIT BATCH JOBS
 ##############################################################################
+## FIRST CONVERT QUERIES IF NEED BE
+convert_queries
+## LOOP
 i=0
 while read ASM; do
   i=$(( $i+1 ))
@@ -298,7 +300,6 @@ while read ASM; do
     ASM=`readlink -f ${ASM}`
     ### PIPELINE
     CLEAN1DEP=afterok
-    convert_queries
     convert_asm
     map_align
     merge_maps
