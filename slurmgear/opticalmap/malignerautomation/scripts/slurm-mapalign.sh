@@ -96,7 +96,7 @@ while getopts "m:f:e:r:d:s:a:q:x:I:M:T:C:1:2:3:4:5:6:7:8:9:0h" arg; do
         r) REC_SEQ=$OPTARG;;
         d) MALIGNER=$OPTARG;;
         s) SCRIPTS=$OPTARG;;
-        a) ASMFOFN==$OPTARG;;
+        a) ASMFOFN=$OPTARG;;
         q) QOS1=$OPTARG;;
         x) QOS2=$OPTARG;;
         I) IMAX=$OPTARG;;
