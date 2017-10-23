@@ -3,7 +3,7 @@ set -e
 set -u
 set -o pipefail
 
-source /Users/jurban/software/sratoolkit/source.sh
+#source /Users/jurban/software/sratoolkit/source.sh
 
 function help {
     echo "
