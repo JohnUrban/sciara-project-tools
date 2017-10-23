@@ -4,6 +4,14 @@
 ## FUNCTION: HELP
 ##############################################################################
 
+## NEED TO GET THESE
+#"      --query-max-misses INT               Query max. consecutive unmatched sites (Default 2)\n"
+#"      --ref-max-misses INT                 Reference max. consecutive unmatched sites (Default 5)\n"
+#"      --query-max-miss-rate FLOAT          Max. rate of unmatched sites in the query (Default 0.25)\n"
+#"      --ref-max-miss-rate FLOAT            Max. rate of unmatched sites in the reference (Default 0.50)\n"
+#"      --max-alignments-per-reference INT   Max. alignments to report per reference (Default 100)\n"
+#"      --max-alignments INT                 Max. number of alignments to output (Default 10)\n"
+
 function help {
     echo "
         Usage: ${0} -m:f:e:r:d:s:a:q:x:I:M:T:C:1:2:3:4:5:6:7:8:9:0hS
@@ -22,9 +30,9 @@ function help {
         -C with argument = how many cpus/threads to tell sbatch. (Default: 2)
         -1 with argument = MIN_FRAG_SIZE for maligner (Default: 1000)
         -2 with argument = QUERY_MISS_PENALTY for maligner (Default: 3.0)
-        -3 with argument = REF_MISS_PENALTY for maligner (Default: 3.0)
-        -4 with argument = QUERY_MAX_MISSES for maligner (Default: 5)
-        -5 with argument = REF_MAX_MISSES for maligner (Default: 5)
+        -3 with argument = REF_MISS_PENALTY for maligner  (Default: 3.0)
+        -4 with argument = QUERY_MAX_MISSES for maligner (Query max. consecutive unmatched sites) (Default: 5)
+        -5 with argument = REF_MAX_MISSES for maligner (Ref max. consecutive unmatched sites) (Default: 5)
         -6 with argument = SD_RATE for maligner (Default: 0.05)
         -7 with argument = MIN_SD for maligner (Default: 750)
         -8 with argument = MAX_SCORE_PER_INNER_CHUNK= for maligner (Default: 1.0)
