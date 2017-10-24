@@ -9,6 +9,8 @@ ASMFOFN=`readlink -f $ASMFOFN`
 
 RENAME=true
 
+## MIN CONTIG SIZE -- defaults to analyzing all (minlen=0).
+MINLEN=0
 
 ###################  SHORT READ  ###########################
 # specify paths to lap read sample (LR1,LR2) and all reads (R1,R2)-- give dummy answers if will not be using (that will serve as place-holders)
@@ -182,19 +184,31 @@ BUSCOV3RUN=${BUSCOV3SCRIPTS}/auto-buscov3.sh
 ##############################################
 ##############################################
 ################ EXECUTE #####################
+NEWDIR=eval_asms
+if $RENAME || [ $MINLEN -gt 0 ]; then mkdir ${NEWDIR} ; fi
+
+## IF OPTED; rename and/or set min contig length
 if $RENAME; then echo renaming....;
- mkdir renamed_asms
+ if [ $MINLEN -gt 0 ]; then echo ...also setting min contig length to $MINLEN ; fi
  while read fasta; do
   b=`basename $fasta`
-  fasta_name_changer.py -f $fasta -r contig -n > renamed_asms/${b}
+  fasta_name_changer.py -f $fasta -r contig -n | extractFastxEntries.py --fa --stdin --minlen $MINLEN > ${NEWDIR}/${b}
  done < $ASMFOFN
- for f in renamed_asms/*; do
-  readlink -f $f; done > renamed.fofn
- ASMFOFN=`readlink -f renamed.fofn`
-else
- echo Skip renaming....
+elif [ $MINLEN -gt 0 ] && [ $RENAME != "true" ]; then echo ...setting min contig length to $MINLEN ... ;
+ while read fasta; do
+  b=`basename $fasta`
+  extractFastxEntries.py --fa -f $fasta --minlen $MINLEN > ${NEWDIR}/${b}
+ done < $ASMFOFN
 fi
 
+## CREATE AND USE UPDATED FOFN
+for f in ${NEWDIR}/*; do
+  readlink -f $f; 
+done > renamed.fofn
+ASMFOFN=`readlink -f renamed.fofn`
+
+
+## BEGIN LAUNCHING JOBS
 echo shortread
 mkdir shortread
 cd shortread
