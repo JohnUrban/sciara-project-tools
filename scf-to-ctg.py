@@ -53,7 +53,7 @@ for fa in SeqIO.parse(args.fasta, 'fasta'):
             if len(candidate) > args.minctglen and candidate not in excludedseqs:
                 ctgnum += 1
                 length = len(candidate)
-                print ">" + fa.name + "_ctg" + str(ctgnum) + ":len="+str(length) + ":after" + str(Ncnt) + "Ns"
+                print ">" + fa.name + "_ctg" + str(ctgnum) + "_len="+str(length) + "_after" + str(Ncnt) + "Ns"
                 print candidate
                 Ncnt = 1 ## If start at 0, it seems to report number of Ns = true_num - 1
             else:
