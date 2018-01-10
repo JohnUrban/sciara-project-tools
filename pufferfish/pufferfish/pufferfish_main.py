@@ -27,10 +27,16 @@ def run_subtool(parser, args):
         import pk2txt as submodule
     elif args.command == 'puffcn':
         import cn as submodule
+    elif args.command == 'puffcnpy':
+        import cnpy as submodule
     elif args.command == 'summits':
         import findsummits as submodule
     elif args.command == 'normalize':
         import normalize as submodule
+    elif args.command == 'hmm':
+        import generalhmm as submodule
+    elif args.command == 'generate':
+        import generate as submodule
     elif args.command == 'help':
         import helper as submodule
     # run the chosen submodule
@@ -255,6 +261,10 @@ Note: if early is not present, this is same as protocol 6.''')
 Then late stage is normalized to early stage if available. (i.e. smooth -> L/E)
 Then the HMM is run.
 Note: if early is not present, this is same as protocol 5.''')
+    parser_puffcn_protocol.add_argument('-7', '--protocol7', action='store_true', default=False,
+                                        help='''Late stage is normalized to early stage if available.
+Then the HMM is run.
+Note: No median normalization or smoothing is performed. If only late is given, then this is just an identity/pass-through function.''')
     
     parser_puffcn.add_argument('-m', '--emodel', type=str, default='normal',
                                help='''Specify emissions model to assume for HMM. Options: normal, exponential. Default: normal.''')
@@ -289,6 +299,179 @@ NOTE: In practice, this lead to its own set of problems and I do not recommend u
                                help=''' Use this flag to output levels bdg instead of state bdg.
 Levels are the means 1,2,4,8,16,32,64.
 These are obtained by 2**(state-1).''')
+
+
+    parser_puffcn.add_argument('--mu', type=str, default='1,2,4,8,16,32,64',
+                               help=''' PuffCN has been optimized for mapping DNA puffs in the fungus fly.
+The default state means were previously hard-coded.
+This option allows some flexibility from the command-line to change the state means.
+Default: 1,2,4,8,16,32,64
+To change: Provide comma-seprated list of state means.
+The number of states will be calculated from this list.
+If changing state sigmas (used in normal model), it must have same number of states represented.
+
+NOTE: If using exponential or geometric distribution, provide the expected mean RCN values of the states
+    as you would for normal or poisson models. This script will automatically take their inverses to work
+    in the exponential and geometric models.''')
+
+    parser_puffcn.add_argument('--sigma', type=str, default=None,
+                               help=''' PuffCN has been optimized for mapping DNA puffs in the fungus fly.
+The default state sigmas (stdevs) were previously hard-coded.
+This option allows some flexibility from the command-line to change the state sigmas.
+Default: if not changed, defaults to square root of state means (Poisson-like).
+To change: Provide comma-seprated list of state sigmas.
+Alternatively: Use --mu_scale (default False) with a scaling factor multiplied against the MUs.
+The number of states is calculated from this state mean list, which defaults to 7.
+If changing state sigmas (used in normal model), it must have same number of states represented as state means.''')
+
+    parser_puffcn.add_argument('--mu_scale', type=float, default=None,
+                               help=''' See --sigma for more details on sigmas.
+Use this to scale means (--mu) to use as stdevs (sigma) instead of taking square roots of means.
+For example, --mu_scale 0.5 will use mu*0.5 as the stdev.''')
+
+##    parser_puffcn.add_argument('--changestate', type=float, default=0.001,
+##                               help=''' PuffCN has been optimized for mapping DNA puffs in the fungus fly.
+##The default transition probabilities were previously hard-coded.
+##For now, there are two parameters for transition probabilities: changing states or staying in a state.
+##They are shard by all states.
+##This option allows some flexibility from the command-line to change the probability of changing states.
+##Default: 0.001.
+##NOTE: To ensure transition probabilities from state i to j sum to 1,
+##    the final transition probabilities will actually be X/sum(all trans i to j),
+##    where X is 0.001 by default or what user has given.
+##''')
+##
+##    parser_puffcn.add_argument('--samestate', type=float, default=0.999,
+##                               help=''' PuffCN has been optimized for mapping DNA puffs in the fungus fly.
+##The default transition probabilities were previously hard-coded.
+##For now, there are two parameters for transition probabilities: changing states or staying in a state.
+##They are shard by all states.
+##This option allows some flexibility from the command-line to change the probability of staying in the current state (not changing).
+##Default: 0.999.
+##NOTE: To ensure transition probabilities from state i to j sum to 1,
+##    the final transition probabilities will actually be X/sum(all trans i to j),
+##    where X is 0.999 by default or what user has given.
+##''')
+
+
+    parser_puffcn.add_argument('--special_idx', type=int, default=0,
+                               help='''Only for use if you're very familiar with the program (and change defaults).
+The default state means is 1,2,4,8,16,32,64.
+The default index for the mean that represents copy number 1 is 0.
+In this lingo - CN=1 is the special state, and the 0-based index of the special state in that list is 0.
+If you were to change parameters that affect where the special state is in the list, make sure to change this index.
+This index is only used to help construct initial probabilities and transition probabilies.
+If understood, it can be used to designate any single special state (not necessarily the one that corresponds to CN=1).
+The other parameters to use with this are:
+--init_special (probability of starting in the special state (usually CN=1).
+    The probabity of starting in a another state (usually copy number variant states) defaults to (1-init_special)/(nstates-1).
+--prob_leave_special
+--prob_stay_special
+--prob_other_to_special
+--prob_other_to_other
+--prob_other_to_self
+
+Alternative to, an initial probability vector can be given with --initialprobs 
+''')
+
+    parser_puffcn.add_argument('--init_special', type=float, default=0.997,
+                               help='''Probability of starting in the 'special state' (usually copy number = 1). Default: 0.997.
+The probabity of starting in a another state (usually copy number variant states) defaults to (1-init_special)/(nstates-1).
+''')
+
+
+
+    parser_puffcn.add_argument('--leave_special_state', type=float, default=0.001,
+                               help='''Probability of leaving the 'special state' (usually copy number = 1).
+Default: 0.001.
+If number is betwen 0 and 1, it will be assumed a probability.
+If number given is > 1, then it will be treated as the average length (number of bins) of the special state.
+For example, if 1000 is given, it will be 1/1000 = 0.001.
+In terms of bp lengths, one would need to multiply n_bins * bin_length OR divide bp length by bin_length
+Thus, if you want to see a change every 500 kb w/ 500 bp bins, then 500kb/500 = 1 kb = 1000 -- which will be interpreted as 0.001.
+Or as another example, if you expect to see a change every 2 Mb with 100 bp bins, then 2e6/1e2 = 1e4 = 10 kb = 10000, interpreted as 0.0001.
+
+The probability of staying in this state is the complement: 1-p
+''')
+
+    parser_puffcn.add_argument('--leave_other', type=str, default=None,
+                               help='''Probability of leaving one of the other states.
+This defaults to --leave_special_state making all transition probabilities out of states the same (0.001 by default).
+
+To change, provide a probability of leaving (p).
+
+If the  first number is betwen 0 and 1, it will be assumed a probability.
+If the first number given is > 1, then it will be treated as the average length (number of bins).
+For example, if 1000 is given, it will be 1/1000 = 0.001.
+
+If only 1 number is given, then that is assumed to be the probability of transitioning to all the other states.
+
+You can also give a comma-separated pair of 2 probabilities:
+    prob of leaving to special state
+    prob of leaving to another 'non-special' state.
+Make sure the probabilities sum to what you expect the overall probability of leaving the state is...
+    which should be p_to_special + p_to_nonspecial * (num_non_special-1) = p_to_special + p_to_nonspecial (nstates-2)
+
+For example, in a 7-state model:
+    0.001,0.0002 --> 0.001 + 0.0002 * 5 = 0.001 + 0.001 = 0.002
+    OR
+    0.001,0.001 --> 0.001 + 0.001 * 5 = 0.006
+
+If the second number is > 1, the same rules apply as to the first number.
+
+For other analyses, I've used:
+0.00001,0.000000000001
+OR
+0.001,0.0000000001
+
+The probability of staying in these states is the complement: 1-p1-p2
+
+NOTE: the program forces the transition probabilities of a given state to sum to 1.
+''')
+
+    parser_puffcn.add_argument('--initialprobs', type=str, default=None,
+                               help='''PuffCN has been optimized for mapping DNA puffs in the fungus fly.
+The default state means were previously hard-coded.
+This option allows some flexibility from the command-line to change the state means.
+Default: [0.997, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005]
+The default will change with more or less states described w/ --mu and --sigma.
+By default, the first state will start out as 0.997 as above, all other states will be (1-0.997)/n_other_states.
+That behavior also changes with following parameters:
+--special_idx -- determines which state (not necessarily first) will be given default 0.997 (OR other with --initcn1)
+--init_special (probability of starting in the special state (usually CN=1).
+    The probabity of starting in a another state (usually copy number variant states) defaults to (1-init_special)/(nstates-1).
+--leave_special_state
+
+--prob_other_to_special
+--prob_other_to_other
+--prob_other_to_self
+To change the initial probs manually: Provide comma-separated list of initial probs -e.g.: '0.997,0.0005,0.0005,0.0005,0.0005,0.0005,0.0005'
+This must have same number of states represented as state means (--mu; default 7).
+
+''')
+##'0.997,0.0005,0.0005,0.0005,0.0005,0.0005,0.0005'  [0.997, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005]
+
+    parser_puffcn.add_argument('--initialprobs', type=str, default=None,
+                               help='''PuffCN has been optimized for mapping DNA puffs in the fungus fly.
+The default state means were previously hard-coded.
+This option allows some flexibility from the command-line to change the state means.
+Default: [0.997, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005]
+The default will change with more or less states described w/ --mu and --sigma.
+By default, the first state will start out as 0.997 as above, all other states will be (1-0.997)/n_other_states.
+That behavior also changes with following parameters:
+--special_idx -- determines which state (not necessarily first) will be given default 0.997 (OR other with --initcn1)
+--init_special (probability of starting in the special state (usually CN=1).
+    The probabity of starting in a another state (usually copy number variant states) defaults to (1-init_special)/(nstates-1).
+--leave_special_state
+
+--prob_other_to_special
+--prob_other_to_other
+--prob_other_to_self
+To change the initial probs manually: Provide comma-separated list of initial probs -e.g.: '0.997,0.0005,0.0005,0.0005,0.0005,0.0005,0.0005'
+This must have same number of states represented as state means (--mu; default 7).
+
+''')
+
     parser_puffcn.set_defaults(func=run_subtool)
 
 
@@ -445,7 +628,160 @@ Try: 10000.''')
 
 
     parser_normalize.set_defaults(func=run_subtool)
+
+
+
+
+
+
+
+
+###########GENERATE
+        ## create sub-sommand for puffcn (puff copy number)
+    parser_generate = subparsers.add_parser('generate',
+                                          help = '''Generate emitted_data and statepath bedGraphs.''')
+
+    parser_generate.add_argument('-f','-b', '-i', '--bedgraph', type=str, required=True,
+                                help='''Provide path to bedGraph that contains the intervals in first 3 columns to return with generated data.''')
+
+
+    parser_generate.add_argument('-m', '--emodel', type=str, default='normal',
+                               help='''Specify emissions model to assume for HMM. Options: normal, exponential. Default: normal.''')
+
+    parser_generate.add_argument('--mu', type=str, default='1,2,4,8,16,32,64',
+                               help=''' PuffCN has been optimized for mapping DNA puffs in the fungus fly.
+The default state means were previously hard-coded.
+This option allows some flexibility from the command-line to change the state means.
+Default: 1,2,4,8,16,32,64
+To change: Provide comma-seprated list of state means.
+The number of states will be calculated from this list.
+If changing state sigmas (used in normal model), it must have same number of states represented.
+
+NOTE: If using exponential or geometric distribution, provide the expected mean RCN values of the states
+    as you would for normal or poisson models. This script will automatically take their inverses to work
+    in the exponential and geometric models.''')
+
+    parser_generate.add_argument('--sigma', type=str, default=None,
+                               help=''' PuffCN has been optimized for mapping DNA puffs in the fungus fly.
+The default state sigmas (stdevs) were previously hard-coded.
+This option allows some flexibility from the command-line to change the state sigmas.
+Default: if not changed, defaults to square root of state means (Poisson-like).
+To change: Provide comma-seprated list of state sigmas.
+Alternatively: Use --mu_scale (default False) with a scaling factor multiplied against the MUs.
+The number of states is calculated from this state mean list, which defaults to 7.
+If changing state sigmas (used in normal model), it must have same number of states represented as state means.''')
+
+    parser_generate.add_argument('--mu_scale', type=float, default=None,
+                               help=''' See --sigma for more details on sigmas.
+Use this to scale means (--mu) to use as stdevs (sigma) instead of taking square roots of means.
+For example, --mu_scale 0.5 will use mu*0.5 as the stdev.''')
+
+
+    parser_generate.add_argument('--special_idx', type=int, default=0,
+                               help='''Only for use if you're very familiar with the program (and change defaults).
+The default state means is 1,2,4,8,16,32,64.
+The default index for the mean that represents copy number 1 is 0.
+In this lingo - CN=1 is the special state, and the 0-based index of the special state in that list is 0.
+If you were to change parameters that affect where the special state is in the list, make sure to change this index.
+This index is only used to help construct initial probabilities and transition probabilies.
+If understood, it can be used to designate any single special state (not necessarily the one that corresponds to CN=1).
+The other parameters to use with this are:
+--init_special (probability of starting in the special state (usually CN=1).
+    The probabity of starting in a another state (usually copy number variant states) defaults to (1-init_special)/(nstates-1).
+--prob_leave_special
+--prob_stay_special
+--prob_other_to_special
+--prob_other_to_other
+--prob_other_to_self
+
+Alternative to, an initial probability vector can be given with --initialprobs 
+''')
+
+    parser_generate.add_argument('--init_special', type=float, default=0.997,
+                               help='''Probability of starting in the 'special state' (usually copy number = 1). Default: 0.997.
+The probabity of starting in a another state (usually copy number variant states) defaults to (1-init_special)/(nstates-1).
+''')
+
+
+
+    parser_generate.add_argument('--leave_special_state', type=float, default=0.001,
+                               help='''Probability of leaving the 'special state' (usually copy number = 1).
+Default: 0.001.
+If number is betwen 0 and 1, it will be assumed a probability.
+If number given is > 1, then it will be treated as the average length (number of bins) of the special state.
+For example, if 1000 is given, it will be 1/1000 = 0.001.
+In terms of bp lengths, one would need to multiply n_bins * bin_length OR divide bp length by bin_length
+Thus, if you want to see a change every 500 kb w/ 500 bp bins, then 500kb/500 = 1 kb = 1000 -- which will be interpreted as 0.001.
+Or as another example, if you expect to see a change every 2 Mb with 100 bp bins, then 2e6/1e2 = 1e4 = 10 kb = 10000, interpreted as 0.0001.
+
+The probability of staying in this state is the complement: 1-p
+''')
+
+    parser_generate.add_argument('--leave_other', type=str, default=None,
+                               help='''Probability of leaving one of the other states.
+This defaults to --leave_special_state making all transition probabilities out of states the same (0.001 by default).
+
+To change, provide a probability of leaving (p).
+
+If the  first number is betwen 0 and 1, it will be assumed a probability.
+If the first number given is > 1, then it will be treated as the average length (number of bins).
+For example, if 1000 is given, it will be 1/1000 = 0.001.
+
+If only 1 number is given, then that is assumed to be the probability of transitioning to all the other states.
+
+You can also give a comma-separated pair of 2 probabilities:
+    prob of leaving to special state
+    prob of leaving to another 'non-special' state.
+Make sure the probabilities sum to what you expect the overall probability of leaving the state is...
+    which should be p_to_special + p_to_nonspecial * (num_non_special-1) = p_to_special + p_to_nonspecial (nstates-2)
+
+For example, in a 7-state model:
+    0.001,0.0002 --> 0.001 + 0.0002 * 5 = 0.001 + 0.001 = 0.002
+    OR
+    0.001,0.001 --> 0.001 + 0.001 * 5 = 0.006
+
+If the second number is > 1, the same rules apply as to the first number.
+
+For other analyses, I've used:
+0.00001,0.000000000001
+OR
+0.001,0.0000000001
+
+The probability of staying in these states is the complement: 1-p1-p2
+
+NOTE: the program forces the transition probabilities of a given state to sum to 1.
+''')
+
+    parser_generate.add_argument('--initialprobs', type=str, default=None,
+                               help='''PuffCN has been optimized for mapping DNA puffs in the fungus fly.
+The default state means were previously hard-coded.
+This option allows some flexibility from the command-line to change the state means.
+Default: [0.997, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005]
+The default will change with more or less states described w/ --mu and --sigma.
+By default, the first state will start out as 0.997 as above, all other states will be (1-0.997)/n_other_states.
+That behavior also changes with following parameters:
+--special_idx -- determines which state (not necessarily first) will be given default 0.997 (OR other with --initcn1)
+--init_special (probability of starting in the special state (usually CN=1).
+    The probabity of starting in a another state (usually copy number variant states) defaults to (1-init_special)/(nstates-1).
+--leave_special_state
+
+--prob_other_to_special
+--prob_other_to_other
+--prob_other_to_self
+To change the initial probs manually: Provide comma-separated list of initial probs -e.g.: '0.997,0.0005,0.0005,0.0005,0.0005,0.0005,0.0005'
+This must have same number of states represented as state means (--mu; default 7).
+
+''')
+
     
+    parser_generate.set_defaults(func=run_subtool)
+
+
+
+
+
+
+
     ## create sub-command for help
     parser_help = subparsers.add_parser('help', help=''' Gives more extensive guidance on using pufferfish.''')
     parser_help.set_defaults(func=run_subtool)

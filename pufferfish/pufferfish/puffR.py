@@ -45,8 +45,15 @@ viterbi.puff <- function(emissions, transitions, initial, states, emitted.data, 
 ##  write.table(num.emits, file="del5")
   if (emodel == "normal"){V=viterbi.normal(emissions, transitions, initial, emitted.data, num.states, num.emits)}
   else if (emodel == "poisson"){V=viterbi.poisson(emissions, transitions, initial, emitted.data, num.states, num.emits)}
-  else if (emodel == "exponential"){V=viterbi.exponential(emissions, transitions, initial, emitted.data, num.states, num.emits)}
-  else if (emodel == "geometric"){V=viterbi.geometric(emissions, transitions, initial, emitted.data, num.states, num.emits)}  
+  ## NOTE: for following two emission_prob_means that would otherwise be used for normal or poissoin are inversed (1/mu) for exponential and geometric
+  else if (emodel == "exponential"){
+      emissions[1,] <- 1/emissions[1,]
+      V=viterbi.exponential(emissions, transitions, initial, emitted.data, num.states, num.emits)
+  }
+  else if (emodel == "geometric"){
+      emissions[1,] <- 1/emissions[1,]
+      V=viterbi.geometric(emissions, transitions, initial, emitted.data, num.states, num.emits)
+  }  
   
   viterbi_path <- matrix(data = rep(0, num.emits), nrow = 1)
   viterbi_path[num.emits] <- which.max(V$Viterbi[,num.emits]);  
@@ -97,7 +104,6 @@ viterbi.poisson <- function(emissions, transitions, initial, emitted.data, num.s
 }
 
 viterbi.exponential <- function(emissions, transitions, initial, emitted.data, num.states, num.emits){
-  ## rounds floats to integers
   pointer <- matrix(rep(0, num.emits*num.states), nrow = num.emits)
   Viterbi <- matrix(rep(0, num.states*num.emits), nrow = num.states)  
   Viterbi[ ,1] <- initial + dexp(emitted.data[1], rate = emissions[1, ], log=TRUE)
@@ -366,6 +372,8 @@ backsample.max.freq.path <- function(freq){
 emissions <- matrix(rep(0, 6), nrow=2)
 emissions[1,] <- c(-0.5,0,0.5)
 emissions[2,] <- c(0.5,0.5,0.5)
+
+
 ##transitions <- matrix(rep(0,9),nrow=3)
 ##transitions[1,] <- c(0.99, 0.005, 0.005)
 ##transitions[2,] <- c(0.005,0.99,0.005)
@@ -381,11 +389,20 @@ transitions[3,] <- c(0.00001,0.00001,0.99998)
 ## params for 7state
 ##initial7 <- matrix(rep(1,7)/7, nrow=1)
 initial7 <- matrix(c(0.997,rep(0.0005,6)), nrow=1)
+
 s <- c(1,sqrt(2),2,sqrt(8),4,sqrt(32),8) 
 m <- c(1,2,4,8,16,32,64) 
+
+##For exponential and geometric
+###m <- 1/m
+
+
 emissions7 <- matrix(rep(0, 14), nrow=2)
 emissions7[1,] <- m
 emissions7[2,] <- s
+
+
+
 transitions7 <- matrix(rep(0,49),nrow=7)
 for(i in 1:7){
   transitions7[i,1:7] <- 0.001 #0.000001
@@ -441,5 +458,77 @@ for(i in 1:7){
 ##}
 
 
+generate.normal <- function(n, mu, sig){
+  rnorm(n, mean = mu, sd = sig)
+}
+
+generate.exponential <- function(n, mu, sig){
+  ## assumes mu already 1/mu_given
+  ## sig is just dummy var
+  rexp(n, rate=mu)
+}
+
+generate.poisson <- function(n, mu, sig){
+  ## mu is rounded
+  rpois(n, lambda = round(mu))
+}
+
+generate.geometric <- function(n, mu, sig){
+  ## assumes mu is 1/mu_given
+  ## sig is just dummy var
+  rgeom(n, prob = mu)
+}
+
+##generate_statepath <- function(transitions, initial, states, len=10){
+##  statenums <- 1:length(states)
+##  statepath <- vector(mode="integer", length=len)
+##  # INITIAL
+##  statepath[1] <- sample(statenums, size = 1, prob = initial)
+##    ## TRANSITIONS
+##  for (i in 2:len){
+##    statepath[i] <- sample(statenums, size=1, prob = transitions[statepath[i-1], ])
+##  }
+##  return(statepath)
+##}
+##
+##generate_emitted_data <- function(emissions, statepath, emodel = 'normal'){
+##  #model
+##  if (emodel == "normal"){emodel.fxn <- generate.normal}
+##  else if (emodel == "exponential"){emodel.fxn <- generate.exponential}
+##  else if (emodel == "poisson"){emodel.fxn <- generate.poisson}
+##  else if (emodel == "geometric"){emodel.fxn <- generate.geometric}
+##
+##  statepathlen = length(statepath)
+##  emitted_data <- vector(mode='numeric', length=statepathlen)
+##  for (i in 1:statepathlen){
+##    emitted_data[i] <- emodel.fxn(n=1, mu=emissions[1, statepath[i]], sig=emissions[2, statepath[i]])
+##  }
+##  return(emitted_data)
+##}
+
+
+generate <- function(emissions, transitions, initial, states, statepathlen=10, emodel="normal"){
+  #model
+  if (emodel == "normal"){emodel.fxn <- generate.normal}
+  else if (emodel == "exponential"){emodel.fxn <- generate.exponential}
+  else if (emodel == "poisson"){emodel.fxn <- generate.poisson}
+  else if (emodel == "geometric"){emodel.fxn <- generate.geometric}
+
+  ## Ensure states are indexes
+  statenums <- 1:length(states)
+  statepath <- vector(mode="integer", length=statepathlen)
+  emitted_data <- vector(mode='numeric', length=statepathlen)
+  
+  # INITIAL
+  statepath[1] <- sample(statenums, size = 1, prob = initial)
+  emitted_data[1] <- emodel.fxn(n=1, mu=emissions[1, statepath[1]], sig=emissions[2, statepath[1]])
+  
+    ## TRANSITIONS
+  for (i in 2:statepathlen){
+    statepath[i] <- sample(statenums, size=1, prob = transitions[statepath[i-1], ])
+    emitted_data[i] <- emodel.fxn(n=1, mu=emissions[1, statepath[i]], sig=emissions[2, statepath[i]])
+  }
+  return(list(statepath, emitted_data))
+}
 '''
 

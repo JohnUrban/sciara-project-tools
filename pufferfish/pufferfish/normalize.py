@@ -52,6 +52,13 @@ def protocol6(late, early, bw=10000, pseudocount=0.1):
         late.normalize_to_other(early, pseudocount)
     return late
 
+def protocol7(late, early, pseudocount=0.1):
+    #no smoothing, no median norm
+    # late:early only if early present
+    if early:
+        late.normalize_to_other(early, pseudocount)
+    return late
+
 ##TODO - allow imputing values locally when a bin is 0 -- i.e. if surrounded by 2 bins with values >0, take average.
 ## various 0 spots are causing short state changes in the CN hmm.
 ## perhaps do ksmoothing with something like 10-50kb bandwidth -- then go back to raw signal, and wherever 0 is, substitute with Ksmoothed value.
@@ -108,6 +115,8 @@ def normalize(latestage, protocol=1, earlystage=False, pseudo=0.1, bandwidth=250
             newmsg("following normalization protocol 5"+emsg)
         elif protocol == 6:
             newmsg("following normalization protocol 6"+emsg)
+        elif protocol == 7:
+            newmsg("following normalization protocol 7"+emsg)
     if protocol == 1:
         late = protocol1(late, early, pseudo)
     elif protocol == 2:
@@ -120,6 +129,8 @@ def normalize(latestage, protocol=1, earlystage=False, pseudo=0.1, bandwidth=250
         late = protocol5(late, early, bandwidth, pseudo)
     elif protocol == 6:
         late = protocol6(late, early, bandwidth, pseudo)
+    elif protocol == 7:
+        late = protocol7(late, early, pseudo)
     return late
 
 
@@ -137,5 +148,7 @@ def run(parser, args):
         protocol=5
     elif args.protocol6:
         protocol=6
+    elif args.protocol7:
+        protocol=7
     late = normalize(latestage=args.latestage, protocol=protocol, earlystage=args.earlystage, pseudo=args.pseudo, bandwidth=args.bandwidth, quiet=args.quiet, impute=args.impute)
     sys.stdout.write( late.get_bdg(late.count, args.collapsed) )

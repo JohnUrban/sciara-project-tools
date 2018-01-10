@@ -2,34 +2,14 @@ import sys, datetime
 from CovBedClass import *
 from pk2txt import bdgmsg, newmsg
 from normalize import protocol1, protocol2, protocol3, protocol4, protocol5, protocol6, normalize
+from hmm_fxns_for_R import *
 
-def hmm7(late, path, emodel):
-    states = {}
-    if path == 'viterbi':
-        for chrom in late.chromosomes:
-##            sys.stderr.write( chrom + "\n" )
-            if len(late.count[chrom]) > 1:
-                v = puffR.viterbi_puff(emissions = puffR.emissions7, transitions = puffR.transitions7, initial = puffR.initial7, states = intvec([1,2,3,4,5,6,7]), emitted_data = fltvec(late.count[chrom]), emodel = emodel, logprobs=False)
-                states[chrom] = list(v[0])
-            else:
-                states[chrom] = [0] ## if only 1 bin, assign a non-state
-    elif path == 'posterior':
-        for chrom in late.chromosomes:
-            f = puffR.forward_puff(emissions = puffR.emissions7, transitions = puffR.transitions7, initial = puffR.initial7, states = intvec([1,2,3,4,5,6,7]), emitted_data = fltvec(late.count[chrom]), emodel = emodel, logprobs=False)
-            b = puffR.backward_puff(emissions = puffR.emissions7, transitions = puffR.transitions7, initial = puffR.initial7, states = intvec([1,2,3,4,5,6,7]), emitted_data = fltvec(late.count[chrom]), emodel = emodel, logprobs=False)
-            p = posterior(f[0], b[0], [1,2,3,4,5,6,7])
-            states[chrom] = list(p[0])            
-    return states
 
-##def ORI_bed(late):
-##    ## BED with chr
 
-def get_levels(states):
-    levels = {}
-    for chrom in states.keys():
-        levels[chrom] = 2**(np.array(states[chrom])-1)
-    return levels
-
+## TODO:
+## ALLOW OPTION TO USE KMEANS CLUSTERING TO FIND MEAN OF K STATES (w/ or w/o normalization)
+## --kmeans 5 -- this will over-ride the normal emissions params given or used and will learn them...
+## might also want to give option to randomly sample from data if kmeans takes to long on all data..
 
 def run(parser, args):
 ##    if not args.quiet:
@@ -67,6 +47,8 @@ def run(parser, args):
 ##        late = protocol4(late, early, args.bandwidth, args.pseudo)
 ##
     ## TODO - just change to 1 argument: --protocol -- with options [1,2,3,4]
+
+    
     if args.protocol1:
         protocol=1
     elif args.protocol2:
@@ -79,6 +61,8 @@ def run(parser, args):
         protocol=5
     elif args.protocol6:
         protocol=6
+    elif args.protocol7:
+        protocol=7
     
     late = normalize(latestage=args.latestage, protocol=protocol, earlystage=args.earlystage, pseudo=args.pseudo, bandwidth=args.bandwidth, quiet=args.quiet)
 
@@ -91,15 +75,41 @@ def run(parser, args):
         
     if not args.quiet:
         newmsg("finding state path")
-    states = hmm7(late, args.path, args.emodel)
+
+
+    ## CONSTRUCT EMISSIONS PROBABILITY MATRIX FOR R
+
+
+    eprobs, nstates = help_get_emission_probs(args.mu, args.sigma, args.mu_scale)
+
+
+    ## CONSTRUCT TRANSITIONS PROBABILITY MATRIX FOR R
+
+
+    tprobs = help_get_transition_probs(args.leave_special_state, args.leave_other, args.special_idx, nstates)
+
+    
+    ## CONSTRUCT INITIAL PROBABILITY MATRIX FOR R
+
+
+    iprobs = help_get_initial_probs(nstates, args.special_idx, args.init_special, args.initialprobs)
+
+
+    ## HIDDEN MARKOV MODEL: Find most probable path through states
+
+    statepath = hmmR(late, args.path, args.emodel, eprobs=eprobs, tprobs=tprobs, iprobs=iprobs)
+
+    ## If opted for, get the state means/levels
     if args.levels:
         newmsg("getting levels")
-        levels = get_levels(states)
+        levels = get_levels(statepath)
 
+    ##
     if not args.quiet:
             bdgmsg("state path", args.collapsed)
+            
     if args.levels:
         sys.stdout.write(late.get_bdg(levels, args.collapsed))
     else:
-        sys.stdout.write(late.get_bdg(states, args.collapsed))
+        sys.stdout.write(late.get_bdg(statepath, args.collapsed))
         

@@ -6,8 +6,10 @@ np.seterr(divide='ignore', invalid='raise')
 ##np.seterr(divide='ignore', invalid='ignore')
 import rpy2.robjects as robjects
 ksmooth = robjects.r['ksmooth']
+kmeans = robjects.r['kmeans']
 intvec = robjects.IntVector
 fltvec = robjects.FloatVector
+matrixr = robjects.r.matrix
 r = robjects.r
 from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage as stap
 from puffR import *
@@ -94,7 +96,10 @@ class CovBed(object):
         self.open()
         for line in self.connection:
             chrom, start, end, count = line.strip().split()
-            self._update_data(chrom, int(start), int(end), int(float(count)))
+            self._update_data(chrom, int(start), int(end), float(count))
+            ### JAN 9, 2018 -- I changed above int(float(count)) to float(count)
+            ###         At this point, I don't know what it might break...
+            ##          But now that I am using this more generally for signal data - not just counts - I need it as float
         self._finalize_data()
         self.close()
 
@@ -125,6 +130,13 @@ class CovBed(object):
         for chrom in self.chromosomes:
             for i in range(len(self.start[chrom])):
                 string += ('\t').join([chrom, str(self.start[chrom][i]),  str(self.end[chrom][i]),  str(bdg[chrom][i])]) + "\n"
+        return string
+
+    def expanded_bdg_two_cols(self, bdg1, bdg2):
+        string = ''
+        for chrom in self.chromosomes:
+            for i in range(len( self.start[chrom] )):
+                string += ('\t').join([chrom, str(self.start[chrom][i]), str(self.end[chrom][i]), str(bdg1[chrom][i]), str(bdg2[chrom][i])]) + "\n"
         return string
     
     def collapsed_bdg(self, bdg):
@@ -324,6 +336,13 @@ class MultiCovBed(object):
         for chrom in self.chromosomes:
             for i in range(len( self.start[chrom] )):
                 string += ('\t').join([chrom, str(self.start[chrom][i]), str(self.end[chrom][i]), str(bdg[chrom][i])]) + "\n"
+        return string
+
+    def expanded_bdg_two_cols(self, bdg1, bdg2):
+        string = ''
+        for chrom in self.chromosomes:
+            for i in range(len( self.start[chrom] )):
+                string += ('\t').join([chrom, str(self.start[chrom][i]), str(self.end[chrom][i]), str(bdg1[chrom][i]), str(bdg2[chrom][i])]) + "\n"
         return string
     
     def collapsed_bdg(self, bdg):
