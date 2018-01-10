@@ -37,6 +37,8 @@ def run_subtool(parser, args):
         import generalhmm as submodule
     elif args.command == 'generate':
         import generate as submodule
+    elif args.command == 'filter':
+        import filterfish as submodule
     elif args.command == 'help':
         import helper as submodule
     # run the chosen submodule
@@ -766,6 +768,94 @@ This must have same number of states represented as state means (--mu; default 7
     
     parser_generate.set_defaults(func=run_subtool)
 
+
+
+
+
+    ## create sub-command for filter/filterfish
+    parser_filter = subparsers.add_parser('filter',
+                                       help = '''Given a latest-stage sample (where all or most puffs have grown) and an optional earliest stage sample
+    (for additional Fold-enrichment normalization), just return the late-stage sample with normalized values as specified by protocol options below.''')
+
+    parser_filter.add_argument('--counts', type=str, default=False,
+                            help=''' Use this flag and specify an output prefix for the final normalized late stage bin counts bedGraph.''')
+
+    parser_filter_unit = parser_filter.add_mutually_exclusive_group()
+    parser_filter_unit.add_argument('-sd1','--stdev_above', action='store_true', default=False, 
+                             help='''Use value given as multiple of standard deviations above the mean.''')
+    parser_filter_unit.add_argument('-sd2','--stdev_below', action='store_true', default=False, 
+                             help='''Use value given as multiple of standard deviations BELOW the mean.''')
+    parser_filter_unit.add_argument('-mu','--mean', action='store_true', default=False, 
+                             help='''Use value given as multiple of the mean.''')
+    parser_filter.add_argument('-V','--value', type=float, required=True,
+                             help='''Value to filter on -- a float. Required.''')
+    parser_filter.add_argument('-R','--relation', type=str, default=">",
+                             help='''Relationship to value to filter on -- i.e. greater than, less than, etc. Accepted values are:
+    gt, ge, lt, le, eq, ne -- respectively representing the relations >, >=, <, <=, ==, !=''')
+
+    parser_filter.add_argument('-l','--latestage', type=str, required=True,
+                             help='''Provide path to bedGraph (e.g. made from getcov) for a late stage sample.''')
+    parser_filter.add_argument('-e','--earlystage', type=str, required=False, default=False,
+                            help=''' Optional: Provide path to bedGraph (e.g. made from getcov) for an early stage sample. This is used after smoothing and median normalization to further normalize the late-stage sample (e.g. can correct for sequencing biases)''')
+
+    parser_filter_protocol = parser_filter.add_mutually_exclusive_group(required=True)
+
+    parser_filter_protocol.add_argument('-s','--skipnorm', action='store_true', default=False,
+                             help='''Use provided bedGraph (late option) directly -- skip any normalization procedure.''')
+    parser_filter_protocol.add_argument('-1', '--protocol1', action='store_true', default=False,
+                                     help='''Late stage (and early stage if present) bin counts are median normalized.
+    Then late stage is normalized to early stage if available..''')
+    parser_filter_protocol.add_argument('-2', '--protocol2', action='store_true', default=False,
+                                     help='''Late stage (and early stage if present) bin counts are first smoothed with bandwidth given by --bandwidth.
+    Then they are median normalized.
+    Then late stage is normalized to early stage if available.''')
+    parser_filter_protocol.add_argument('-3', '--protocol3', action='store_true', default=False,
+                                     help='''Late stage (and early stage if present) bin counts are first median normalized.
+    Then they are smoothed with bandwidth given by --bandwidth.
+    Then late stage is normalized to early stage if available.
+    Note: if early is not present, this is same as protocol 4.''')
+    parser_filter_protocol.add_argument('-4', '--protocol4', action='store_true', default=False,
+                                     help='''Late stage (and early stage if present) bin counts are first median normalized.
+    Then late stage is normalized to early stage if available.
+    Then late/early is smoothed with bandwidth given by --bandwidth.
+    Note: if early is not present, this is same as protocol 3.''')
+
+    parser_filter_protocol.add_argument('-5', '--protocol5', action='store_true', default=False,
+                                     help='''Late stage is normalized to early stage if available.
+    Then late/early is smoothed with bandwidth given by --bandwidth. (i.e. L/E -> smooth).
+    Note: if early is not present, this is same as protocol 6.''')
+
+    parser_filter_protocol.add_argument('-6', '--protocol6', action='store_true', default=False,
+                                     help='''Late stage (and early stage if present) bin counts are first smoothed with bandwidth given by --bandwidth.
+    Then late stage is normalized to early stage if available. (i.e. smooth -> L/E).
+    Note: if early is not present, this is same as protocol 5.''')
+
+    parser_filter.add_argument('-c', '--collapsed', action='store_true', default=False,
+                            help='''Return collapsed variable-step bedGraph instead of expanded single-step bedGraph.
+    This is often a much smaller file.''')
+
+    parser_filter.add_argument('-ps', '--pseudo', type=float, default=0.1,
+                            help=''' Before normalizing late to early, add this pseudocount to all counts in order to avoid division by zero.
+    Should be between 0 and 1.
+    Should be small enough to not change other values much,
+    but big enough such that numbers divided by 0+pseudo do not become massive.
+    Default: 0.1.''')
+
+    parser_filter.add_argument('-bw', '--bandwidth', type=int, default=2500,
+                        help=''' If kernel smoothing, specify bandwidth (int).
+    Bandwidth should be bigger when no early stage normalization to try to smooth out sequencing biases, mappability biases, etc.
+    Default: 2500.''')
+    parser_filter.add_argument('--impute', type=int, default=False,
+                            help=''' If imputing, specify bandwidth (int) for  kernel smoothing.
+    This bandwidth is generally longer than the one you would provide for regular smoothing.
+    Only bins with a count of 0 will take on smoothed (imputed) values.
+    Try: 10000.''')
+     
+
+    parser_filter.set_defaults(func=run_subtool)
+ 
+ 
+ 
 
 
 

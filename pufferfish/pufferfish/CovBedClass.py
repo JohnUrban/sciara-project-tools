@@ -57,6 +57,8 @@ class CovBed(object):
         self.count = {}
         self.chromosomes = set([])
         self.median = None
+        self.mean = None
+        self.sd = None
         self.count_only=count_only ## When False, start/end dicts are initialized, but remain empty: useful when comparing 2 bedgraphs of identical coords. See also MultiCovBed (though that currently requires a "stage file")
         self._extract_data()
         
@@ -104,6 +106,21 @@ class CovBed(object):
             ##          But now that I am using this more generally for signal data - not just counts - I need it as float
         self._finalize_data()
         self.close()
+
+
+    def get_mean(self):
+        if self.mean is None:
+            counts = np.concatenate(self.count.values())
+            self.mean = float(np.mean(counts))
+            self.sd = float(np.std(counts))
+        return self.mean
+
+    def get_sd(self):
+        if self.sd is None:
+            counts = np.concatenate(self.count.values())
+            self.mean = float(np.mean(counts))
+            self.sd = float(np.std(counts,ddof=1))
+        return self.sd
 
     def _get_median(self):
         counts = np.concatenate(self.count.values())
@@ -167,6 +184,29 @@ class CovBed(object):
         else:
             return self.collapsed_bdg(bdg)
 
+    def filtered_bdg(self, relation = ">", value = 0, bdg=None):
+        ##bdg is just what should be in the 4th column
+        ## for this might typically be self.count
+        if bdg is None:
+            bdg = self.count
+            string = ''
+        if relation == "gt":
+            keep = lambda x: x > value
+        elif relation == "ge":
+            keep = lambda x: x >= value
+        elif relation == "lt":
+            keep = lambda x: x < value
+        elif relation == "le":
+            keep = lambda x: x <= value
+        elif relation == "eq":
+            keep = lambda x: x == value
+        elif relation == "ne":
+            keep = lambda x: x != value
+        for chrom in self.chromosomes:
+            for i in range(len(self.start[chrom])):
+                if keep(bdg[chrom][i]):
+                    string += ('\t').join([chrom, str(self.start[chrom][i]),  str(self.end[chrom][i]),  str(bdg[chrom][i])]) + "\n"
+        return string
     
     def __str__(self):
         return self.get_bdg(self.count)
