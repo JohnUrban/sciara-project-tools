@@ -239,6 +239,18 @@ def help_get_initial_probs(nstates, special_state_idx, init_special, initialprob
     return iprobs
 
 
+def help_get_prob_matrices_from_params(mu, sigma, mu_scale, leave_special_state, leave_other, special_idx, init_special, initialprobs):
+    ## CONSTRUCT EMISSIONS PROBABILITY MATRIX FOR R
+    eprobs, nstates = help_get_emission_probs(mu, sigma, mu_scale)
+
+    ## CONSTRUCT TRANSITIONS PROBABILITY MATRIX FOR R
+    tprobs = help_get_transition_probs(leave_special_state, leave_other, special_idx, nstates)
+    
+    ## CONSTRUCT INITIAL PROBABILITY MATRIX FOR R
+    iprobs = help_get_initial_probs(nstates, special_idx, init_special, initialprobs)
+
+    return eprobs, tprobs, iprobs
+
 
 
 def k_state_means(data, k):
@@ -282,7 +294,7 @@ def get_k_mean_cluster_mean_lengths(km_lengths):
 
 def get_k_mean_cluster_trans_probs(kmmeans):
     leave = 1/np.array(kmmeans, dtype=float)
-    return list(1-(leave)), list(leave)
+    return list(1-(leave)), list(leave/(len(leave)-1))
 
 def get_k_mean_cluster_initial_probs(km_lengths):
     sums = []
@@ -315,5 +327,18 @@ def get_state_emissions_from_kmeans(data, k):
     sorted_params = sorted( zip( mu, sig , init_probs, stay_probs, leave_probs) )
     return [mu for mu,sig,I,S,L in sorted_params], [sig for mu,sig,I,S,L in sorted_params], [I for mu,sig,I,S,L in sorted_params], [S for mu,sig,I,S,L in sorted_params], [L for mu,sig,I,S,L in sorted_params]
 
-
+def help_get_state_emissions_from_kmeans(data, k):
+    e_mu, e_sig, inits, stay, leave = get_state_emissions_from_kmeans(data, k)
+    eprobs = get_emission_probs(mu=e_mu, sig=e_sig)
+    rowsvec = []
+    for i in range(k):
+        row = [leave[i]]*k
+        row[i] = stay[i]
+        rowsvec += row
+    rowsvecr = fltvec(rowsvec)
+    tprobs = matrixr(rowsvecr, nrow=k, byrow=True)
+    iprobs = matrixr( fltvec(inits), nrow=1 )
+    return eprobs, tprobs, iprobs
+                                 
+                            
     

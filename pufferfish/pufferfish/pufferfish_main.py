@@ -451,25 +451,15 @@ This must have same number of states represented as state means (--mu; default 7
 ''')
 ##'0.997,0.0005,0.0005,0.0005,0.0005,0.0005,0.0005'  [0.997, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005]
 
-    parser_puffcn.add_argument('--initialprobs', type=str, default=None,
+    parser_puffcn.add_argument('--kmeans', type=int, default=None,
                                help='''PuffCN has been optimized for mapping DNA puffs in the fungus fly.
-The default state means were previously hard-coded.
-This option allows some flexibility from the command-line to change the state means.
-Default: [0.997, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005]
-The default will change with more or less states described w/ --mu and --sigma.
-By default, the first state will start out as 0.997 as above, all other states will be (1-0.997)/n_other_states.
-That behavior also changes with following parameters:
---special_idx -- determines which state (not necessarily first) will be given default 0.997 (OR other with --initcn1)
---init_special (probability of starting in the special state (usually CN=1).
-    The probabity of starting in a another state (usually copy number variant states) defaults to (1-init_special)/(nstates-1).
---leave_special_state
-
---prob_other_to_special
---prob_other_to_other
---prob_other_to_self
-To change the initial probs manually: Provide comma-separated list of initial probs -e.g.: '0.997,0.0005,0.0005,0.0005,0.0005,0.0005,0.0005'
-This must have same number of states represented as state means (--mu; default 7).
-
+The default HMM parameters were previously hard-coded.
+There are now other options available to tune the paramters.
+This option is the first way to learn parameters.
+It uses kmeans clustering of the data to estimate initial, transition, and emission probs.
+For now, you need to make an assumption about k by providing an integer.
+This model probably works best when you expect 2-3 states...
+This option over-rides all other parameter options (which will be ignored).
 ''')
 
     parser_puffcn.set_defaults(func=run_subtool)

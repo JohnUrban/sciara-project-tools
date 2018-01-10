@@ -74,26 +74,22 @@ def run(parser, args):
         o.close()
         
     if not args.quiet:
+        newmsg("Constructing probability matrices...")
+
+
+    ## CONSTRUCT EMISSIONS/TRANSITION/INITIAL PROBABILITY MATRIXES FOR R
+    if args.kmeans is not None:
+        data = []
+        for chrom in late.count:
+            data += list(late.count[chrom])
+            
+        eprobs, tprobs, iprobs = help_get_state_emissions_from_kmeans(data, args.kmeans)
+    else:
+        eprobs, tprobs, iprobs = help_get_prob_matrices_from_params(args.mu, args.sigma, args.mu_scale, args.leave_special_state, args.leave_other, args.special_idx, args.init_special, args.initialprobs)
+
+
+    if not args.quiet:
         newmsg("finding state path")
-
-
-    ## CONSTRUCT EMISSIONS PROBABILITY MATRIX FOR R
-
-
-    eprobs, nstates = help_get_emission_probs(args.mu, args.sigma, args.mu_scale)
-
-
-    ## CONSTRUCT TRANSITIONS PROBABILITY MATRIX FOR R
-
-
-    tprobs = help_get_transition_probs(args.leave_special_state, args.leave_other, args.special_idx, nstates)
-
-    
-    ## CONSTRUCT INITIAL PROBABILITY MATRIX FOR R
-
-
-    iprobs = help_get_initial_probs(nstates, args.special_idx, args.init_special, args.initialprobs)
-
 
     ## HIDDEN MARKOV MODEL: Find most probable path through states
 
