@@ -341,4 +341,76 @@ def help_get_state_emissions_from_kmeans(data, k):
     return eprobs, tprobs, iprobs
                                  
                             
+
+
+
+## FUNCTIONS NOT BEING USED
+def window_medians(x, flanksize=2, includeflanks=True):
+    ''' Given vector of FEs and flank size, find median FE in window centered over each bin by entending flanksize in each direction.
+    TODO: For edge cases, take median in windows of flanksize*2 by adding/subtracting on each side as nec...'''
+    meds = []
+    lenx = len(x)
+    start = flanksize
+    end = lenx-flanksize
+    Pos = start
+    ans = np.median( x[Pos-flanksize:Pos+1+flanksize] )
+    if includeflanks:
+        # Append ans for all flank positions before Start
+        meds += [ans]*flanksize
+    meds.append(ans)
+    #Iter from start+1
+    for Pos in range(start+1, end):
+        meds.append( np.median( x[Pos-flanksize:Pos+1+flanksize] ) )
+    if includeflanks:
+        # Append ans for all flank positions before Start
+        meds += [meds[-1]]*flanksize
+    return np.array(meds)
     
+
+def window_sums(x, flanksize=2, returnmeans=False, includeflanks=True):
+    ''' Given vector and flank size, get sum or mean of bin and flanks to each side.
+        Note that this is sliding window mean-smoothing with uniform weighting.
+        Can use ksmooth or loess in R to weight closer bins higher.'''
+    sums = []
+    lenx = len(x)
+    start = flanksize
+    end = lenx-flanksize 
+    windowsize = float(flanksize*2 + 1) ## 2 flanks + Pos it is centered on
+    Pos = start
+    #First window
+    ans = np.sum( x[Pos-flanksize:Pos+flanksize+1] )
+    if includeflanks:
+        # Append ans for all flank positions before Start
+        sums += [ans]*flanksize
+    # Append ans for Start
+    sums.append( ans ) 
+
+    #Iterate
+    for Pos in range(start+1, end):
+        ## Subtract first element of last window
+        ans -= x[Pos-1-flanksize]
+        ## Add last element of current window
+        ans += x[Pos+flanksize]
+        ## Append ans to sums
+        sums.append( ans )
+
+    if includeflanks:
+        # Append last answer for all flank positions after End
+        sums += [sums[-1]] * flanksize
+        
+    ## convert sums to np
+    sums = np.array(sums)
+    ## If means desired
+    if returnmeans:
+        return sums/windowsize
+    return sums
+
+
+def ksmooth_counts(self, bw=10000):
+    for chrom in self.chromosomes:
+        x = self.start[chrom]
+        y = self.count[chrom]
+        k = ksmooth(x = fltvec(x), y = fltvec(y), bandwidth = bw)
+        self.count[chrom] = np.array(k[1])
+
+## HMM followed by window_modes of states could help...

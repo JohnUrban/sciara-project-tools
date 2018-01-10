@@ -48,7 +48,7 @@ TMP_DIR = ".pufferfish_tmp_dir"
 TMP_DIR = TMP_DIR[1:]
 
 class CovBed(object):
-    def __init__(self, covbedfile):
+    def __init__(self, covbedfile, count_only=False):
         self.fopen = False
         self.connection = None
         self.file = covbedfile
@@ -57,6 +57,7 @@ class CovBed(object):
         self.count = {}
         self.chromosomes = set([])
         self.median = None
+        self.count_only=count_only ## When False, start/end dicts are initialized, but remain empty: useful when comparing 2 bedgraphs of identical coords. See also MultiCovBed (though that currently requires a "stage file")
         self._extract_data()
         
     def open(self):
@@ -78,8 +79,9 @@ class CovBed(object):
     def _update_data(self, chrom, start, end, count):
         if chrom not in self.chromosomes:
             self._add_chromosome(chrom)
-        self.start[chrom].append(start)
-        self.end[chrom].append(end)
+        if not self.count_only: ## This allows the start/end dicts to be initialized, but remain empty
+                self.start[chrom].append(start)
+                self.end[chrom].append(end)
         self.count[chrom].append(count)
 
     def _finalize_data(self):
