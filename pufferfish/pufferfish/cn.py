@@ -87,7 +87,11 @@ def run(parser, args):
     else:
         eprobs, tprobs, iprobs = help_get_prob_matrices_from_params(args.mu, args.sigma, args.mu_scale, args.leave_special_state, args.leave_other, args.special_idx, args.init_special, args.initialprobs)
 
-
+    if not args.quiet:
+        newmsg("\nTransition Probs:\n"+str(tprobs))
+        newmsg("\nEmission Probs:\n"+str(eprobs))
+        newmsg("\nInitial Probs:\n"+str(iprobs))
+        
     if not args.quiet:
         newmsg("finding state path")
 
