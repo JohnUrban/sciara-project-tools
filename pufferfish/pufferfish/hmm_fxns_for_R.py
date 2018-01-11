@@ -183,7 +183,7 @@ def help_get_emission_probs(mu, sigma=None, mu_scale=None):
     nstates = len(e_mu)
     ## emissions: determine state sigmas
     if sigma is not None:
-        e_sig = [float(e) for e in args.sigma.strip().split(',')]
+        e_sig = [float(e) for e in sigma.strip().split(',')]
     elif mu_scale is not None: 
         e_sig = [e*mu_scale for e in e_mu]
     else:
