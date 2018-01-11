@@ -154,6 +154,7 @@ if args.dist:
     distout = open(args.dist+'.gc_signal_distributions.txt', 'w')
 # initialize dictionary
 statdict = defaultdict(list)
+mad_sd_ratio = []
 for i in range(0,101,1):
     n = len(gc2felist[i])
     if n > 0:
@@ -161,6 +162,14 @@ for i in range(0,101,1):
         mean =  np.mean(gc2felist[i])
         std = np.std(gc2felist[i], ddof=1) ## ddof=1 gives same result as R
         mad = np.median( np.absolute(gc2felist[i] - median) ) ## median absolute deviation from median
+        ## CAN ALSO PUT MAD CORRECTION AFTER ALL ARE COMPUTED....
+        if mad == 0: ## This will give problem w/ z-scores
+            if i > 0: ## scale std based on mean ratio of mad-to-sd: sd*ratio
+                mad = std * sum(mad_sd_ratio)/float(len(mad_sd_ratio))
+            else: #i=0; use stdev as no ratio known yet
+                mad = std
+        else:
+            mad_sd_ratio.append( float(mad)/std )
         if n == 1: ## stdev will be NAN and MAD will be 0 - just use previous for both
             ## This is just a band-aid for now
             ## Moreover, it is not guaranteed to work if n_i-1 was also 1
