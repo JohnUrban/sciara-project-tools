@@ -174,8 +174,8 @@ for i in range(0,101,1):
 ##                mad = std * sum(mad_sd_ratio)/float(len(mad_sd_ratio))
 ##            else: #i=0; use stdev as no ratio known yet
 ##                mad = std
-        else:
-            mad_sd_ratio.append( float(mad)/std )
+##        else:
+##            mad_sd_ratio.append( float(mad)/std )
 
         statdict[i] += [median, mean, std, mad, n]
         if args.dist:
