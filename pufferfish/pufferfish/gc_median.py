@@ -161,6 +161,11 @@ for i in range(0,101,1):
         mean =  np.mean(gc2felist[i])
         std = np.std(gc2felist[i], ddof=1) ## ddof=1 gives same result as R
         mad = np.median( np.absolute(gc2felist[i] - median) ) ## median absolute deviation from median
+        if n == 1: ## stdev will be NAN and MAD will be 0 - just use previous for both
+            ## This is just a band-aid for now
+            ## Moreover, it is not guaranteed to work if n_i-1 was also 1
+            std = np.std(gc2felist[i-1], ddof=1)
+            mad = np.median( np.absolute(gc2felist[i-1] - median) ) ## uses i-1 values w/ median_i 
         statdict[i] += [median, mean, std, mad, n]
         if args.dist:
             out = [str(i), (',').join([str(e) for e in gc2felist[i]])]
