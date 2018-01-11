@@ -160,8 +160,14 @@ for i in range(0,101,1):
     if n > 0:
         median = np.median(gc2felist[i])
         mean =  np.mean(gc2felist[i])
-        std = np.std(gc2felist[i], ddof=1) ## ddof=1 gives same result as R
-        mad = np.median( np.absolute(gc2felist[i] - median) ) ## median absolute deviation from median
+        if n == 1: ## stdev will be NAN and MAD will be 0 - just use previous for both
+            ## This is just a band-aid for now
+            ## Moreover, it is not guaranteed to work if n_i-1 was also 1
+            std = np.std(gc2felist[i-1], ddof=1)
+            mad = np.median( np.absolute(gc2felist[i-1] - median) ) ## uses i-1 values w/ median_i 
+        else:
+            std = np.std(gc2felist[i], ddof=1) ## ddof=1 gives same result as R
+            mad = np.median( np.absolute(gc2felist[i] - median) ) ## median absolute deviation from median
         ## CAN ALSO PUT MAD CORRECTION AFTER ALL ARE COMPUTED....
         if mad == 0: ## This will give problem w/ z-scores
             if i > 0: ## scale std based on mean ratio of mad-to-sd: sd*ratio
@@ -170,11 +176,7 @@ for i in range(0,101,1):
                 mad = std
         else:
             mad_sd_ratio.append( float(mad)/std )
-        if n == 1: ## stdev will be NAN and MAD will be 0 - just use previous for both
-            ## This is just a band-aid for now
-            ## Moreover, it is not guaranteed to work if n_i-1 was also 1
-            std = np.std(gc2felist[i-1], ddof=1)
-            mad = np.median( np.absolute(gc2felist[i-1] - median) ) ## uses i-1 values w/ median_i 
+
         statdict[i] += [median, mean, std, mad, n]
         if args.dist:
             out = [str(i), (',').join([str(e) for e in gc2felist[i]])]
