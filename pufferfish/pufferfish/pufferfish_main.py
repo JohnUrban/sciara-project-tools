@@ -84,7 +84,10 @@ Maps reads to genome and filters out unmapped reads before sorting and indexing.
                                help='''Path to bt2 index prefix.''')
     parser_mapreads_reftype.add_argument('-r', '--ref_fasta', type=str,
                                help='''Path to reference fasta. A bt2 index will be generated in same dir.''')
+    parser_mapreads.add_argument('--threads', '-p', type=int, default=1, help='''Number of parallel threads for bowtie2 to use. Default: 1.''')
+
     parser_mapreads.add_argument('--dry', action='store_true', default=False, help='''Only writes out the commands that will be used if set.''')
+
     parser_mapreads.set_defaults(func=run_subtool)
 
 

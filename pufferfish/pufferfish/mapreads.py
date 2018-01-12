@@ -42,14 +42,14 @@ def make_bt2(fasta, prefix):
     cmd = 'bowtie2-build ' + fasta + ' ' + prefix
     return cmd, prefix
 
-def bowtie2(bt2, fastx, errfile):
-    bowtie2fq = 'bowtie2 -q --very-sensitive -N 1 -x %s -U %s 2>%s'
-    bowtie2fa = 'bowtie2 -f --very-sensitive -N 1 -x %s -U %s 2>%s'
+def bowtie2(bt2, fastx, threads, errfile):
+    bowtie2fq = 'bowtie2 --threads %s -q --very-sensitive -N 1 -x %s -U %s 2>%s'
+    bowtie2fa = 'bowtie2 --threads %s -f --very-sensitive -N 1 -x %s -U %s 2>%s'
     fx = detect_fastx_type(fastx)
     if fx == 'fa':
-        return bowtie2fa % (bt2, fastx, errfile)
+        return bowtie2fa % (threads, bt2, fastx, errfile)
     elif fx == 'fq':
-        return bowtie2fq % (bt2, fastx, errfile)
+        return bowtie2fq % (threads, bt2, fastx, errfile)
 
 
 ## IT APPEARS SAMTOOLS NO LONGER NEEDS THE "-"
@@ -59,8 +59,8 @@ def samtools_view(errfile): # removes unmapped reads
 
 ##def samtools_sort(bamprefix, errfile):
 ##    return 'samtools sort - -o %s.bam 2>>%s' % (bamprefix, errfile)
-def samtools_sort(bamprefix, errfile):
-    return 'samtools sort -o %s.bam 2>>%s' % (bamprefix, errfile)
+def samtools_sort(bamprefix, threads, errfile):
+    return 'samtools sort --threads %s -o %s.bam 2>>%s' % (threads, bamprefix, errfile)
 
 
 def samtools_index(bamfile, errfile):
@@ -69,10 +69,10 @@ def samtools_index(bamfile, errfile):
 
 
 
-def map_reads(fastx, bt2, dry=False):
+def map_reads(fastx, bt2, threads, dry=False):
     prefix = os.path.basename(fastx).split(".")[0]
     errfile = prefix + ".err"
-    mapreads = (" | ").join([bowtie2(bt2,fastx,errfile), samtools_view(errfile), samtools_sort(prefix,errfile)])
+    mapreads = (" | ").join([bowtie2(bt2,fastx,threads,errfile), samtools_view(errfile), samtools_sort(prefix, threads, errfile)])
     bam = prefix + ".bam"
     run_cmd( mapreads, dry )
     cmd = samtools_index(bam,errfile)
@@ -108,6 +108,6 @@ def run(parser, args):
         cmd, args.bt2 = make_bt2(args.ref_fasta, prefix)
         run_cmd( cmd, args.dry )
     for fastx in args.fastxfiles:
-        map_reads(fastx, args.bt2, args.dry)
+        map_reads(fastx, args.bt2, str(args.threads), args.dry)
     
     
