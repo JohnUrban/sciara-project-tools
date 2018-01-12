@@ -163,19 +163,24 @@ for i in range(0,101,1):
         if n == 1: ## stdev will be NAN and MAD will be 0 - just use previous for both
             ## This is just a band-aid for now
             ## Moreover, it is not guaranteed to work if n_i-1 was also 1
-            std = np.std(gc2felist[i-1], ddof=1)
-            mad = np.median( np.absolute(gc2felist[i-1] - median) ) ## uses i-1 values w/ median_i 
+            try:
+                std = np.std(gc2felist[i-1], ddof=1)
+                mad = np.median( np.absolute(gc2felist[i-1] - median) ) ## uses i-1 values w/ median_i
+            except:
+                std = 1
+                mad = 1
         else:
             std = np.std(gc2felist[i], ddof=1) ## ddof=1 gives same result as R
             mad = np.median( np.absolute(gc2felist[i] - median) ) ## median absolute deviation from median
         ## CAN ALSO PUT MAD CORRECTION AFTER ALL ARE COMPUTED....
         if mad == 0: ## This will give problem w/ z-scores
-            if i > 0: ## scale std based on mean ratio of mad-to-sd: sd*ratio
-                mad = std * sum(mad_sd_ratio)/float(len(mad_sd_ratio))
-            else: #i=0; use stdev as no ratio known yet
-                mad = std
+            mad = 1 ## If the median deviation is 0 and its purpose is to normalize scores, then it might as well be set to 1
         else:
-            mad_sd_ratio.append( float(mad)/std )
+            mad_sd_ratio.append( float(mad)/std ) ## NOT USED ANYMORE
+        if median == 0:
+            ## THIS SCREWS UP MEDIANFE --> BIN/MEDIAN
+            ## THIS IS SOMEWHAT SETTING A BASELINE OF 1
+            median = 1 ## NEED TO RECORD THESE CHANGES TO STATS FILE
 
         statdict[i] += [median, mean, std, mad, n]
         if args.dist:
