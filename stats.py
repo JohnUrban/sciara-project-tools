@@ -153,7 +153,7 @@ MEAN = np.mean(l)
 MEDIAN = np.median(l)
 
 ## Get median 
-MAD = np.median( absolute(np.array(l)-np.median(l)) )
+MAD = np.median( abs(np.array(l)-np.median(l)) )
 
 ## Get NX values
 nxvalues, lxvalues = NX(l,x,G=A)
