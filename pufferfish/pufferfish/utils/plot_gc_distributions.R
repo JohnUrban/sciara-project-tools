@@ -32,6 +32,8 @@ for (gc in data$gc){
   RNG <- range(d,rmu,rmed)
   l.out <- min(c(500, n/10))
   breaks <- seq(RNG[1]-mad, RNG[2]+mad, length.out=l.out)
+  print(c(gc, RNG[1], RNG[2], l.out))
+
   hd <- hist(d, breaks=breaks, plot = FALSE)
   hrmu <- hist(rmu, breaks=breaks, plot=FALSE)
   hrmed <- hist(rmed, breaks=breaks, plot=FALSE)
