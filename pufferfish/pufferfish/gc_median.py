@@ -160,6 +160,7 @@ for i in range(0,101,1):
     if n > 0:
         median = np.median(gc2felist[i])
         mean =  np.mean(gc2felist[i])
+        binsum = np.sum(gc2felist[i])
         if n == 1: ## stdev will be NAN and MAD will be 0 - just use previous for both
             ## This is just a band-aid for now
             ## Moreover, it is not guaranteed to work if n_i-1 was also 1
@@ -182,7 +183,7 @@ for i in range(0,101,1):
             ## THIS IS SOMEWHAT SETTING A BASELINE OF 1
             median = 1 ## NEED TO RECORD THESE CHANGES TO STATS FILE
 
-        statdict[i] += [median, mean, std, mad, n]
+        statdict[i] += [median, mean, std, mad, n, binsum]
         if args.dist:
             out = [str(i), (',').join([str(e) for e in gc2felist[i]])]
             outmsg = ('\t').join(out)
