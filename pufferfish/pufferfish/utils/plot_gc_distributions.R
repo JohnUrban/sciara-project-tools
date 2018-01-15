@@ -30,7 +30,7 @@ for (gc in data$gc){
   rmed <- rnorm(n = n, mean = med, sd = mad)
 
   RNG <- range(d,rmu,rmed)
-  l.out <- min(c(500, n/10))
+  l.out <- round(min(c(500, n/10)))
   if (l.out < 2) {l.out <- 2}
   breaks <- seq(RNG[1]-mad, RNG[2]+mad, length.out=l.out)
   print(c(gc, RNG[1], RNG[2], l.out))
