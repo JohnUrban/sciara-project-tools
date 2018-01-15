@@ -31,6 +31,7 @@ for (gc in data$gc){
 
   RNG <- range(d,rmu,rmed)
   l.out <- min(c(500, n/10))
+  if (l.out < 2) {l.out <- 2}
   breaks <- seq(RNG[1]-mad, RNG[2]+mad, length.out=l.out)
   print(c(gc, RNG[1], RNG[2], l.out))
 
