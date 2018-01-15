@@ -253,7 +253,7 @@ for i in range(0,101,1):
 ## Keeping it below is starting to make a mess - especially as I change how I'd like to proceed.
 
 ## WRITE EXTRA BEDGRAPHS IF DESIRED
-if args.bdg or args.control or args.mad:
+if args.bdg or args.control or args.mad or args.zscore or args.robust_zscore or args.madunits or args.medfe or args.meanfe or args.subtractmed or args.subtractmean:
     if args.bdg: ## WRITE CORRECTED SIGNAL FILE IF DESIRED
         sigbdg = open(name_bdg(args.bdg),'w')
     if args.control: ## WRITE MEDIAN CONTROL BEDGRAPH IF DESIRED (mean printed out if --mean specified)
