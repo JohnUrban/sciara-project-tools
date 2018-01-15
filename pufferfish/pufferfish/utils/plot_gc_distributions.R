@@ -39,9 +39,9 @@ for (gc in data$gc){
   hrmu <- hist(rmu, breaks=breaks, plot=FALSE)
   hrmed <- hist(rmed, breaks=breaks, plot=FALSE)
   
-  plot(hd$mids, hd$counts, type='l', main=paste0('GC = ', gc))
-  lines(hrmu$mids, hrmu$counts, col='red')
-  lines(hrmed$mids, hrmed$counts, col='blue')
+  plot(hd$mids, hd$counts, type='l', main=paste0('GC = ', gc), lwd=3, col="grey")
+  lines(hrmu$mids, hrmu$counts, col='red', lty=3)
+  lines(hrmed$mids, hrmed$counts, col='blue', lty=3)
   points(mu, 0, col='blue')
   points(med, 0,col='red')
 }
