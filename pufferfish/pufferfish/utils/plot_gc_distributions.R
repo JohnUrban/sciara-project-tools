@@ -39,9 +39,8 @@ for (gc in data$gc){
   plot(hd$mids, hd$counts, type='l', main=paste0('GC = ', gc))
   lines(hrmu$mids, hrmu$counts, col='red')
   lines(hrmed$mids, hrmed$counts, col='blue')
-  abline(v=gc, lwd=2)
-  abline(v=mu, lwd=2, col='blue')
-  abline(v=med, lwd=2, col='red')
+  points(mu, 0, col='blue')
+  points(med, 0,col='red')
 }
 
   
