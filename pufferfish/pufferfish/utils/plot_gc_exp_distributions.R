@@ -72,8 +72,15 @@ print(c("ALL", RNG[1], RNG[2], l.out))
 hd <- hist(DIST, breaks=breaks, plot = FALSE)
 hrmu <- hist(rmu, breaks=breaks, plot=FALSE)
 hrmed <- hist(rmed, breaks=breaks, plot=FALSE)
-  
+
 plot(hd$mids, hd$counts, type='l', main=paste0('GC = ALL'), lwd=3, col="grey")
+lines(hrmu$mids, hrmu$counts, col='red', lty=3)
+lines(hrmed$mids, hrmed$counts, col='blue', lty=3)
+points(mu, 0, col='blue')
+points(med, 0,col='red')
+
+q <- quantile(x=DIST, probs = 0.99)  
+plot(hd$mids[hd$mids<q], hd$counts[hd$mids<q], type='l', main=paste0('GC = ALL up to 99_pctile'), lwd=3, col="grey")
 lines(hrmu$mids, hrmu$counts, col='red', lty=3)
 lines(hrmed$mids, hrmed$counts, col='blue', lty=3)
 points(mu, 0, col='blue')
