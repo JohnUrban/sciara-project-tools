@@ -28,8 +28,10 @@ for (gc in data$gc){
   
   rmu <- rnorm(n = n, mean = mu, sd = std)
   rmed <- rnorm(n = n, mean = med, sd = mad)
+
+  RNG <- range(d,rmu,rmed)
   l.out <- min(c(500, n/10))
-  breaks <- seq(mn-mad, mx+mad, length.out=l.out)
+  breaks <- seq(RNG[1]-mad, RNG[2]+mad, length.out=l.out)
   hd <- hist(d, breaks=breaks, plot = FALSE)
   hrmu <- hist(rmu, breaks=breaks, plot=FALSE)
   hrmed <- hist(rmed, breaks=breaks, plot=FALSE)
