@@ -16,6 +16,9 @@ data <- read.table(gcdist, col.names=c('gc','dist'), colClasses=c('numeric','cha
 
 pdf(fname)
 
+DIST <- c()
+N <- 0
+
 for (gc in data$gc){
   d <- as.numeric( unlist( strsplit(data$dist[data$gc == gc], split = ',') ) )
   n <- length(d)
@@ -26,6 +29,9 @@ for (gc in data$gc){
   mn <- min(d)
   mx <- max(d)
   
+  DIST <- c(DIST, d)
+  N <- N+n
+
   rmu <- rnorm(n = n, mean = mu, sd = std)
   rmed <- rnorm(n = n, mean = med, sd = mad)
 
@@ -46,6 +52,28 @@ for (gc in data$gc){
   points(med, 0,col='red')
 }
 
+mu <- mean(DIST)
+med <- median(DIST)
+std <- sd(DIST)
+mad <- median(abs(DIST-med))
+mn <- min(DIST)
+mx <- max(DIST)
+rmu <- rnorm(n = N, mean = mu, sd = std)
+rmed <- rnorm(n = N, mean = med, sd = mad)
+RNG <- range(DIST,rmu,rmed)
+l.out <- round(min(c(500, N/10)))
+if (l.out < 2) {l.out <- 2}
+breaks <- seq(RNG[1]-mad, RNG[2]+mad, length.out=l.out)
+print(c("ALL", RNG[1], RNG[2], l.out))
+hd <- hist(DIST, breaks=breaks, plot = FALSE)
+hrmu <- hist(rmu, breaks=breaks, plot=FALSE)
+hrmed <- hist(rmed, breaks=breaks, plot=FALSE)
+  
+plot(hd$mids, hd$counts, type='l', main=paste0('GC = ALL'), lwd=3, col="grey")
+lines(hrmu$mids, hrmu$counts, col='red', lty=3)
+lines(hrmed$mids, hrmed$counts, col='blue', lty=3)
+points(mu, 0, col='blue')
+points(med, 0,col='red')
   
 dev.off()
 
