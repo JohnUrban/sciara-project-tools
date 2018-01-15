@@ -23,11 +23,13 @@ for (gc in data$gc){
   med <- median(d)
   std <- sd(d)
   mad <- median(abs(d-med))
-  
+  mn <- min(d)
+  mx <- max(d)
   
   rmu <- rnorm(n = n, mean = mu, sd = std)
   rmed <- rnorm(n = n, mean = med, sd = mad)
-  breaks <- max(5, round(n/5))
+  l.out <- min(c(500, n/10))
+  breaks <- seq(mn-mad, mx+mad, length.out=l.out)
   hd <- hist(d, breaks=breaks, plot = FALSE)
   hrmu <- hist(rmu, breaks=breaks, plot=FALSE)
   hrmed <- hist(rmed, breaks=breaks, plot=FALSE)
