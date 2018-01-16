@@ -53,7 +53,15 @@ viterbi.puff <- function(emissions, transitions, initial, states, emitted.data, 
   else if (emodel == "geometric"){
       emissions[1,] <- 1/emissions[1,]
       V=viterbi.geometric(emissions, transitions, initial, emitted.data, num.states, num.emits)
-  }  
+  } else if (emodel == "gamma"){
+      params <- emissions
+      ## Estimate shape
+      params[1,] <- emissions[1,]^2 / emissions[2,]^2
+      ## Estimate scale
+      params[2,] <- emissions[2,]^2 / emissions[1,]
+      ## Stay calm and carry on
+      V=viterbi.gamma(params, transitions, initial, emitted.data, num.states, num.emits)
+  }
   
   viterbi_path <- matrix(data = rep(0, num.emits), nrow = 1)
   viterbi_path[num.emits] <- which.max(V$Viterbi[,num.emits]);  
@@ -103,6 +111,7 @@ viterbi.poisson <- function(emissions, transitions, initial, emitted.data, num.s
   return(list(Viterbi=Viterbi, pointer=pointer))
 }
 
+## EXPONENTIAL
 viterbi.exponential <- function(emissions, transitions, initial, emitted.data, num.states, num.emits){
   pointer <- matrix(rep(0, num.emits*num.states), nrow = num.emits)
   Viterbi <- matrix(rep(0, num.states*num.emits), nrow = num.states)  
@@ -120,6 +129,8 @@ viterbi.exponential <- function(emissions, transitions, initial, emitted.data, n
   return(list(Viterbi=Viterbi, pointer=pointer))
 }
 
+
+## GEOMETRIC
 viterbi.geometric <- function(emissions, transitions, initial, emitted.data, num.states, num.emits){
   ## rounds floats to integers
   pointer <- matrix(rep(0, num.emits*num.states), nrow = num.emits)
@@ -138,6 +149,25 @@ viterbi.geometric <- function(emissions, transitions, initial, emitted.data, num
   return(list(Viterbi=Viterbi, pointer=pointer))
 }
 
+## GAMMA
+viterbi.gamma <- function(emissions, transitions, initial, emitted.data, num.states, num.emits){
+  pointer <- matrix(rep(0, num.emits*num.states), nrow = num.emits)
+  Viterbi <- matrix(rep(0, num.states*num.emits), nrow = num.states)  
+  Viterbi[ ,1] <- initial + dgamma(emitted.data[1], shape = emissions[1, ], scale =emissions[2, ], log=TRUE)
+  pointer[1, ] <- 1
+  f <- function(x){i <- which.max(x); y <- x[i]; return(c(i,y))}
+  for (j in 2:num.emits){
+    selection <- Viterbi[,j-1] + transitions
+    for (i in 1:num.states){
+      maxstate <- which.max(selection[,i])
+      Viterbi[i,j] <- dgamma(emitted.data[j], shape = emissions[1, i], scale = emissions[2, i], log = TRUE) + selection[maxstate,i]
+      pointer[j,i] <- maxstate 
+    }
+  }  
+  return(list(Viterbi=Viterbi, pointer=pointer))
+}
+
+
 #### VECTORIZED FORWARDS ########
 forward.puff <- function(emissions, transitions, initial, states, emitted.data, emodel="normal"){
   num.states <- length(states)
@@ -147,9 +177,23 @@ forward.puff <- function(emissions, transitions, initial, states, emitted.data, 
   
   #model
   if (emodel == "normal"){emodel.fxn <- puff.normal}
-  else if (emodel == "exponential"){emodel.fxn <- puff.exponential}
-  else if (emodel == "poisson"){emodel.fxn <- puff.poisson}
-  else if (emodel == "geometric"){emodel.fxn <- puff.geometric}
+  else if (emodel == "exponential"){
+      emissions[1,] <- 1/emissions[1,]
+      emodel.fxn <- puff.exponential
+  } else if (emodel == "poisson"){emodel.fxn <- puff.poisson}
+  else if (emodel == "geometric"){
+      emissions[1,] <- 1/emissions[1,]
+      emodel.fxn <- puff.geometric
+  } else if (emodel == "gamma") {
+      params <- emissions
+      ## Estimate shape
+      params[1,] <- emissions[1,]^2 / emissions[2,]^2
+      ## Estimate scale
+      params[2,] <- emissions[2,]^2 / emissions[1,]
+      ## Stay calm and carry on
+      emissions <- params
+      emodel.fxn <- puff.gamma
+  }
   
   ## initial
   Forward[, 1] <- initial*emodel.fxn(emitted.data[1], emissions)
@@ -185,9 +229,25 @@ backward.puff <- function(emissions, transitions, initial, states, emitted.data,
   
   #model
   if (emodel == "normal"){emodel.fxn <- puff.normal}
-  else if (emodel == "exponential"){emodel.fxn <- puff.exponential}
+  else if (emodel == "exponential"){
+      emissions[1,] <- 1/emissions[1,]
+      emodel.fxn <- puff.exponential
+  }
   else if (emodel == "poisson"){emodel.fxn <- puff.poisson}
-  else if (emodel == "geometric"){emodel.fxn <- puff.geometric}
+  else if (emodel == "geometric"){
+      emissions[1,] <- 1/emissions[1,]
+      emodel.fxn <- puff.geometric
+  }
+  else if (emodel == "gamma"){
+      params <- emissions
+      ## Estimate shape
+      params[1,] <- emissions[1,]^2 / emissions[2,]^2
+      ## Estimate scale
+      params[2,] <- emissions[2,]^2 / emissions[1,]
+      ## Stay calm and carry on
+      emissions <- params
+      emodel.fxn <- puff.gamma
+  }
   
   ## initial
   Backward[ , num.emits] <- 1
@@ -225,6 +285,11 @@ puff.poisson <- function(x, emissions){
 
 puff.geometric <- function(x, emissions){
   dgeom(x = round(x), prob = emissions[1, ], log = FALSE)
+}
+
+
+puff.gamma <- function(x, emissions){
+  dgamma(x = x, shape = emissions[1, ], scale = emissions[2, ], log=FALSE)
 }
 
 ###

@@ -272,7 +272,11 @@ Then the HMM is run.
 Note: No median normalization or smoothing is performed. If only late is given, then this is just an identity/pass-through function.''')
     
     parser_puffcn.add_argument('-m', '--emodel', type=str, default='normal',
-                               help='''Specify emissions model to assume for HMM. Options: normal, exponential. Default: normal.''')
+                               help='''Specify emissions model to assume for HMM. Options: normal, exponential, poisson, geometric, gamma. Default: normal.
+Note that all you ever need to do is given the expected means and standard deviations for each state from sampled data.
+The normal model will use those directly. Poisson will use the means as lambda. Exponential will use the means as B w/ rate 1/B. Geometric will also use the means as 1/mu.
+Gamma will estimate alpha and beta (shape and scale) parameters from the means and standard deviations - if you have A/B in mind, convert to mu and sigma by A*B and (A*B^2)^0.5.
+Note that the exponential is same as the gamma when shape is set to 1, making mu and sigma equal B. Thus, if you do gamma w/ muscale=1, then you should get same as exponential.''')
     parser_puffcn.add_argument('-p', '--path', type=str, default='viterbi',
                                help='''Specify whether to take state path defined by viterbi or posterior decoding. Options: viterbi, posterior. Default: viterbi.''')
     parser_puffcn.add_argument('-s', '--scale', action='store_true', default=False,
