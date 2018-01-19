@@ -101,15 +101,15 @@ parser.add_argument('-o', "--outdir",
                    help='''Path to output dir - where files will be deposited.''')
 
 parser.add_argument('-bt2', "--bowtie2index",
-                   type=str, required=False,
+                   type=str, required=False, 
                    help='''Path to bowtie2 index (up to prefix of index files).''')
 
 parser.add_argument('-bdb', "--blastdb",
-                   type=str, default=None,
+                   type=str, default=None, required=True,
                    help='''Path to blast db (up to prefix of db files).''')
 
 parser.add_argument('-ref', "--reference",
-                   type=str, default=None, 
+                   type=str, default=None, required=False,
                    help='''Path to reference.fasta file. NOTE: This is typically required if will be predicting PCR products.''')
 
 parser.add_argument('-p', "--product_only",
@@ -624,6 +624,18 @@ class TSV(Pairs):
 
     
 ##pairs = Pairs(args.input, args.outdir, args.bowtie2index, args.blastdb, args.reference)
+
+## CHECK ARGS
+if not (args.product_only or args.product_spec_only):
+    try:
+        assert args.bowtie2index is not None
+        assert args.reference is not None
+    except:
+        print "Bowtie2 index and reference fasta are required if product_only or product_spec_only not specified..."
+        quit()
+
+if not os.path.exists(args.outdir) or not os.path.isdir(args.outdir):
+    os.system('mkdir ' + args.outdir)
 
 if args.input:
     pairs = PrimerBlastFile(args.input, args.outdir, args.bowtie2index, args.blastdb, args.reference, args.qpcr)
