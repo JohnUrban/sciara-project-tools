@@ -263,14 +263,17 @@ if args.bdg or args.control or args.mad or args.zscore or args.robust_zscore or 
     if args.zscore:
         zbdg = open(name_bdg(args.zscore), 'w')
     if args.robust_zscore:
-        rzbdg = open(name_bdg(args.zscore), 'w')
+        rzbdg = open(name_bdg(args.robust_zscore), 'w')
     if args.madunits:
-        madunitbdg = open(name_bdg(args.zscore), 'w')
+        madunitbdg = open(name_bdg(args.madunits), 'w')
     if args.medfe:
         febdg = open(name_bdg(args.medfe), 'w')
     if args.meanfe:
         mufebdg = open(name_bdg(args.meanfe), 'w')
-        
+    if args.subtractmed:
+        submedbdg = open(name_bdg(args.subtractmed), 'w')
+    if args.subtractmean:
+        submubdg = open(name_bdg(args.subtractmean), 'w')
     with open(args.table) as table:
         for row in table:
             row = row.strip().split()
@@ -348,6 +351,18 @@ if args.bdg or args.control or args.mad or args.zscore or args.robust_zscore or 
                 out = [row[chrcol], row[startcol], row[endcol], fe]
                 outmsg = ("\t").join([str(e) for e in out])
                 mufebdg.write( outmsg + '\n' )
+            if args.subtractmed:
+                sig = float(row[sigcoltocorrect])
+                newsig = sig - statdict[gc][0]
+                out = [row[chrcol], row[startcol], row[endcol], newsig]
+                outmsg = ("\t").join([str(e) for e in out])
+                submedbdg.write( outmsg + '\n' )
+            if args.subtractmean:
+                sig = float(row[sigcoltocorrect])
+                newsig = sig - statdict[gc][1]
+                out = [row[chrcol], row[startcol], row[endcol], newsig]
+                outmsg = ("\t").join([str(e) for e in out])
+                submubdg.write( outmsg + '\n' )
     if args.bdg:
         sigbdg.close()
     if args.control:
@@ -364,6 +379,9 @@ if args.bdg or args.control or args.mad or args.zscore or args.robust_zscore or 
         febdg.close()
     if args.meanfe:
         mufebdg.close()
-
+    if args.subtractmed:
+        submedbdg.close()
+    if args.subtractmean:
+        submeanbdg.close()
 
 ## ANOTHER WAY TO CORRECT: might be to do Signal * Overall_median/GC_median
