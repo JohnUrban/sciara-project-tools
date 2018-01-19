@@ -1,22 +1,98 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python2.7
+
+###!/usr/local/bin/python
+
 import sys
 
-if len(sys.argv) == 1:
-    print
-    print "Usage 1: scriptname minSize maxSize"
-    print "  --> alt. is minRatio maxRatio"
-    print "  -->If both args are <= 1.0, it will assume ratios were given."
-    print " Adding 'r' or 'recipe' as a 3rd argument gives 100 ul recipe example"
-    print
-    print "Usage 2: scriptname intervalSize"
-    print "  This will print a table of sizes 200-800 in intervalSize"
-    print "  'Size' is the boundary size:"
-    print "      --> DNA > Size is on the beads"
-    print "      --> DNA < Size is in the supernatant"
-    print
-    print "This linear model works (approx) for ratios in between 0.4-1.0"
-    print " --> i.e. boundaries between 200-800 bp"
-    print
+help_msg = '''
+    AMPure version 1.1
+    John Urban (2010-2017)
+    Created 2010.
+    Updated Nov 20, 2017: more helpful help message, recipe for any volume (not just 100 ul).
+
+    Obtain help message by any of the following:
+    AMPure
+    AMPure -h
+    AMPure -help
+    AMPure --help
+    AMPure -H
+
+    Usage 1: Give floor and ceiling sizes.
+        Find the first and second ratio to use for given floor and ceiling boundaries (e.g. 200 to 500).
+    Syntax:
+        AMPure minSize maxSize
+    Example:
+        AMPure 200 500
+
+
+
+    Usage 2: Given floor and ceiling ratios.
+        Find the floor and ceiling given a pair of ratios to use (e.g. 0.7 to 1.0).
+    Syntax:
+        AMPure minRatio maxRatio
+    Example:
+        AMPure 0.7 1.0
+
+
+
+    Usage 3:
+        Get the recipe in 100 ul as the output for Usage 1 or Usage 2.
+    Syntax:
+        AMPure minSize maxSize recipe
+        AMPure minSize maxSize r
+        AMPure minRatio maxRatio recipe
+        AMPure minRatio maxRatio r
+    Example:
+        AMPure 200 500 r
+        AMPure 0.7 1.0 r
+
+
+
+    Usage 4:
+        Get the recipe in YOURCHOICE ul as the output for Usage 1 or Usage 2.
+        ((volume in ul))
+    Syntax:
+        AMPure minSize maxSize r volume
+        AMPure minRatio maxRatio r volume
+    Example:
+        AMPure 200 500 r 200
+        AMPure 0.7 1.0 r 200
+
+
+
+    Usage 5:
+        Show Size-vs-Ratio linear model x,y pairs starting at 200 bp up to 800 bp in given stepSize intervals.
+    Syntax:
+        AMPure stepSize
+    Example:
+        AMPure 50
+        AMPure 100
+        AMPure 200
+        
+    This will print a table of sizes 200-800 in stepSize intervals.
+    'Size' is the boundary size:
+        DNA > Size is on the beads
+        DNA < Size is in the supernatant
+
+        
+    Overall, the linear model in this script works (approximately) for ratios in between 0.4-1.0, which outlines a size range of 200-800 bp.
+    As the ratio gets smaller, the boundary is less precise.
+    In fact, I used 0.4x to deplete DNA < 1-2 kb in MinION preps. Nonetheless, it definitely depletes DNA < 800 bp.
+
+
+    I've used this program to outline floors/ceilings for a lot of Illumina preps targeting fragments in between
+    200-800 bp, and it seems to work like a charm. In particular, for all steps that involve AMPure in Illumin preps,
+    I always use the floor ratio to deplete DNA smaller than my ultimate target insert size.
+    I do both floor and ceiling cutoffs both before AND after PCR.
+    If really tight cutoffs are needed, you can repeat the floor/ceiling size-selection s.t. you do it twice before and twice after PCR.
+    You need to adjust ratios at each step that adds length to the DNA fragments you are working with.
+    For NEBNext preps, size is added after adapter ligation AND after PCR.
+    
+'''
+
+
+if len(sys.argv) == 1 or (len(sys.argv) > 1 and sys.argv[1] in ("-h", "-H", "-help", "--help")):
+    print help_msg
     quit()
 
 m = (1.0-0.4)/(200-800)
@@ -34,25 +110,36 @@ maxSize = float(sys.argv[2])
 
 
 if minSize <= 1.0 and maxSize <= 1.0: ##ratios given
-    low = int((maxSize-b)/m)
-    high = int((minSize-b)/m)
-    print low, "-", high, "bp DNA will be selected."
+    low = minSize
+    high = maxSize
+    minSize = int((high-b)/m)
+    maxSize = int((low-b)/m)
+    print minSize, "-", maxSize, "bp DNA will be selected."
+
+
 else:
     low = m*maxSize + b
     high = m*minSize + b
-    if len(sys.argv) == 4 and sys.argv[3] == "recipe":
-        print
     print low, " - ", high
-    if len(sys.argv) == 4 and sys.argv[3][0] == "r":
-        print
-        print "Transfer sup from ", low, " to new tube."
-        print "Final ratio needs to be ", high
-        print
-        print "For 100 ul DNA:"
-        print "    Add ", low*100, " ul AMPure beads (ratio = ", low, ")"
-        print "    The sup contains DNA <= ", maxSize, "."
-        print "    Transfer sup to new tube. "
-        print "    Add ", (high-low)*100, "ul AMPure beads to the previous sup."
-        print "    Final ratio is", high
-        print "    Treat this as normal AMPure cleaning and take DNA off beads"
-        print
+
+
+
+
+if (len(sys.argv) == 4 or len(sys.argv) == 5) and sys.argv[3][0] == "r":
+    volume = 100
+    if len(sys.argv) == 5:
+        volume = float(sys.argv[4])
+    print
+    print "To obtain DNA fragments in size range of", minSize, "to", maxSize, "start with AMPure ratio of ", low
+    print "Transfer sup from ", low, " to new tube."
+    print "Add ", high-low, " extra AMPure to hit target final ratio."
+    print "Final ratio needs to be ", high
+    print
+    print "For", volume, "ul DNA:"
+    print "    Add ", low*volume, " ul AMPure beads (ratio = ", low, ")"
+    print "    The sup contains DNA <= ", maxSize, "."
+    print "    Transfer sup to new tube. "
+    print "    Add ", (high-low)*volume, "ul AMPure beads to the previous sup."
+    print "    Final ratio is", high
+    print "    Treat this as normal AMPure cleaning and take DNA off beads"
+    print
