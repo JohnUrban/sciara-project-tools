@@ -63,16 +63,16 @@ args = parser.parse_args()
 ## IF STDIN, REQUIRE FTYPE DECLARATION
 if args.fastx == "-" or args.fastx == "stdin":
     args.fastx = sys.stdin
+    ext = None
     try:
         assert args.fasta or args.fastq
     except:
         print "For stdin as input, you need declare the file type with --fasta or --fastq"
         quit()
-
-## DETERMINE FTYPE
-ext = None
-if args.fastx != 'stdin':
+else:
     ext = args.fastx.strip().split('.')[-1]
+    
+## DETERMINE FTYPE
 if args.fasta or (ext in ('fasta', 'fa', 'fna', 'fpa')):
     ftype = 'fasta'
 elif args.fastq or (ext in ('fastq', 'fq')):
