@@ -62,7 +62,7 @@ args = parser.parse_args()
 
 ## IF STDIN, REQUIRE FTYPE DECLARATION
 if args.fastx == "-" or args.fastx == "stdin":
-    args.fasta = sys.stdin
+    args.fastx = sys.stdin
     try:
         assert args.fasta or args.fastq
     except:
