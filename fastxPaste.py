@@ -60,6 +60,10 @@ parser.add_argument('--outbed', '-O',
 If you specify as 'stdout', it will print to stdout.
 Cannot print both this and out --outfastx to stdout.''')
 
+parser.add_argument('--qualoffset', '-Q', type=int, default=33,
+                    help='''Fastq qual strings are read in assuming Phred+33. This option only affects output for now.
+                    So it should be kept as default of 33.''')
+
 args = parser.parse_args()
 
 ## ENSURE <= 1 STDOUT
@@ -118,7 +122,8 @@ for fa in SeqIO.parse(args.fastx , ftype):
     ends.append(currloc)
     currloc += args.gaplength ## adding gapLen to currStart+seqlen sets currloc to nextstart
     if ftype == 'fastq':
-        quals.append( str(fa.quals) )
+        qualstr = ('').join([str(unichr(q + args.qualoffset)) for q in fa.letter_annotations['phred_quality']])
+        quals.append( qualstr )
 
 
     
