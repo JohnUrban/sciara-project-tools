@@ -86,7 +86,9 @@ if args.fastx == "-" or args.fastx == "stdin":
         quit()
 
 ## DETERMINE FTYPE
-ext = args.fastx.strip().split('.')[-1]
+ext = None
+if args.fastx != 'stdin':
+    ext = args.fastx.strip().split('.')[-1]
 if args.fasta or (ext in ('fasta', 'fa', 'fna', 'fpa')):
     ftype = 'fasta'
 elif args.fastq or (ext in ('fastq', 'fq')):
