@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 import argparse
 from Bio import SeqIO
 from collections import defaultdict
