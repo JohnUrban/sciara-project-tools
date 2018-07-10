@@ -36,6 +36,9 @@ parser.add_argument('-k', "--colnum",
 parser.add_argument('-x', "--x",
                    type=str, default="50",
                    help='''Give comma-separated X values for NX function -- i.e. 50 for N50. Default=25,50,75''')
+parser.add_argument('-p', "--probs",
+                   type=str, default="10,25,50,75,90",
+                   help='''Give comma-separated percentile values to show information for... Default=10,25,50,75,90''')
 
 parser.add_argument('-S', "--scale",
                    type=str, default=False,
@@ -181,7 +184,8 @@ if args.scale:
 STDV = np.std(l)
 
 ## quantile
-Qx=[10,25,50,75,90]
+#Qx=[10,25,50,75,90]
+Qx = [float(e) for e in args.probs.strip().split(',')]
 Q = np.percentile(a=l, q=Qx)
 
 
