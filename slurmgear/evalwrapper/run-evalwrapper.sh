@@ -27,6 +27,7 @@ R2=~/data/scratch/male-ilmn/data/ilmnraw/R2.fastq
 ## OPTIONS for what programs to use. 
 ## FILL IN   ==>"EvalThese"<==   BELOW WITH ONE OF THESE
 ALL=eval.cfg
+ALLDIRTY=eval.noclean.cfg
 OnlyAle=eval.aleonly.cfg
 OnlyBusco=eval.buscoOnly.cfg
 OnlyLap=eval.laponly.cfg
