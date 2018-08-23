@@ -12,6 +12,10 @@ Use -l/--length to control minimum gap length (default 25).
 Use -r/--recognition to allow regex to expand gaps through recognition sequence islands dispersed in N-gaps (e.g. from optical maps).
 When using -r provide only the recognition sequence. For now it is case-sensitive.
 By default N-gaps are simply where Ns start to the first non-N.
+
+Example recognition sequences:
+BssSI: CACGAG
+BspQI: GCTCTTC
 ''')
 parser.add_argument("fasta")
 parser.add_argument("-l", "--length", type=int, default=25, help='''Do not report as gap if less than this length. Default=25.''')
