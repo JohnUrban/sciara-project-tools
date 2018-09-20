@@ -7,13 +7,13 @@
 #############
 
 
-reactionEfficiency <- function(slope){
+reactionEfficiency <- function(slope,logbase=10){
   ## reaction efficiency is 10^(-1/slope) -1
-  return(10^(-1/slope) - 1)
+  return(logbase^(-1/slope) - 1)
 }
 
-slopeFromRxnEff <- function(RxnEff){
-  return(-1/log10(RxnEff + 1))
+slopeFromRxnEff <- function(RxnEff, logbase=10){
+  return(-1/log(RxnEff + 1, base=logbase))
 }
 
 efficiencyTest <- function(slope){
@@ -27,10 +27,18 @@ dilutionSeries <- function(startingAmount=25, dilutionFactor=10, numPoints=5, hi
   ## dilutionFactor is how many fold you dilute each in series -- default is 10
   ## numPoints is number of samples/concentrations in standard curve -- we usually do 5
     ## 1, 1/10, 1/100, 1/1000, 1/10000
-  dilSer <- c()
-  for(i in 1:numPoints){
-    nextDil <- startingAmount/(dilutionFactor^(i-1))
-    dilSer <- c(dilSer, nextDil)
+  if(length(dilutionFactor) == 1){
+    dilSer <- c()
+    for(i in 1:numPoints){
+      nextDil <- startingAmount/(dilutionFactor^(i-1))
+      dilSer <- c(dilSer, nextDil)
+    }
+  } else if (length(dilutionFactor)>1){
+    dilSer <- vector(mode = "numeric", length=numPoints)
+    dilSer[1] <- startingAmount
+    for(i in 2:numPoints){
+      dilSer[i] <- dilSer[i-1]/dilutionFactor[i-1]
+    }
   }
   ## if data has Cts reported in lowToHigh conc. order
   if(!highToLow){dilSer <- dilSer[length(dilSer):1]}
@@ -38,11 +46,28 @@ dilutionSeries <- function(startingAmount=25, dilutionFactor=10, numPoints=5, hi
 }
 
 
+getlogNg <- function(dilutionFactor,startingAmount,numPoints,highToLow, numTechReps,logbase){
+  ## THIS WAS PORTED TO dlutionSeries()
+  # if(length(dilutionFactor)==1){
+  #   relAmnts <- dilutionSeries(startingAmount=startingAmount, dilutionFactor=dilutionFactor, numPoints=numPoints, highToLow=highToLow)
+  # } else if (length(dilutionFactor)>1){
+  #   relAmnts <- vector(mode = "numeric", length=numPoints)
+  #   relAmnts[1] <- startingAmount
+  #   for(i in 2:numPoints){
+  #     relAmnts[i] <- relAmnts[i-1]/dilutionFactor[i-1]
+  #   }
+  # }
+  relAmnts <- dilutionSeries(startingAmount=startingAmount, dilutionFactor=dilutionFactor, numPoints=numPoints, highToLow=highToLow)
+  logNg <- rep(log(relAmnts, base=logbase), each=numTechReps)
+  return(logNg)
+}
+
 meanTm <- function(qPCRdata){
   ## will give mean Tm for a primer pair in qPCR data -- will use all instances (Standard, Known, etc) where it is named
   
   # Grab a list of all detectors
-  primerPairs <- levels(qPCRdata$Detector)
+  #primerPairs <- levels(qPCRdata$Detector)
+  primerPairs <- unique(as.character(qPCRdata$Detector))
   
   # initialize output dataframe
   prodTms <- data.frame(primerPair = primerPairs, meanTm = 0, medTm=0, sdTm = 0, distTm = 0)
@@ -70,32 +95,39 @@ meanTm <- function(qPCRdata){
 }
 
 
-primerValidation <- function(qPCRdata, numTechReps=2, startingAmount=2, dilutionFactor=4, numPoints=4, highToLow=TRUE, single=FALSE, qpcrtask="Standard"){
+primerValidation <- function(qPCRdata, numTechReps=2, startingAmount=2, dilutionFactor=4, numPoints=4, highToLow=TRUE, single=FALSE, qpcrtask="Standard", logbase=10){
   ## determine slope, efficiency, and R^2 for all
   ## qPCRdata is a table with columns (class): Well (character); Detector(factor); Task (factor); Ct (numeric); Tm (numeric)
   
   # Grab a list of all detectors
-  primerPairs <- levels(qPCRdata$Detector)
-#   print(primerPairs)
+  #primerPairs <- levels(qPCRdata$Detector)
+  primerPairs <- unique(as.character(qPCRdata$Detector))
+  # print(primerPairs)
   # initialize output dataframe
   primerStats <- data.frame(primerPair = primerPairs, slope = 0, efficiency = 0, Rsqr = 0, pass=0)
   
   # Create vector of concentrations for standard curve 
-  logNg <- rep(log10(dilutionSeries(startingAmount=startingAmount, dilutionFactor=dilutionFactor, numPoints=numPoints, highToLow=highToLow)), each=numTechReps)
+  logNg <- getlogNg(dilutionFactor,startingAmount,numPoints,highToLow, numTechReps,logbase)
+  
 
   # For each detector/primerPair, calculate the primer stats and say whether it passes validation or not
   for(primer in primerPairs){
-#     print(primer)
+    # print(primer)
     isNA <- is.na(subset(qPCRdata, Detector == primer & Task == qpcrtask)$Ct)
+    # print(qPCRdata)
+    # print(isNA)
     Cts <- subset(qPCRdata, Detector == primer & Task == qpcrtask)$Ct[!isNA]
     dilSer <- logNg[!isNA]
-#     print(Cts)
-#     print(dilSer)
+    # print(Cts)
+    # print(dilSer)
     linMod <- lm(Cts ~ dilSer)
-#     print(linMod)
+    print(linMod)
     slope <- linMod$coeff[2]
     Rsqr <- (cor(dilSer, Cts))^2
-    efficiency <- reactionEfficiency(slope)
+    efficiency <- reactionEfficiency(slope, logbase = logbase)
+    # print(slope)
+    # print(Rsqr)
+    # print(efficiency)
     ## Pass or fail? Slope/eff cutoffs are from ABI manual; Rsqr min is from Marcela
     pass <- slope <= -3.1 & slope >= -3.58 & efficiency >= 0.9 & efficiency <= 1.1 & Rsqr >= 0.97
     primerStats[primerStats$primerPair == primer,]$slope <- slope
@@ -107,11 +139,11 @@ primerValidation <- function(qPCRdata, numTechReps=2, startingAmount=2, dilution
   else {return(primerStats)}
 }
 
-autoValidatePrimers <- function(data, controls=NA, numTechReps=2, startingAmount=2,dilutionFactor=4,numPoints=4,highToLow=TRUE, qpcrtask="Standard"){
+autoValidatePrimers <- function(data, controls=NA, numTechReps=2, startingAmount=2,dilutionFactor=4,numPoints=4,highToLow=TRUE, qpcrtask="Standard", logbase=10){
   if(is.na(controls[1])){print("Must add vector of control detectors for relative efficiency test -- e.g., c(C1) or c(C1,C2)"); return()}
 #   print(1)
-  primerVal <- primerValidation(data, numTechReps, startingAmount, dilutionFactor, numPoints, highToLow, qpcrtask = qpcrtask)
-  avgCtTable <- avgCTs(data, numTechReps, startingAmount, dilutionFactor, numPoints, highToLow, qpcrtask)
+  primerVal <- primerValidation(data, numTechReps, startingAmount, dilutionFactor, numPoints, highToLow, qpcrtask = qpcrtask, logbase = logbase)
+  avgCtTable <- avgCTs(data, numTechReps, startingAmount, dilutionFactor, numPoints, highToLow, qpcrtask, logbase = logbase)
 #   print(2)
 #   print(avgCtTable)
   frt <- fullRelativeEfficiencyTable(avgCtTable=avgCtTable, normalizer=controls[1], startingAmount=startingAmount, dilutionFactor=dilutionFactor, numPoints=numPoints, highToLow=highToLow)
@@ -168,7 +200,7 @@ autoValidatePrimers <- function(data, controls=NA, numTechReps=2, startingAmount
   list(scores=final1, controlscores=rtest1_controlscores)
 }
 
-autoCorrectPrimers <- function(data, scores, numTechReps=2, startingAmount=2, dilutionFactor=4, numPoints=4, highToLow=TRUE, qpcrtask="Standard"){
+autoCorrectPrimers <- function(data, scores, numTechReps=2, startingAmount=2, dilutionFactor=4, numPoints=4, highToLow=TRUE, qpcrtask="Standard", logbase=10){
   ## scores is from output of autoValidatePrimers -- ans$scores
   if(dilutionFactor <= 4){xlim <- c(-2,2)}
   else{xlim <- c(-4,1)}
@@ -183,7 +215,7 @@ autoCorrectPrimers <- function(data, scores, numTechReps=2, startingAmount=2, di
       cat("Observe data below and plot...\n")
       print(subset(data, Detector == fix))
 #       print("HEY"); print(c(numTechReps,startingAmount, dilutionFactor))
-      plotStdCurve(qPCRdata = data, sampleName = fix, numTechReps, startingAmount, dilutionFactor, numPoints, qpcrtask, ylim=c(15,33), xlim=xlim, col="blue", lwd=3, main = paste0(fix, ", Initial condition")) ## std curve
+      plotStdCurve(qPCRdata = data, sampleName = fix, numTechReps, startingAmount, dilutionFactor, numPoints, qpcrtask, ylim=c(15,33), xlim=xlim, col="blue", lwd=3, main = paste0(fix, ", Initial condition"), logbase = logbase) ## std curve
       del <- 0
 #       print(needsfixing)
 #       print(del <= 4)
@@ -193,7 +225,7 @@ autoCorrectPrimers <- function(data, scores, numTechReps=2, startingAmount=2, di
         subtable <- subset(data, subset = Detector == fix)
         subtable$Detector <- factor(subtable$Detector) ## reset factor levels on new subtable to be only "fix"
         ## Get model
-        fmod <- primerValidation(subtable, numTechReps, startingAmount, dilutionFactor, numPoints, highToLow, single=TRUE, qpcrtask = qpcrtask)
+        fmod <- primerValidation(subtable, numTechReps, startingAmount, dilutionFactor, numPoints, highToLow, single=TRUE, qpcrtask = qpcrtask, logbase = logbase)
         ## Get residuals
         fres <- residuals(fmod$model)
         ## find index of largest residual
@@ -205,11 +237,11 @@ autoCorrectPrimers <- function(data, scores, numTechReps=2, startingAmount=2, di
         subtable <- subset(data, subset = Detector == fix)
         subtable$Detector <- factor(subtable$Detector) ## reset factor levels on new subtable to be only "fix"
         ## Get pass info
-        finfo <- primerValidation(subtable, numTechReps, startingAmount, dilutionFactor, numPoints, highToLow, single=TRUE, qpcrtask=qpcrtask)
+        finfo <- primerValidation(subtable, numTechReps, startingAmount, dilutionFactor, numPoints, highToLow, single=TRUE, qpcrtask=qpcrtask, logbase = logbase)
         ## REPLOT
         cat(fix, "Fix", del,": Observe data below and plot...\n")
         print(subset(data, Detector == fix))
-        plotStdCurve(qPCRdata = data, sampleName = fix, numTechReps, startingAmount, dilutionFactor, numPoints, qpcrtask, ylim=c(15,33), xlim=xlim, col="blue", lwd=3, main = paste0(fix, ", Fix", del)) ## std curve
+        plotStdCurve(qPCRdata = data, sampleName = fix, numTechReps, startingAmount, dilutionFactor, numPoints, qpcrtask, ylim=c(15,33), xlim=xlim, col="blue", lwd=3, main = paste0(fix, ", Fix", del), logbase = logbase) ## std curve
         ## needs fixing ?
         needsfixing <- finfo$stats$pass == 0
 #         cat("END",needsfixing,"\n")
@@ -221,7 +253,7 @@ autoCorrectPrimers <- function(data, scores, numTechReps=2, startingAmount=2, di
   return(list(data=data, notes=notes))
 }
 
-validateMyPrimers <- function(filename, controls=NA, numTechReps=2, startingAmount=2,dilutionFactor=4,numPoints=4,highToLow=TRUE,conditional=FALSE, qpcrtask="Standard"){
+validateMyPrimers <- function(filename, controls=NA, numTechReps=2, startingAmount=2,dilutionFactor=4,numPoints=4,highToLow=TRUE,conditional=FALSE, qpcrtask="Standard", logbase=10){
   ## read in data - ADD /path/to/clean-data.tsv to the double quotes below
   data <- read.table(filename, header=T, colClasses=c("character", "factor", "factor", "character", "numeric"))
   ## Make Ct variable numeric instead of character
@@ -229,12 +261,12 @@ validateMyPrimers <- function(filename, controls=NA, numTechReps=2, startingAmou
   class(data$Ct) = "numeric"
   ## Get validation scores
   print("Begin Auto-validation")
-  final1 <- autoValidatePrimers(data,controls,numTechReps, startingAmount,dilutionFactor,numPoints,highToLow, qpcrtask=qpcrtask)
+  final1 <- autoValidatePrimers(data,controls,numTechReps, startingAmount,dilutionFactor,numPoints,highToLow, qpcrtask=qpcrtask, logbase=logbase)
   print(final1)
   print("Begin Auto-Correction")
-  cordata <- autoCorrectPrimers(data, final1$scores, numTechReps, startingAmount, dilutionFactor, numPoints, highToLow, qpcrtask=qpcrtask)
+  cordata <- autoCorrectPrimers(data, final1$scores, numTechReps, startingAmount, dilutionFactor, numPoints, highToLow, qpcrtask=qpcrtask, logbase=logbase)
 #   print("A")
-  final2 <- autoValidatePrimers(cordata$data,controls,numTechReps, startingAmount,dilutionFactor,numPoints,highToLow, qpcrtask=qpcrtask)
+  final2 <- autoValidatePrimers(cordata$data,controls,numTechReps, startingAmount,dilutionFactor,numPoints,highToLow, qpcrtask=qpcrtask, logbase=logbase)
   print(final2)
   print("Finishing up....")
   ## ALL TOGETHER NOW
@@ -250,6 +282,36 @@ print("Finished...")
 }
 
 
+validateMyPrimers.BioRad <- function(filename, controls=NA, numTechReps=2, startingAmount=2,dilutionFactor=4,numPoints=4,highToLow=TRUE,conditional=FALSE, qpcrtask="Standard", logbase=10){
+  ## read in data - ADD /path/to/clean-data.tsv to the double quotes below
+  data <- read.table(filename, header=T, as.is = TRUE, colClasses=c("character", "character", "factor", "numeric", "numeric"))
+  data <- data[data$Task != "NaN", ]
+  levels(data$Detector) <- unique(data$Detector)
+  ## Make Ct variable numeric instead of character
+  data$Ct[data$Ct == "Undetermined"] = NA
+  class(data$Ct) = "numeric"
+  ## Get validation scores
+  print("Begin Auto-validation")
+  final1 <- autoValidatePrimers(data,controls,numTechReps, startingAmount,dilutionFactor,numPoints,highToLow, qpcrtask=qpcrtask, logbase=logbase)
+  print(final1)
+  print("Begin Auto-Correction")
+  cordata <- autoCorrectPrimers(data, final1$scores, numTechReps, startingAmount, dilutionFactor, numPoints, highToLow, qpcrtask=qpcrtask, logbase=logbase)
+  #   print("A")
+  final2 <- autoValidatePrimers(cordata$data,controls,numTechReps, startingAmount,dilutionFactor,numPoints,highToLow, qpcrtask=qpcrtask, logbase=logbase)
+  print(final2)
+  print("Finishing up....")
+  ## ALL TOGETHER NOW
+  prvalscores <- final1$scores$pass+final2$scores$pass
+  #   print("ass")
+  #   print(final1$scores$rscores)
+  #   print(final2$scores$rscores)
+  final3 <- cbind(final1$scores$pass,final2$scores$pass,prvalscores,final1$scores$rscores,final2$scores$rscores)
+  colnames(final3) <- c("test1","test2","testsum","rel1", "rel2")
+  final4 <- cbind(final1$controlscores, final2$controlscores)
+  print("Finished...")
+  return(list(eff=final3, rel=final4, notes=cordata$notes))
+}
+
 ## retired just use read.csv or read.table where relevant
 ## header=T, stringsAsFactors=F
 # readqPCRdata <- function(qPCRTxtFile){
@@ -263,13 +325,15 @@ print("Finished...")
 #     return(qPCRdata)
 # }
 
-plotStdCurve <- function(qPCRdata, sampleName, numberTechReps=2, startingAmount=25, dilutionFactor=10, numPoints=4, qpcrtask="Standard", ...){
+plotStdCurve <- function(qPCRdata, sampleName, numberTechReps=2, startingAmount=25, dilutionFactor=10, numPoints=4, qpcrtask="Standard", logbase=10,  highToLow=TRUE, ...){
   ## for plotting 1 std curve
   ## you may be interested in plotting std curves for all primer pairs on same plot (as well as have points of unknown)
-  logNg <- log10(rep(dilutionSeries(startingAmount, dilutionFactor, numPoints), each=numberTechReps))
+  ##logNg <- log(rep(dilutionSeries(startingAmount, dilutionFactor, numPoints), each=numberTechReps),base=logbase)
+  logNg <- getlogNg(dilutionFactor,startingAmount,numPoints,highToLow, numTechReps,logbase)
   isNA <- is.na(subset(qPCRdata, Detector == sampleName & qPCRdata$Task == qpcrtask)$Ct)
   Ctvals <- subset(qPCRdata, qPCRdata$Detector==sampleName & qPCRdata$Task==qpcrtask)$Ct[!isNA]
   logNg <- logNg[!isNA]
+  par(mfrow=c(2,1))
   plot(logNg, Ctvals, ...)
   fit <- lm(Ctvals ~ logNg)
   lines(logNg, fit$fitted, col="red")
@@ -279,11 +343,24 @@ plotStdCurve <- function(qPCRdata, sampleName, numberTechReps=2, startingAmount=
   slope <- paste0("Slope = ", fit$coeff[2])
   R <- cor(logNg, Ctvals)  
   Rsq <- paste0("R^2 = ", R^2)
-  RxnEff <- paste0("Reaction Efficiency = ", reactionEfficiency(fit$coeff[2]))
-  text(0, 24, slope, cex=0.8)
-  text(0, 23, yint, cex=0.8)
-  text(0, 22, Rsq, cex=0.8)
-  text(0, 21, RxnEff, cex=0.8)
+  RxnEff <- paste0("Reaction Efficiency = ", reactionEfficiency(fit$coeff[2],logbase=logbase))
+  text(median(logNg), 26, slope, cex=0.8)
+  text(median(logNg), 24, yint, cex=0.8)
+  text(median(logNg), 22, Rsq, cex=0.8)
+  text(median(logNg), 20, RxnEff, cex=0.8)
+  ## Plot Deltas
+  avgCtTable <- avgCTs(qPCRdata = data, qpcrtask = qpcrtask, logbase = logbase, numTechReps = numberTechReps, startingAmount = startingAmount, dilutionFactor = dilutionFactor, numPoints = numPoints)
+  avg <- avgCtTable$avgCt[avgCtTable$primerPair == sampleName]
+  deltas <- avg[2:length(avg)] - avg[1:(length(avg)-1)]
+  DFs <- 2^deltas
+  x <- avgCtTable$logNg[avgCtTable$primerPair == sampleName]
+  mDF <- max(DFs, na.rm = TRUE)
+  plot(x, rep(mDF,length(x)), ylim=c(0,mDF), type="n", xlab="", ylab="DF between dilutions")
+  for(i in 2:length(x)){
+    segments(x0 = x[i-1], x1 = x[i], y0 = DFs[i-1], y1 = DFs[i-1])
+    text(x=mean(c(x[i-1],x[i])), y=DFs[i-1]-1, labels = round(DFs[i-1], digits=3))
+  }
+  par(mfrow=c(1,1))
   return(fit)
 }
 
@@ -350,7 +427,8 @@ alt.ddCtFE <- function(sampleSOICt, sampleNormCt, calibratorSOICt, calibratorNor
 }
 
 allFE <- function(qPCRdata, normalizer, numTechReps=3, task="Unknown", method=ddCtFE, testSampFirst=TRUE){
-  primerPairs <- levels(qPCRdata$Detector)
+  #primerPairs <- levels(qPCRdata$Detector)
+  primerPairs <- unique(as.character(qPCRdata$Detector))
   if(testSampFirst){
     testSample <- 1:numTechReps
     calibratorSample <- (numTechReps+1):(2*numTechReps) 
@@ -358,8 +436,11 @@ allFE <- function(qPCRdata, normalizer, numTechReps=3, task="Unknown", method=dd
     calibratorSample <- 1:numTechReps
     testSample <- (numTechReps+1):(2*numTechReps)
   }
+  
   testNormalizerCt <- mean(subset(qPCRdata, Detector == normalizer & Task == task)$Ct[testSample], na.rm=TRUE)
   calibratorNormalizerCt <- mean(subset(qPCRdata, Detector == normalizer & Task == task)$Ct[calibratorSample], na.rm=TRUE)
+  print(testNormalizerCt)
+  print(calibratorNormalizerCt)
   feTable <- data.frame(primerPair = primerPairs, FE = 0)
   for(primer in primerPairs){
     primerdata <- subset(qPCRdata, Detector == primer & Task == task)
@@ -378,7 +459,8 @@ allstats <- function(qPCRdata, normalizer, numTechReps=3, task="Unknown", method
   ## include p-values and corrected p-values for a couple tests (e.g. t-test and rank sum)
   ## include mean Ct and sd Ct values -- for each site for each sample
   ## these will be used in a future function that takes in stats tables for bioreps and computes stats from there...
-  primerPairs <- levels(qPCRdata$Detector)
+  #primerPairs <- levels(qPCRdata$Detector)
+  primerPairs <- unique(as.character(qPCRdata$Detector))
   if(testSampFirst){
     testSample <- 1:numTechReps
     calibratorSample <- (numTechReps+1):(2*numTechReps) 
@@ -404,7 +486,8 @@ allstats <- function(qPCRdata, normalizer, numTechReps=3, task="Unknown", method
 
 
 cov <- function(qPCRdata, numTechReps=3, task="Unknown", testSampFirst=TRUE, covcutoff=1, doremoval=FALSE){
-  primerPairs <- levels(qPCRdata$Detector)
+  #primerPairs <- levels(qPCRdata$Detector)
+  primerPairs <- unique(as.character(qPCRdata$Detector))
   if(testSampFirst){
     testSample <- 1:numTechReps
     calibratorSample <- (numTechReps+1):(2*numTechReps) 
@@ -477,20 +560,23 @@ cov <- function(qPCRdata, numTechReps=3, task="Unknown", testSampFirst=TRUE, cov
   else {covtable}
 }
 
-coefplot <- function(data, covcutoff=2){
+coefplot <- function(data, covcutoff=2, ylim=c(10,40), ...){
   X <- round(dim(data)[1]/3)
   x <- 0:(X+1)
   y <- seq(10, 35, length.out = length(x))
-  plot(x,y,type="n", las=1,ylab="Ct values", xlab="", xaxt="n")
+  plot(x,y,type="n", las=1, ylab="Ct values", xlab="", xaxt="n", ylim=ylim, ...)
   abline(h=c(15,20,25,30), lty=3)
   for(i in seq(3,X*3,3)){
     d <- data$Ct[(i-2):i]
     wells <- data$Well[(i-2):i]
     axis(side=1, at = i/3, labels = FALSE) 
-    lablist <- paste(data$Detector[i], wells[1],wells[2],wells[3])#, las=2, cex.axis=0.5)
-    text(i/3-1.5, par("usr")[3] - 2.5, labels = lablist, srt = 45, pos = 1, xpd = TRUE, cex=0.75)
+    #lablist <- paste(data$Detector[i], wells[1],wells[2],wells[3])#, las=2, cex.axis=0.5)
+    #text(i/3-1.5, par("usr")[3] - 2.5, labels = lablist, srt = 45, pos = 1, xpd = TRUE, cex=0.75)
+    lablist <- paste(data$Detector[i], wells[1],wells[2],wells[3], sep = "\n")
+    axis(side=1, at = i/3, labels = lablist, las=1, cex.axis=0.75, pos = 6, tick = FALSE) 
     abline(v = i/3, lty=3)
-    points(rep(i/3,3), c(d))
+    #points(rep(i/3,3), c(d))
+    text(x = rep(i/3,3), y = c(d), labels = wells)
     #   
 #     a <- c(i, d, sd(d, na.rm = TRUE), mean(d, na.rm = TRUE))
 #     print(a)
@@ -522,19 +608,21 @@ coefplot <- function(data, covcutoff=2){
   
 
 groupQPCRdata <- function(qPCRdata){
-  primerPairs <- levels(qPCRdata$Detector)
+  #primerPairs <- levels(qPCRdata$Detector)
+  primerPairs <- unique(as.character(qPCRdata$Detector))
   for(primer in primerPairs){
     print(subset(qPCRdata, Detector == primer))
   }
 }
 
-avgCTs <- function(qPCRdata, numTechReps=2, startingAmount=25, dilutionFactor=10, numPoints=4, highToLow=TRUE, qpcrtask="Standard"){
+avgCTs <- function(qPCRdata, numTechReps=2, startingAmount=25, dilutionFactor=10, numPoints=4, highToLow=TRUE, qpcrtask="Standard", logbase=10){
   # Grab a list of all detectors
-  primerPairs <- levels(qPCRdata$Detector)
+  #primerPairs <- levels(qPCRdata$Detector)
+  primerPairs <- unique(as.character(qPCRdata$Detector))
   
   # Create vector of concentrations for standard curve 
   Ng <- dilutionSeries(startingAmount=startingAmount, dilutionFactor=dilutionFactor, numPoints=numPoints, highToLow=highToLow)
-  logNgLevels <- log10(Ng)
+  logNgLevels <- log(Ng, base=logbase)
   logNg  <- rep(logNgLevels, each=numTechReps)
   
   # initialize output dataframe
@@ -713,13 +801,15 @@ compactAvgCts <- function(fullRelTable){
   return(avgCtsCompact)
 }
 
-plotAvgCts <- function(avgCtTable, numPoints=4, label=c("1:1", "1:4", "1:16", "1:64"), highlight=c(NA)){
+plotAvgCts <- function(avgCtTable, numPoints=4, label=c("1:1", "1:4", "1:16", "1:64"), highlight=c(NA), ...){
   idx <- c(1:(numPoints-1),0)
-  abcd <- matrix(nrow = numPoints, ncol = length(levels(avgCtTable$primerPair)))
+  #abcd <- matrix(nrow = numPoints, ncol = length(levels(avgCtTable$primerPair)))
+  abcd <- matrix(nrow = numPoints, ncol = length(unique(as.character(avgCtTable$primerPair))))
 #   print(abcd)
   for(i in 1:numPoints){
 #     avgCtTable[(1:length(avgCtTable$avgCt))%%numPoints == i, c(1,3)]
-    a <- as.matrix(avgCtTable[(1:length(avgCtTable$avgCt))%%numPoints == idx[i], c(3)])
+    #a <- as.matrix(avgCtTable[(1:length(avgCtTable$avgCt))%%numPoints == idx[i], c(3)])
+    a <- as.matrix(avgCtTable$avgCt[(1:length(avgCtTable$avgCt))%%numPoints == idx[i]])
     dim(a)
 #     print(dim(a))
     abcd[i,] <- a
@@ -731,7 +821,7 @@ plotAvgCts <- function(avgCtTable, numPoints=4, label=c("1:1", "1:4", "1:16", "1
   y <- as.vector(t(abcd))
   l <- avgCtTable[(1:length(avgCtTable$avgCt))%%numPoints == 1, c(1)]
   cex=0.6
-  plot(x, y, pch=1, cex=cex, xlab="Dilution", ylab="Average Ct", xaxt="n", yaxt="n", las=2, type="n", xlim=c(0.5,4.5))
+  plot(x, y, pch=1, cex=cex, xlab="Dilution", ylab="Average Ct", xaxt="n", yaxt="n", las=2, type="n", xlim=c(0.5,4.5), ...)
   text(x,y,labels = l, cex=cex)
   axis(side=1, at=1:numPoints, label=label)
   axis(side=2, at=21:31, label=21:31, las=2)
@@ -747,9 +837,24 @@ plotAvgCts <- function(avgCtTable, numPoints=4, label=c("1:1", "1:4", "1:16", "1
   }
 }
 
+pairwisePlotAvgCts <- function(avgCtTable, numPoints=4, label=c("1:1", "1:4", "1:16", "1:64"), highlight=c(NA), control){
+  ## NEED TO PROVIDE CONTROL
+  pairs <- as.character(unique(avgCtTable$primerPair))
+  n <- length(pairs)-1
+  nr <- ceiling(sqrt(n))
+  nc <- nr
+  par(mfrow=c(nr,nc), mar=c(2.5,4,1,1))
+  for (test in pairs){
+    if (test != control){
+      subTable <- subset(x = avgCtTable, subset = avgCtTable$primerPair %in% c(control, test))
+      plotAvgCts(avgCtTable = subTable, numPoints = numPoints, highlight = highlight, main=paste0(test, " vs. ", control))
+    }
+  }
+  par(mfrow=c(1,1))
+}
 
 ##Currently working on....Jul 2016
-plotFE <- function(fetable, ord=NA, barcol="dark cyan", addh1=TRUE, addplot=FALSE, ylim=NA, bglines=c(5,10,15), plot_type="bar", sqsub=c(1), ylab="FE"){
+plotFE <- function(fetable, ord=NA, barcol="dark cyan", addh1=TRUE, addplot=FALSE, ylim=NA, bglines=c(5,10,15), plot_type="bar", sqsub=c(1), ylab="FE", LOG2=FALSE, ...){
   #fetable is output of allFE
   #ord is order to show genes or genomic sites in -- given ordered primer pair names
   if(is.character(barcol)){barcol <- c(barcol)}
@@ -757,9 +862,12 @@ plotFE <- function(fetable, ord=NA, barcol="dark cyan", addh1=TRUE, addplot=FALS
   if(length(sqsub) == 1){sqsub <- rep(sqsub[1], length(fetable$primerPair))}
   if (is.na(ord[1])){ord <- fetable$primerPair}
   x <- 1:length(ord)
-  if (is.na(ylim[1])){ylim <- max(fetable$FE)+1}
+  cap<-1
+  zero <- 0
+  if(LOG2){fetable$FE <- log2(fetable$FE); cap<-0; zero <- -1*max(abs(fetable$FE))}
+  if (is.na(ylim[1])){ylim <- max(abs(fetable$FE))}
   if (!(addplot)){
-    plot(x, seq(0, ylim, length.out = length(x)), type="n", xlab="", ylab=ylab, las=1, xaxt="n")
+    plot(x, seq(zero, ylim, length.out = length(x)), type="n", xlab="", ylab=ylab, las=1, xaxt="n", ...)
     axis(side=1, at = x, labels = ord, las=2)
     abline(h=bglines,lty=3)
   }
@@ -780,11 +888,23 @@ plotFE <- function(fetable, ord=NA, barcol="dark cyan", addh1=TRUE, addplot=FALS
       polygon(x = c(l,l,r,r,l), y = c(b,t,t,b,b), col = barcol[j])
     } 
   }
-  if (addh1) {abline(h=1,lty=3,lwd=2)}
+  if (addh1) {abline(h=cap,lty=3,lwd=2)}
 }
 
 
-
+read_biorad <- function(filename, samplepresent=TRUE){
+  if(samplepresent){data <- read.table(filename, header=T, as.is = TRUE, colClasses=c("character", "character", "factor", "factor", "numeric", "numeric"))}
+  else{data <-read.table(filename, header=T, as.is = TRUE, colClasses=c("character", "character", "factor", "numeric", "numeric"))}
+  options("scipen"=100, "digits"=10)
+  data$Task <- qpcrtask
+  data <- data[data$Task != "NaN", ]
+  levels(data$Detector) <- unique(data$Detector)
+  # Make Ct variable numeric instead of character
+  data$Ct[data$Ct == 0] = NA
+  data$Ct[data$Ct == 100] = NA ## as part of making clean.tsv I now make NaN Ct values into 100 -- I did not include this line in original pass through this analysis (some results may change slightly)
+  class(data$Ct) = "numeric"
+  return(data)
+}
 
 
 #TODO/TOFINISH
