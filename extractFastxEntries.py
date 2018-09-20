@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.7
-import sys
+import sys, string
 import argparse
 from Bio import SeqIO
 from collections import defaultdict
@@ -107,6 +107,14 @@ Indexes are 0-based like Python. Slices will go up to but not include end of ran
 
 parser.add_argument('--head', type=int, default=False,
                     help=''' Use this if you just want to extract the head (first N bases) of all sequences.''')
+
+parser.add_argument('--subseqs', type=str, default=False,
+                    help=''' Use this if you just want to extract only reads that contain sub-sequences/kmers in given file (sub-sequences assumed to be in first column of file regardless of how many other columns).
+This can handle kmers (subseqs all of length k) as well as variable-length subseqs. This does not currently work with --exclude. (TODO)''')
+
+parser.add_argument('--revsubseqs', action='store_true', default=False,
+                    help='''Use this with --subseqs if the sub-sequence set should also contain the reverse complements. This forms a set, so there is no concern about representing a sub-sequence/kmer more than once.''')
+
 ##
 ##parser.add_argument('-U', '--touppercase', type=int, default=False,
 ##                    help=''' Will ensure all letters in sequence returned are uppercase.''')
@@ -305,6 +313,37 @@ elif args.regex:
         regex_present = len( re.findall( regex, record.description ) )
         if regex_present:
             SeqIO.write(record, out, fastx)
+
+elif args.subseqs:
+    kmers = [line.strip().split()[0].upper() for line in open(args.subseqs).readlines()]
+    k = len(kmers[0])
+    constant = sum([len(kmer)==k for kmer in kmers]) == len(kmers)
+    if args.revsubseqs:
+        intab = 'ACGT'
+        outtab = 'TGCA'
+        trantab = string.maketrans(intab, outtab)
+        revkmers = [e.translate(trantab)[-1::-1] for e in kmers]
+        kmers = set(kmers+revkmers)
+    else:
+        kmers = set(kmers)
+    if constant:
+        for record in SeqIO.parse(fastxFile, fastx):
+            reclen = len(record.seq)
+            recseq = str(record.seq)
+            for i in range(0,reclen-k+1):
+                if recseq[i:i+k] in kmers:
+                    SeqIO.write(record, out, fastx)
+                    break
+    else:
+        subseqs = list(kmers) ## can be diff lengths
+        for record in SeqIO.parse(fastxFile, fastx):
+            for seq in subseqs:
+                if seq in str(record.seq):
+                    SeqIO.write(record, out, fastx)
+                    break
+        
+    
+
 
 ## NEW ELIFs SHOULD BE ABOVE THIS LINE    
 elif args.minlen or args.maxlen:
