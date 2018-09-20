@@ -88,8 +88,8 @@ if __name__ == "__main__":
 
     ## ensure each kmer in both
     for kmer in allkmers:
-        A[kmer]
-        B[kmer]
+        A[kmer] += args.pseudocount
+        B[kmer] += args.pseudocount
 
     ## obtain medians
     med_A = median(A)
