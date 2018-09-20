@@ -35,7 +35,7 @@ parser.add_argument('-k', "--colnum",
 
 parser.add_argument('-x', "--x",
                    type=str, default="50",
-                   help='''Give comma-separated X values for NX function -- i.e. 50 for N50. Default=25,50,75''')
+                   help='''Give comma-separated X values for NX function -- i.e. 50 for N50. Default=25,50,75. NOTE: NX only returns values if all values are > 0.''')
 parser.add_argument('-p', "--probs",
                    type=str, default="10,25,50,75,90",
                    help='''Give comma-separated percentile values to show information for... Default=10,25,50,75,90''')
@@ -65,7 +65,7 @@ def NX(l, x=[25,50,75], G=False):
         Interpretation: When NX = NX_value, X% of data (in bp) is contained in reads at least NX_value bp long.
         """
         ## assumes both l and x are sorted
-	if isinstance(l, list) and isinstance(x, list) and G:
+	if isinstance(l, list) and isinstance(x, list) and G and np.sum(np.array(l)<0) == 0:
             l = l[:]
             x = x[:]
             nxsum = 0
