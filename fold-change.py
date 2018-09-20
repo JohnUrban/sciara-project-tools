@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.7
-import os, sys
+import os, sys, gzip
 import argparse
 from collections import defaultdict
 from math import log10, log
@@ -33,10 +33,20 @@ args = parser.parse_args()
 
 def get(fh):
     d = defaultdict(int)
-    with open(fh) as f:
-        for line in f:
-            line = line.strip().split()
-            d[line[0]] = int(line[1])
+    stdin = False
+    if fh in ('-','stdin') or fh.startswith('<('):
+        f = sys.stdin
+        stdin=True
+    elif fh.endswith('.gz'):
+        f = gzip.open(fh, 'rb')
+    else:
+        f = open(fh)
+        
+    for line in f:
+        line = line.strip().split()
+        d[line[0]] = int(line[1])
+    if not stdin:
+        f.close()
     return d
 
 def median(d):
