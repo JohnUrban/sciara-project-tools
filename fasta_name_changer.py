@@ -47,11 +47,14 @@ parser.add_argument('--replace', '-r',
 parser.add_argument('--number', '-n',
                    action='store_true', default=False,
                    help='''Add entry number (e.g. _1) to end of name. Often sed with --replace.''')
+parser.add_argument('--key', default=False, type=str, help=''' Provide filename to store new_name-to-old_name map file (3 columns: new name, old name, old description).''')
 args = parser.parse_args()
 if args.keep:
     chunk = args.keep-1
 if args.fasta == "-" or args.fasta == "stdin":
     args.fasta = sys.stdin
+if args.key:
+    key = open(args.key,'w')
 ## SeqIO automatically takes ">name" from ">name other info" with entry.name
 ## entry.description gives whole name "name other info" -- removes ">" in front
 seq_n=0
@@ -69,8 +72,11 @@ for entry in SeqIO.parse(args.fasta, "fasta"):
         name = args.replace
     if args.number:
         name += "_"+str(seq_n)
-    name = ">"+name
-    sys.stdout.write(name + "\n")
+    #name = ">"+name
+    sys.stdout.write(">" + name + "\n")
     sys.stdout.write(str(entry.seq) + "\n")
+    if args.key:
+        key.write(name+'\t'+entry.name+'\t'+entry.description+'\n')
 
-
+if args.key:
+    key.close()
