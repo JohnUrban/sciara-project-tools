@@ -22,12 +22,14 @@ John Urban (2015, 2016, 2017, 2018)
 
 
 
-parser.add_argument('-A', '--fileA', type=str, default=6,
+parser.add_argument('-A', '--fileA', type=str, 
                     help = '''.''')
 
-parser.add_argument('-B', '--fileB', type=str, default=6,
+parser.add_argument('-B', '--fileB', type=str, 
                     help = '''.''')
 
+parser.add_argument('-C', '--pseudocount', type=int, default=0,
+                    help = '''.''')
 args = parser.parse_args()
 
 
