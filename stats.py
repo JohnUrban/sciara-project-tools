@@ -83,7 +83,7 @@ def NX(l, x=[25,50,75], G=False):
             return nxvalues, lxvalues
 
 	else:
-            return None
+            return None, None
 
 def e_size(l,G=False):
     if G:
