@@ -72,9 +72,9 @@ def mad_norm(d, med, mad):
         newd[kmer] = (d[kmer]-med)/mad
     return newd
 
-def table(d1,d2):
+def table(d1,d2,id1,id2):
     for kmer in sorted(d1.keys()):
-        print kmer, d1[kmer], d2[kmer], d1[kmer]/d2[kmer], np.log2(d1[kmer]/d2[kmer]) 
+        print kmer, d1[kmer], d2[kmer], d1[kmer]/d2[kmer], np.log2(d1[kmer]/d2[kmer]), id1[kmer], id2[kmer], 1d1[kmer]/1d2[kmer] 
 
 if __name__ == "__main__":
 
@@ -99,4 +99,4 @@ if __name__ == "__main__":
     Bnorm = med_norm(B, med_B)
 
     ## print
-    table(Anorm, Bnorm)
+    table(Anorm, Bnorm, A, B)
