@@ -207,9 +207,16 @@ if not args.table:
             print qxstr, Q[i]
 
     for e in x:
-        print "N%s\t%d" % (str(e), int(round(nxvalues[e])))
+        if nxvalues is not None:
+                print "N%s\t%d" % (str(e), int(round(nxvalues[e])))
+        else:
+                print "N%s\t%s" % (str(e), "-")
     for e in x:
-            print "L%s\t%d" % (str(e), int(round(lxvalues[e])))
+        if lxvalues is not None:
+                print "L%s\t%d" % (str(e), int(round(lxvalues[e])))
+        else:
+                print "L%s\t%d" % (str(e),"-")
+        
     print "E size (G=%d) = %d" % (A, E)
     if args.scale:
             for g in G:
