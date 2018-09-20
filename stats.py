@@ -206,19 +206,20 @@ if not args.table:
             qxstr = 'Q'+str(Qx[i])+':'
             print qxstr, Q[i]
 
-    for e in x:
-        if nxvalues is not None:
-                print "N%s\t%d" % (str(e), int(round(nxvalues[e])))
-        else:
-                print "N%s\t%s" % (str(e), "-")
-    for e in x:
-        if lxvalues is not None:
-                print "L%s\t%d" % (str(e), int(round(lxvalues[e])))
-        else:
-                print "L%s\t%d" % (str(e),"-")
+    if nxvalues is not None:
+            for e in x:
+                if nxvalues is not None:
+                        print "N%s\t%d" % (str(e), int(round(nxvalues[e])))
+                else:
+                        print "N%s\t%s" % (str(e), "-")
+            for e in x:
+                if lxvalues is not None:
+                        print "L%s\t%d" % (str(e), int(round(lxvalues[e])))
+                else:
+                        print "L%s\t%d" % (str(e),"-")
         
     print "E size (G=%d) = %d" % (A, E)
-    if args.scale:
+    if args.scale and nxvalues is not None:
             for g in G:
         ##        for e in x:
         ##            print "Contig NG%s (G=%d)\t%d" % (str(e), g, ngxvalues[e])
