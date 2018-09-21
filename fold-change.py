@@ -110,14 +110,20 @@ if __name__ == "__main__":
 
     ## all kmers
     if args.intersect:
-        allkmers = set(A.keys()).intersection(set(B.keys()))
+        #allkmers = set(A.keys()).intersection(set(B.keys()))
+        ## ensure only intersect kmers in both
+        notInA = set(B.keys()).difference(set(A.keys()))
+        for kmer in notInA:
+            B.pop(kmer)
+        notInB = set(A.keys()).difference(set(B.keys()))
+        for kmer in notInB:
+            A.pop(kmer)
     else:
         allkmers = list(set(A.keys()).union(set(B.keys())))
-
-    ## ensure each kmer in both
-    for kmer in allkmers:
-        A[kmer] += args.pseudocount
-        B[kmer] += args.pseudocount
+        ## ensure each kmer in both
+        for kmer in allkmers:
+            A[kmer] += args.pseudocount
+            B[kmer] += args.pseudocount
 
     ## obtain medians
     med_A = median(A)
