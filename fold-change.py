@@ -107,7 +107,7 @@ if __name__ == "__main__":
 
     ## all kmers
     if args.intersect:
-        allkmers = set(A.keys()).intersect(set(B.keys()))
+        allkmers = set(A.keys()).intersection(set(B.keys()))
     else:
         allkmers = list(set(A.keys()).union(set(B.keys())))
 
