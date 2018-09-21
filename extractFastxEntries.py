@@ -115,6 +115,11 @@ This can handle kmers (subseqs all of length k) as well as variable-length subse
 parser.add_argument('--revsubseqs', action='store_true', default=False,
                     help='''Use this with --subseqs if the sub-sequence set should also contain the reverse complements. This forms a set, so there is no concern about representing a sub-sequence/kmer more than once.''')
 
+parser.add_argument('--Nsubseqs', type=int, default=1,
+                    help='''Use this with --subseqs to instruct how many times a subseq needs to be found to extract read.
+                            This is NOT requiring them to be N distinct subseqs - the same subseq can occur N times.
+                            Default: 1.''')
+
 ##
 ##parser.add_argument('-U', '--touppercase', type=int, default=False,
 ##                    help=''' Will ensure all letters in sequence returned are uppercase.''')
@@ -328,19 +333,29 @@ elif args.subseqs:
         kmers = set(kmers)
     if constant:
         for record in SeqIO.parse(fastxFile, fastx):
+            nfound = 0
             reclen = len(record.seq)
             recseq = str(record.seq)
             for i in range(0,reclen-k+1):
                 if recseq[i:i+k] in kmers:
-                    SeqIO.write(record, out, fastx)
-                    break
+                    nfound += 1
+                    if nfound >= args.Nsubseqs:
+                        SeqIO.write(record, out, fastx)
+                        break
     else:
         subseqs = list(kmers) ## can be diff lengths
         for record in SeqIO.parse(fastxFile, fastx):
-            for seq in subseqs:
-                if seq in str(record.seq):
-                    SeqIO.write(record, out, fastx)
-                    break
+            nfound = 0
+            for subseq in subseqs:
+                subseqlen = len(subseq)
+                reclen = len(record.seq)
+                recseq = str(record.seq)
+                for i in range(0,reclen-subseqlen+1):
+                    if recseq[i:i+subseqlen] == subseq:
+                        nfound += 1
+                        if nfound >= args.Nsubseqs:
+                            SeqIO.write(record, out, fastx)
+                            break
         
     
 
