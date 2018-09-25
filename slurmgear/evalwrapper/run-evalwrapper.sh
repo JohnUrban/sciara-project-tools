@@ -191,14 +191,14 @@ BUSCOV3RUN=${BUSCOV3SCRIPTS}/auto-buscov3.sh
 ##############################################
 ################ EXECUTE #####################
 NEWDIR=eval_asms
-if $RENAME || [ $MINLEN -gt 0 ]; then mkdir ${NEWDIR} ; fi
+if $RENAME || [ $MINLEN -gt 0 ]; then mkdir -p ${NEWDIR} ; fi
 
 ## IF OPTED; rename and/or set min contig length
 if $RENAME; then echo renaming....;
  if [ $MINLEN -gt 0 ]; then echo ...also setting min contig length to $MINLEN ; fi
  while read fasta; do
   b=`basename $fasta`
-  fasta_name_changer.py -f $fasta -r contig -n | extractFastxEntries.py --fa --stdin --minlen $MINLEN > ${NEWDIR}/${b}
+  fasta_name_changer.py -f $fasta -r contig -n --key key-${b}.txt | extractFastxEntries.py --fa --stdin --minlen $MINLEN > ${NEWDIR}/${b}
  done < $ASMFOFN
 elif [ $MINLEN -gt 0 ] && [ $RENAME != "true" ]; then echo ...setting min contig length to $MINLEN ... ;
  while read fasta; do
@@ -208,68 +208,75 @@ elif [ $MINLEN -gt 0 ] && [ $RENAME != "true" ]; then echo ...setting min contig
 fi
 
 ## CREATE AND USE UPDATED FOFN
-for f in ${NEWDIR}/*; do
-  readlink -f $f; 
-done > renamed.fofn
-ASMFOFN=`readlink -f renamed.fofn`
+if $RENAME || [ $MINLEN -gt 0 ]; then
+  for f in ${NEWDIR}/*; do
+    readlink -f $f;
+  done > renamed.fofn
+  ASMFOFN=`readlink -f renamed.fofn`
+fi
+
+#for f in ${NEWDIR}/*; do
+#  readlink -f $f; 
+#done > renamed.fofn
+#ASMFOFN=`readlink -f renamed.fofn`
 
 
 ## BEGIN LAUNCHING JOBS
 echo shortread
-mkdir shortread
+mkdir -p shortread
 cd shortread
 ##bash $SHORTAUTO $ASMFOFN $LR1 $LR2 $R1 $R2 $EvalThese $SHORTSCRIPTS
 bash $SHORTAUTO $ASMFOFN $LR1 $LR2 $R1 $R2 $SHORTCONFIG $SHORTSCRIPTS
 cd ../
 
 echo bionano
-mkdir bionano
+mkdir -p bionano
 cd bionano
 $BIONANORUN $BIONANOCLEAN $BIONANOCONFIG $ASMFOFN $MAPSFOFN $REC_ENZ $REC_SEQ $BIONANOSCRIPTS
 cd ../
 
 echo longread
-mkdir longread
+mkdir -p longread
 cd longread 
 bash $AUTOLR $LRCLEAN $LRCONFIG $ASMFOFN $LRSCRIPTS $ONT $PACBIO $ONT1 $ONT2 $PACBIO1 $PACBIO2
 cd ../
 
 echo blast_analyses
-mkdir blast_analyses
+mkdir -p blast_analyses
 cd blast_analyses
 
 echo transcriptome
-mkdir transcriptome
+mkdir -p transcriptome
 cd transcriptome
 $TRANSRUN $TRANSSCRIPTS $TRANSCONFIG $TRANSCLEAN $ASMFOFN $TRANS1 $TRANSNJOBS $TBLASTX $TRANJOBPRE1
 cd ../
 
 echo dmel
-mkdir dmel
+mkdir -p dmel
 cd dmel
 $TRANSRUN $TRANSSCRIPTS $OTHERSPP_TRANSCONFIG $TRANSCLEAN $ASMFOFN $TRANS2 $TRANSNJOBS $TBLASTX $TRANJOBPRE2
 cd ../
 
 echo anopheles
-mkdir anopheles
+mkdir -p anopheles
 cd anopheles
 $TRANSRUN $TRANSSCRIPTS $OTHERSPP_TRANSCONFIG $TRANSCLEAN $ASMFOFN $TRANS2 $TRANSNJOBS $TBLASTX $TRANJOBPRE3
 cd ../
 
 echo dmel_peptides
-mkdir dmel_peptides
+mkdir -p dmel_peptides
 cd dmel_peptides
 $PEPRUN $PEPSCRIPTS $PEPCONFIG $PEPCLEAN $ASMFOFN $PEP2 $PEPNJOBS $PEPJOBPRE2
 cd ../
 
 echo anopheles_peptides
-mkdir anopheles_peptides
+mkdir -p anopheles_peptides
 cd anopheles_peptides
 $PEPRUN $PEPSCRIPTS $PEPCONFIG $PEPCLEAN $ASMFOFN $PEP2 $PEPNJOBS $PEPJOBPRE3
 cd ../
 
 echo knownseqs
-mkdir knownseqs
+mkdir -p knownseqs
 cd knownseqs
 $TRANSRUN $TRANSSCRIPTS $KNOWNCONFIG $KNOWNCLEAN $ASMFOFN $KNOWNSEQS $KNOWNNJOBS $KNOWNTBLASTX $KNOWNJOBPRE
 cd ../
@@ -278,13 +285,13 @@ cd ../
 cd ../
 
 echo rnaseq
-mkdir rnaseq
+mkdir -p rnaseq
 cd rnaseq
 $RNARUN $RNASCRIPTS $RNACONFIG $RNACLEAN $ASMFOFN $RNAFOFN
 cd ../
 
 echo buscov3
-mkdir buscov3
+mkdir -p buscov3
 cd buscov3
 $BUSCOV3RUN $BUSCOV3SCRIPTS $BUSCOV3CONFIG $BUSCOV3CLEAN $ASMFOFN 
 cd ../
