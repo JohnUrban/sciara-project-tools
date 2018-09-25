@@ -39,6 +39,7 @@ SCIARA=${CONFIGS}/pilon-config-sciara.cfg
 SCIARA2=${CONFIGS}/pilon-config-sciara-pilonfixall.cfg
 SKIP2MK=${CONFIGS}/pilon-config-sciara-skip-to-mkdup.cfg
 SKIP2MAP=${CONFIGS}/pilon-config-sciara-skip-to-map.cfg
+SCIARAFASTER=${CONFIGS}/pilon-config-sciara-faster-mapping.cfg 
 
 ## config -- essentially has time, mem, cpu instructions for slurm
 CONFIG=${SCIARA}

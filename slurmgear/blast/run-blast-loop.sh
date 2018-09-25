@@ -14,12 +14,14 @@ E=1e-10
 
 mkdir -p $BLASTDIR
 mkdir -p $SLURMOUT
+mkdir -p $TIGDIR
 
-multiFasta2manyFastas.py -f ${ASM} -d ${TIGDIR}
+## Separate assembly into its components - 1 per file here.
+multiFasta2manyFastas.py -f ${ASM} -d ${TIGDIR}  ## output is all *.fa
 
-for fa in ${TIGDIR}/*fa ${TIGDIR}/*fasta; do
+## BLAST each component separately
+for fa in ${TIGDIR}/*fa; do
  echo $fa
  b=`basename $fa .fa`
- b=`basename $b .fasta`
  sbatch --qos=${QOS} --mem=$MEM --time=$TIME -c $P -o ${SLURMOUT}/${b}.%A.out -J ${b}_blast_NT --export=Q=${fa},P=${P},BLASTDIR=${BLASTDIR},E=${E} blast.sh
 done
