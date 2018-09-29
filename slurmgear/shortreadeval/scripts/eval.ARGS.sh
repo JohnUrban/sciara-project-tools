@@ -198,7 +198,7 @@ if $RUNREAPR; then
  MEM=$RMEM
  TIME=$RTIME
  THREADS=$RTHREADS
- REAPRDONE=`sbatch -J ${BASE}_reapr${JOBSFX} -o ${OUT}/reapr.slurm.%A.out --mem=$MEM --time=$TIME -c $THREADS --qos=$QOS --export=REF=${REF},BASE=${BASE},R1=${R1},R2=${R2},P=${RTHREADS},FACHECK=${FACHECK},PERFECTMAP=${PERFECTMAP},SMALTMAP=${SMALTMAP},PIPELINE=${PIPELINE},AGGRESSIVE=${AGGRESSIVE} ${SCRIPTS}/reapr.eval.sh | awk '{print $4}'`
+ REAPRDONE=`sbatch -J ${BASE}_reapr${JOBSFX} -o ${OUT}/reapr.slurm.%A.out --mem=$MEM --time=$TIME -c $THREADS --qos=$QOS --export=REF=${REF},BASE=${BASE},R1=${R1},R2=${R2},P=${RTHREADS},FACHECK=${FACHECK},PERFECTMAP=${PERFECTMAP},SMALTMAP=${SMALTMAP},PIPELINE=${PIPELINE},AGGRESSIVE=${AGGRESSIVE},G=${G} ${SCRIPTS}/reapr.eval.sh | awk '{print $4}'`
  cd ../
 fi
 
@@ -206,6 +206,7 @@ if $CLEANREAPR; then
  cd reapr
  # if RUNREAPR, dep on REAPRDONE
  if $RUNREAPR; then
+   ## As of 29Sep2018 - technically do not need to export "G" as the lines that required that have been moved to be part of the reapr.eval.sh script
    sbatch -J ${BASE}_reapr_clean${JOBSFX} --dependency=afterok:${REAPRDONE} -o ${OUT}/reapr.clean.slurm.%A.out --mem=8g --time=06:00:00 -c 2 --qos=$QOS --export=G=${G} ${SCRIPTS}/reapr.clean.sh 
  # else doesnt dep on REAPRDONE
  else
