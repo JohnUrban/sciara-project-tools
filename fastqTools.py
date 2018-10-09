@@ -1,4 +1,4 @@
-import random
+import random, gzip
 import sys
 import os
 import numpy as np
@@ -115,8 +115,14 @@ def internalIndex(fqFile):
     return intIndex
         
 
+def open_fastq(fqFile):
+    if fqFile.endswith('.gz'):
+        return gzip.open(fqFile,'rb')
+    else:
+        return open(fqFile, 'r')
+
 def downSampleReadsWithoutReplacement(fqFile, probability, outputFile=None):
-    f = open(fqFile, 'r')
+    f = open_fastq(fqFile)
     if not outputFile:
         try:
             while f:
@@ -139,8 +145,8 @@ def downSampleReadsWithoutReplacement(fqFile, probability, outputFile=None):
 def downSamplePairsWithoutReplacement(fqFile1, fqFile2, probability, outputFile=None):
     if outputFile == None: ##not supporting stdout with pairs now, if I do in future, it would need to be interleaved.
         return
-    f1 = open(fqFile1, 'r')
-    f2 = open(fqFile2, 'r')
+    f1 = open_fastq(fqFile1)
+    f2 = open_fastq(fqFile2)
     outpre = (".").join(outputFile.split(".")[:-1])
     out1 = open(outpre+".1.fastq", 'w')
     out2 = open(outpre+".2.fastq", 'w')
@@ -168,7 +174,7 @@ def downSampleReadsWithReplacement(fqFile, numReadsToSample, outputFile=None):
     for i in range(numReadsToSample):
         getThisRead[random.randint(1,numReadsInFile)] += 1
     readNum = 0
-    f = open(fqFile, 'r')
+    f = open_fastq(fqFile)
     if not outputFile: ## stdout
         try:
             while f:
@@ -203,8 +209,8 @@ def downSamplePairsWithReplacement(fqFile1, fqFile2, numReadsToSample, outputFil
     numReadsInFile = numReads(fqFile)
     getThisRead = sampleWithReplacementDict(numReadsToSample)
     readNum = 0
-    f1 = open(fqFile1, 'r')
-    f2 = open(fqFile2, 'r')
+    f1 = open_fastq(fqFile1)
+    f2 = open_fastq(fqFile2)
     outpre = (".").join(outputFile.split(".")[:-1])
     out1 = open(outpre+"1.fastq", 'w')
     out2 = open(outpre+"3.fastq", 'w')

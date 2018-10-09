@@ -16,17 +16,17 @@ DESCRIPTION
 
 parser.add_argument('--fastq', '-f',
                    type= str,
-                   help='''Path to fastq file of orphan/unpaired reads.''',
+                   help='''Path to fastq file of orphan/unpaired reads. Can be gzipped (must end with .gz).''',
                    default= None)
 
 parser.add_argument('--fastq1', '-1',
                    type= str,
-                   help='''Path to fastq file for read#1 in each pair.''',
+                   help='''Path to fastq file for read#1 in each pair. Can be gzipped (must end with .gz).''',
                    default= None)
 
 parser.add_argument('--fastq2', '-2',
                    type= str,
-                   help='''Path to fastq file for read#2 in each pair.''',
+                   help='''Path to fastq file for read#2 in each pair. Can be gzipped (must end with .gz).''',
                    default= None)
 
 parser.add_argument('--outprefix', '-o',
