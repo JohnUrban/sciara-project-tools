@@ -170,12 +170,13 @@ if args.scale:
         gdict = {}
         for g in G:
             gdict[g] = NX(l,x,G=g)
-        ##    ngxvalues, lgxvalues = NX(l,x,G=g)
+        ngxvalues, lgxvalues = NX(l,x,G=g)
 
         ## get expected sizes given genome size values
         egdict = {}
         for g in G:
             egdict[g] = e_size(l,G=g)
+            
 ##    E = e_size(l,G=g)
 ##    print "E size (G=%d) = %d" % (g, E)
 
@@ -218,32 +219,34 @@ if not args.table:
                 else:
                         print "L%s\t%d" % (str(e),"-")
         
-    print "E size (G=%d) = %d" % (A, E)
+    print "E size (G=%d) = %f" % (A, E)
     if args.scale and nxvalues is not None:
             for g in G:
-        ##        for e in x:
-        ##            print "Contig NG%s (G=%d)\t%d" % (str(e), g, ngxvalues[e])
-        ##        for e in x:
-        ##            print "Contig LG%s (G=%d)\t%d" % (str(e), g, lgxvalues[e])
                 for e in x:
-                    print "Contig NG%s (G=%d)\t%d" % (str(e), g, int(round(gdict[g][0][e])))
+                    print "Contig NG%s (G=%d)\t%d" % (str(e), g, ngxvalues[e])
+                for e in x:
+                    print "Contig LG%s (G=%d)\t%d" % (str(e), g, lgxvalues[e])
+                for e in x:
+                    print "Contig NG%s (G=%d)\t%d" % (str(e), g, round(gdict[g][0][e],3))
                 for e in x:
                     print "Contig LG%s (G=%d)\t%d" % (str(e), g, int((gdict[g][1][e])))
             for g in G:
-                print "E size (G=%d) = %d" % (g, int(round(egdict[g])))
+                print "E size (G=%d) = %d" % (g, round(egdict[g],3))
 
-## CAN ADD ON LATER
-##else:
-##    if args.header:
-##        header = ["N","ASM_SIZE","MAX","MIN","MEAN","MEDIAN"] + ["N"+str(int(round(e))) for e in x] + ["L"+str(int(round(e))) for e in x] + ["E"] + ["NG"+str(int(round(e)))+"_"+str(int(round(g/1e6)))+"M" for e in x for g in G] + ["LG"+str(int(round(e)))+"_"+str(int(round(g/1e6)))+"M" for e in x for g in G] + ["E_"+str(int(round(g/1e6)))+"M" for g in G]
-##        if args.addword:
-##            header = ["string"] + header
-##        print (",").join(header)
-##    metrics = [N, A, MAX, MIN, MEAN, MEDIAN] + [nxvalues[e] for e in x] + [lxvalues[e] for e in x] + [E] + [gdict[g][0][e] for e in x for g in G] + [gdict[g][1][e] for e in x for g in G] + [egdict[g] for g in G]
-##    if args.addword:
-##        print (",").join([args.addword] + [str(int(round(e))) for e in metrics])
-##    else:
-##        print (",").join([str(int(round(e))) for e in metrics])
+
+
+## FOR NOW - NX AND E/EX STUFF DISABLED FOR THIS MODE - ALSO NEED TO ADD IN QUANTILES
+else:
+    if args.header:
+        header = ["N","SUM","MAX","MIN","MEAN","STDV","MEDIAN", "MAD"] #+ ["N"+str(int(round(e))) for e in x] + ["L"+str(int(round(e))) for e in x] + ["E"] + ["NG"+str(int(round(e)))+"_"+str(int(round(g/1e6)))+"M" for e in x for g in G] + ["LG"+str(int(round(e)))+"_"+str(int(round(g/1e6)))+"M" for e in x for g in G] + ["E_"+str(int(round(g/1e6)))+"M" for g in G]
+        if args.addword:
+            header = ["string"] + header
+        print (",").join(header)
+    metrics = [N, A, MAX, MIN, MEAN, STDV, MEDIAN, MAD] #+ [nxvalues[e] for e in x] + [lxvalues[e] for e in x] + [E] + [gdict[g][0][e] for e in x for g in G] + [gdict[g][1][e] for e in x for g in G] + [egdict[g] for g in G]
+    if args.addword:
+        print (",").join([args.addword] + [str(int(round(e))) for e in metrics])
+    else:
+        print (",").join([str(round(e,3)) for e in metrics])
 
 
 
