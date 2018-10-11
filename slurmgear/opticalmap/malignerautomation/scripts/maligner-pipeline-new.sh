@@ -41,7 +41,7 @@ if $CONVERTASM; then
   if [ -d $D ]; then rm -r $D; fi
   mkdir $D
   cd $D
-  CONVDEP=`sbatch -J ${BASE}_convertasm -o ${OUT}/convertasm.slurm.%A.out --mem=8g --time=2:00:00 -c 2 --account=${QOS} --export=ASM_FASTA=${ASM},BASE=${BASE},REC_ENZ=${REC_ENZ},REC_SEQ=${REC_SEQ} ${SCRIPTS}/fa2map.sh | awk '{print $4}'`
+  CONVDEP=`sbatch -J ${BASE}_convertasm -o ${OUT}/convertasm.slurm.%A.out --mem=8g --time=2:00:00 -c 2 --account=${QOS} --export=ALL,ASM_FASTA=${ASM},BASE=${BASE},REC_ENZ=${REC_ENZ},REC_SEQ=${REC_SEQ} ${SCRIPTS}/fa2map.sh | awk '{print $4}'`
   cd ../
 fi
 ASM_MAP=`readlink -f asm_map/`/${BASE}.${REC_ENZ}.smoothed.maps
@@ -60,7 +60,7 @@ if $MAPBIONANO; then
  fi
  while read mapfilename; do
    b=`basename $mapfilename`
-   CLEAN1DEP=$CLEAN1DEP:`sbatch -J ${BASE}_${b} $DEPENDS -o ${OUT}/${b}.slurm.%A.out --mem=$MMEM --time=$MTIME -c $MTHREADS --account=${QOS} --export=ASM_MAP=${ASM_MAP},SMOOTH_MAPS=${mapfilename},REC_SEQ=${REC_SEQ} ${SCRIPTS}/maligner_dp.sh | awk '{print $4}'`
+   CLEAN1DEP=$CLEAN1DEP:`sbatch -J ${BASE}_${b} $DEPENDS -o ${OUT}/${b}.slurm.%A.out --mem=$MMEM --time=$MTIME -c $MTHREADS --account=${QOS} --export=ALL,ASM_MAP=${ASM_MAP},SMOOTH_MAPS=${mapfilename},REC_SEQ=${REC_SEQ} ${SCRIPTS}/maligner_dp.sh | awk '{print $4}'`
  done < $FOFN 
  cd ../
 fi
@@ -78,7 +78,7 @@ if $MERGE; then
  if $MAPBIONANO; then
    DEPENDS=--dependency=${CLEAN1DEP}
  fi
- MERGEDEP=`sbatch -J ${BASE}_merge $DEPENDS -o ${OUT}/merge.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --account=${QOS} --export=ALN=${ALN} ${SCRIPTS}/merge.sh | awk '{print $4}'`
+ MERGEDEP=`sbatch -J ${BASE}_merge $DEPENDS -o ${OUT}/merge.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --account=${QOS} --export=ALL,ALN=${ALN} ${SCRIPTS}/merge.sh | awk '{print $4}'`
  CLEAN1DEP=${CLEAN1DEP}:${MERGEDEP}
  cd ../
 fi
@@ -98,7 +98,7 @@ if $MERGE; then
    DEPENDS=--dependency=afterok:${MERGEDEP}
  fi
  SCOREDONE=`sbatch -J ${BASE}_score $DEPENDS -o ${OUT}/score.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --account=${QOS} \
-   --export=ALL=${ALL} ${SCRIPTS}/score.sh | awk '{print $4}'`
+   --export=ALL,ALL=${ALL} ${SCRIPTS}/score.sh | awk '{print $4}'`
  CLEAN1DEP=$CLEAN1DEP:$SCOREDONE
  cd ../
 fi
@@ -114,7 +114,7 @@ if $MERGE; then
  if $MERGE; then
    DEPENDS=--dependency=afterok:${SCOREDONE}
  fi
- CLEAN1DEP=$CLEAN1DEP:`sbatch -J ${BASE}_bdg $DEPENDS -o ${OUT}/bedgraph.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --account=${QOS} --export=ALL=${ALL},ASM=${ASM},BASE=${BASE} \
+ CLEAN1DEP=$CLEAN1DEP:`sbatch -J ${BASE}_bdg $DEPENDS -o ${OUT}/bedgraph.slurm.%A.out --mem=2g --time=1:00:00 -c 1 --account=${QOS} --export=ALL,ALL=${ALL},ASM=${ASM},BASE=${BASE} \
    ${SCRIPTS}/convert2bedGraph.sh | awk '{print $4}'`
  cd ../
 fi

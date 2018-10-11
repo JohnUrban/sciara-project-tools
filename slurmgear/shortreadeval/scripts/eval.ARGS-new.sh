@@ -52,7 +52,7 @@ if $BUILDBT2 || [ ! -d bt2 ]; then
   if [ -d bt2 ]; then rm -r bt2; fi
   mkdir bt2
   cd bt2
-  BT2DEP=`sbatch -J ${BASE}_buildbt2${JOBSFX} -o ${OUT}/bt2.slurm.%A.out --mem=$B2MEM --time=$B2TIME -c $B2THREADS --account=${QOS} --export=REF=${REF},BASE=${BASE} ${SCRIPTS}/bt2.eval.sh | awk '{print $4}'`
+  BT2DEP=`sbatch -J ${BASE}_buildbt2${JOBSFX} -o ${OUT}/bt2.slurm.%A.out --mem=$B2MEM --time=$B2TIME -c $B2THREADS --account=${QOS} --export=ALL,REF=${REF},BASE=${BASE} ${SCRIPTS}/bt2.eval.sh | awk '{print $4}'`
   cd ../
 fi
 BT2=`readlink -f bt2/`/$BASE
@@ -65,9 +65,9 @@ if $RUNLAP; then
  if [ ! -d lap ]; then mkdir lap; fi
  cd lap
  if $BUILDBT2; then
-  LAPDONE=`sbatch -J ${BASE}_lap${JOBSFX} --dependency=afterok:${BT2DEP} -o ${OUT}/lap.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --account=${QOS} --export=P=${LTHREADS},BASE=${BASE},REF=${REF},R1=${LAPR1},R2=${LAPR2},BT2=${BT2} ${SCRIPTS}/lap.eval.sh | awk '{print $4}'`
+  LAPDONE=`sbatch -J ${BASE}_lap${JOBSFX} --dependency=afterok:${BT2DEP} -o ${OUT}/lap.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --account=${QOS} --export=ALL,P=${LTHREADS},BASE=${BASE},REF=${REF},R1=${LAPR1},R2=${LAPR2},BT2=${BT2} ${SCRIPTS}/lap.eval.sh | awk '{print $4}'`
  else
-  LAPDONE=`sbatch -J ${BASE}_lap${JOBSFX} -o ${OUT}/lap.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --account=${QOS} --export=P=${LTHREADS},BASE=${BASE},REF=${REF},R1=${LAPR1},R2=${LAPR2},BT2=${BT2} ${SCRIPTS}/lap.eval.sh | awk '{print $4}'`
+  LAPDONE=`sbatch -J ${BASE}_lap${JOBSFX} -o ${OUT}/lap.slurm.%A.out --mem=$LMEM --time=$LTIME -c $LTHREADS --account=${QOS} --export=ALL,P=${LTHREADS},BASE=${BASE},REF=${REF},R1=${LAPR1},R2=${LAPR2},BT2=${BT2} ${SCRIPTS}/lap.eval.sh | awk '{print $4}'`
   ##same but not --dep
  fi
  cd ../
@@ -93,9 +93,9 @@ if $MAPREADS; then
  if [ ! -d mreads ]; then mkdir mreads; fi
  cd mreads
  if $BUILDBT2; then
-  ALEFRCDEP=`sbatch -J ${BASE}_mapreads${JOBSFX} --dependency=afterok:${BT2DEP} -o ${OUT}/mapreads.slurm.%A.out --mem=$MMEM --time=$MTIME -c $MTHREADS --account=${QOS} --export=BASE=${BASE},BT2=${BT2},MTHREADS=${MTHREADS},R1=${R1},R2=${R2} ${SCRIPTS}/map.eval.sh | awk '{print $4}'`
+  ALEFRCDEP=`sbatch -J ${BASE}_mapreads${JOBSFX} --dependency=afterok:${BT2DEP} -o ${OUT}/mapreads.slurm.%A.out --mem=$MMEM --time=$MTIME -c $MTHREADS --account=${QOS} --export=ALL,BASE=${BASE},BT2=${BT2},MTHREADS=${MTHREADS},R1=${R1},R2=${R2} ${SCRIPTS}/map.eval.sh | awk '{print $4}'`
  else
-  ALEFRCDEP=`sbatch -J ${BASE}_mapreads${JOBSFX} -o ${OUT}/mapreads.slurm.%A.out --mem=$MMEM --time=$MTIME -c $MTHREADS --account=${QOS} --export=BASE=${BASE},BT2=${BT2},MTHREADS=${MTHREADS},R1=${R1},R2=${R2} ${SCRIPTS}/map.eval.sh | awk '{print $4}'`
+  ALEFRCDEP=`sbatch -J ${BASE}_mapreads${JOBSFX} -o ${OUT}/mapreads.slurm.%A.out --mem=$MMEM --time=$MTIME -c $MTHREADS --account=${QOS} --export=ALL,BASE=${BASE},BT2=${BT2},MTHREADS=${MTHREADS},R1=${R1},R2=${R2} ${SCRIPTS}/map.eval.sh | awk '{print $4}'`
  fi
  cd ../
 fi
@@ -110,9 +110,9 @@ if $RUNALE; then
  if [ ! -d $DIR ]; then mkdir $DIR; fi
  cd $DIR
  if $MAPREADS; then
-  ALEDONE=`sbatch -J ${BASE}_ale${JOBSFX} --dependency=afterok:${ALEFRCDEP} -o ${OUT}/ale.slurm.%A.out --mem=$AMEM --time=$ATIME -c $ATHREADS --account=${QOS} --export=BASE=${BASE},REF=${REF},BAM=${BAM} ${SCRIPTS}/ale.eval.sh | awk '{print $4}'`
+  ALEDONE=`sbatch -J ${BASE}_ale${JOBSFX} --dependency=afterok:${ALEFRCDEP} -o ${OUT}/ale.slurm.%A.out --mem=$AMEM --time=$ATIME -c $ATHREADS --account=${QOS} --export=ALL,BASE=${BASE},REF=${REF},BAM=${BAM} ${SCRIPTS}/ale.eval.sh | awk '{print $4}'`
  else
-  ALEDONE=`sbatch -J ${BASE}_ale${JOBSFX} -o ${OUT}/ale.slurm.%A.out --mem=$AMEM --time=$ATIME -c $ATHREADS --account=${QOS} --export=BASE=${BASE},REF=${REF},BAM=${BAM} ${SCRIPTS}/ale.eval.sh | awk '{print $4}'`
+  ALEDONE=`sbatch -J ${BASE}_ale${JOBSFX} -o ${OUT}/ale.slurm.%A.out --mem=$AMEM --time=$ATIME -c $ATHREADS --account=${QOS} --export=ALL,BASE=${BASE},REF=${REF},BAM=${BAM} ${SCRIPTS}/ale.eval.sh | awk '{print $4}'`
   ##same but not --dep
  fi
  cd ../
@@ -138,9 +138,9 @@ if $RUNFRC; then
  if [ ! -d $DIR ]; then mkdir $DIR; fi
  cd $DIR
  if $MAPREADS; then
-  FRCDONE=`sbatch -J ${BASE}_frc${JOBSFX} --dependency=afterok:${ALEFRCDEP} -o ${OUT}/frc.slurm.%A.out --mem=$FMEM --time=$FTIME -c $FTHREADS --account=${QOS} --export=BASE=${BASE},BAM=${BAM} ${SCRIPTS}/frc.eval.sh | awk '{print $4}'`
+  FRCDONE=`sbatch -J ${BASE}_frc${JOBSFX} --dependency=afterok:${ALEFRCDEP} -o ${OUT}/frc.slurm.%A.out --mem=$FMEM --time=$FTIME -c $FTHREADS --account=${QOS} --export=ALL,BASE=${BASE},BAM=${BAM} ${SCRIPTS}/frc.eval.sh | awk '{print $4}'`
  else
-  FRCDONE=`sbatch -J ${BASE}_frc${JOBSFX} -o ${OUT}/frc.slurm.%A.out --mem=$FMEM --time=$FTIME -c $FTHREADS --account=${QOS} --export=BASE=${BASE},BAM=${BAM} ${SCRIPTS}/frc.eval.sh | awk '{print $4}'`
+  FRCDONE=`sbatch -J ${BASE}_frc${JOBSFX} -o ${OUT}/frc.slurm.%A.out --mem=$FMEM --time=$FTIME -c $FTHREADS --account=${QOS} --export=ALL,BASE=${BASE},BAM=${BAM} ${SCRIPTS}/frc.eval.sh | awk '{print $4}'`
   ##same but not --dep
  fi
  cd ../
@@ -174,11 +174,11 @@ if $RUNPILON; then
  cd $DIR
  if $MAPREADS; then
   PIDONE=`sbatch -J ${BASE}_pilonvar${JOBSFX} --dependency=afterok:${ALEFRCDEP} -o ${OUT}/pilon.slurm.%A.out --mem=$PMEM --time=$PTIME -c $PTHREADS --account=${QOS} \
-  --export=MKDUPS=${MKDUPS},RUNPILON=${RUNPILON},NOSTRAYS=${NOSTRAYS},CHANGES=${CHANGES},VCF=${VCF},TRACKS=${TRACKS},JX=${JX},PICARDJAR=${PICARDJAR},BAM=${BAM},PILONJAR=${PILONJAR},ASM=${REF},CLEAN=${PILONCLEAN},FIX=${PILONFIX} \
+  --export=ALL,MKDUPS=${MKDUPS},RUNPILON=${RUNPILON},NOSTRAYS=${NOSTRAYS},CHANGES=${CHANGES},VCF=${VCF},TRACKS=${TRACKS},JX=${JX},PICARDJAR=${PICARDJAR},BAM=${BAM},PILONJAR=${PILONJAR},ASM=${REF},CLEAN=${PILONCLEAN},FIX=${PILONFIX} \
   ${SCRIPTS}/pilon-eval.sh | awk '{print $4}'`
  else
   PIDONE=`sbatch -J ${BASE}_pilonvar${JOBSFX} -o ${OUT}/pilon.slurm.%A.out --mem=$PMEM --time=$PTIME -c $PTHREADS --account=${QOS} \
-  --export=MKDUPS=${MKDUPS},RUNPILON=${RUNPILON},NOSTRAYS=${NOSTRAYS},CHANGES=${CHANGES},VCF=${VCF},TRACKS=${TRACKS},JX=${JX},PICARDJAR=${PICARDJAR},BAM=${BAM},PILONJAR=${PILONJAR},ASM=${REF},CLEAN=${PILONCLEAN},FIX=${PILONFIX} \
+  --export=ALL,MKDUPS=${MKDUPS},RUNPILON=${RUNPILON},NOSTRAYS=${NOSTRAYS},CHANGES=${CHANGES},VCF=${VCF},TRACKS=${TRACKS},JX=${JX},PICARDJAR=${PICARDJAR},BAM=${BAM},PILONJAR=${PILONJAR},ASM=${REF},CLEAN=${PILONCLEAN},FIX=${PILONFIX} \
   ${SCRIPTS}/pilon-eval.sh | awk '{print $4}'`
  fi
  cd ../
@@ -198,7 +198,7 @@ if $RUNREAPR; then
  MEM=$RMEM
  TIME=$RTIME
  THREADS=$RTHREADS
- REAPRDONE=`sbatch -J ${BASE}_reapr${JOBSFX} -o ${OUT}/reapr.slurm.%A.out --mem=$MEM --time=$TIME -c $THREADS --account=${QOS} --export=REF=${REF},BASE=${BASE},R1=${R1},R2=${R2},P=${RTHREADS},FACHECK=${FACHECK},PERFECTMAP=${PERFECTMAP},SMALTMAP=${SMALTMAP},PIPELINE=${PIPELINE},AGGRESSIVE=${AGGRESSIVE},G=${G} ${SCRIPTS}/reapr.eval.sh | awk '{print $4}'`
+ REAPRDONE=`sbatch -J ${BASE}_reapr${JOBSFX} -o ${OUT}/reapr.slurm.%A.out --mem=$MEM --time=$TIME -c $THREADS --account=${QOS} --export=ALL,REF=${REF},BASE=${BASE},R1=${R1},R2=${R2},P=${RTHREADS},FACHECK=${FACHECK},PERFECTMAP=${PERFECTMAP},SMALTMAP=${SMALTMAP},PIPELINE=${PIPELINE},AGGRESSIVE=${AGGRESSIVE},G=${G} ${SCRIPTS}/reapr.eval.sh | awk '{print $4}'`
  cd ../
 fi
 
@@ -207,10 +207,10 @@ if $CLEANREAPR; then
  # if RUNREAPR, dep on REAPRDONE
  if $RUNREAPR; then
    ## As of 29Sep2018 - technically do not need to export "G" as the lines that required that have been moved to be part of the reapr.eval.sh script
-   sbatch -J ${BASE}_reapr_clean${JOBSFX} --dependency=afterok:${REAPRDONE} -o ${OUT}/reapr.clean.slurm.%A.out --mem=8g --time=06:00:00 -c 2 --account=${QOS} --export=G=${G} ${SCRIPTS}/reapr.clean.sh 
+   sbatch -J ${BASE}_reapr_clean${JOBSFX} --dependency=afterok:${REAPRDONE} -o ${OUT}/reapr.clean.slurm.%A.out --mem=8g --time=06:00:00 -c 2 --account=${QOS} --export=ALL,G=${G} ${SCRIPTS}/reapr.clean.sh 
  # else doesnt dep on REAPRDONE
  else
-   sbatch -J ${BASE}_reapr_clean -o ${OUT}/reapr.clean.slurm.%A.out --mem=8g --time=06:00:00 -c 2 --account=${QOS} --export=G=${G} ${SCRIPTS}/reapr.clean.sh 
+   sbatch -J ${BASE}_reapr_clean -o ${OUT}/reapr.clean.slurm.%A.out --mem=8g --time=06:00:00 -c 2 --account=${QOS} --export=ALL,G=${G} ${SCRIPTS}/reapr.clean.sh 
  fi
  cd ../
 fi
@@ -227,7 +227,7 @@ if $RUNBUSCO; then
  MEM=$BMEM
  TIME=$BTIME
  THREADS=$BTHREADS
- BUSCODONE=`sbatch -J ${BASE}_busco${JOBSFX} -o ${OUT}/busco.slurm.%A.out --mem=$MEM --time=$TIME -c $THREADS --account=${QOS} --export=TARGET=${REF},OUT=${BASE},CPU=${BTHREADS} ${SCRIPTS}/busco.eval.sh | awk '{print $4}'`
+ BUSCODONE=`sbatch -J ${BASE}_busco${JOBSFX} -o ${OUT}/busco.slurm.%A.out --mem=$MEM --time=$TIME -c $THREADS --account=${QOS} --export=ALL,TARGET=${REF},OUT=${BASE},CPU=${BTHREADS} ${SCRIPTS}/busco.eval.sh | awk '{print $4}'`
  cd ../
 fi
 
