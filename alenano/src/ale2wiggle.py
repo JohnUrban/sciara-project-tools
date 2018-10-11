@@ -51,7 +51,8 @@ def convertToWiggle(inFile):
 	dwig = open(inFile + "-depth.wig", 'w')
 	wig = open(inFile + ".wig", 'w')
 
-	for line in file(inFile):
+	##for line in file(inFile):
+	for line in open(inFile):
 		line = line.rstrip()
 		if line[0] == "#":
 			sp = line.split()
