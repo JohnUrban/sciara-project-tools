@@ -45,11 +45,11 @@
 """
 
 def convertToWiggle(inFile):
-	kwig = open(inFile + "-kmer.wig", 'w')
-	pwig = open(inFile + "-place.wig", 'w')
-	iwig = open(inFile + "-insert.wig", 'w')
-	dwig = open(inFile + "-depth.wig", 'w')
-	wig = open(inFile + ".wig", 'w')
+	kwig = open(inFile + "-kmerLike.wig", 'w')
+	pwig = open(inFile + "-placeLike.wig", 'w')
+	iwig = open(inFile + "-insertLike.wig", 'w')
+	dwig = open(inFile + "-depthLike.wig", 'w')
+	wig = open(inFile + "-depth.wig", 'w')
 
 	## Write track line just once at top of file(s)
 	pwig.write("track name=ALE-place color=0,0,255 group=ALE priority=1\n")
@@ -69,7 +69,7 @@ def convertToWiggle(inFile):
 				iwig.write("fixedStep chrom=" + sp[2] + " start=1 step=1\n")
 				dwig.write("fixedStep chrom=" + sp[2] + " start=1 step=1\n")
 				kwig.write("fixedStep chrom=" + sp[2] + " start=1 step=1\n")
-				wig.write("fixedStep chrom=" + sp[2] + " start=0 step=1\n")
+				wig.write("fixedStep chrom=" + sp[2] + " start=1 step=1\n")
 			continue
 		contig,position,depth,depthLike,placeLike,insertLike,kmerLike = line.split()
 		kwig.write(str(kmerLike) + "\n")	
