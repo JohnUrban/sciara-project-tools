@@ -44,7 +44,7 @@ for DIR in ${LINEAGE_OPTIONS}; do
  if $RUN; then
   if [ ! -d $DIR ]; then mkdir $DIR; fi
   cd $DIR
-  DONE=`sbatch -J ${BASE}_buscov3_${DIR} -o ${OUT}/${DIR}.slurm.%A.out --mem=$BMEM --time=$BTIME -c $BTHREADS --account=$QOS --export=FASTA=${ASM},OUT=${BASE},CPU=${BTHREADS},LINEAGE=${LINEAGE},MODE=${MODE},REGIONLIMIT=${REGIONLIMIT} ${SCRIPTS}/buscov3.eval.sh | awk '{print $4}'`
+  DONE=`sbatch -J ${BASE}_buscov3_${DIR} -o ${OUT}/${DIR}.slurm.%A.out --mem=$BMEM --time=$BTIME -c $BTHREADS --account=$QOS --export=ALL,FASTA=${ASM},OUT=${BASE},CPU=${BTHREADS},LINEAGE=${LINEAGE},MODE=${MODE},REGIONLIMIT=${REGIONLIMIT} ${SCRIPTS}/buscov3.eval.sh | awk '{print $4}'`
   if $CLEAN; then
     MOP=`sbatch --dependency=afterok:${DONE} -J ${BASE}_buscov3_${DIR}_clean -o ${OUT}/clean_${DIR}.slurm.%A.out --mem=1g --time=1:00:00 -c 1 --account=$QOS ${SCRIPTS}/buscov3.clean.sh | awk '{print $4}'` 
   fi

@@ -64,7 +64,7 @@ D=blastdb
 if $MAKEBLASTDB; then
  if [ ! -d $D ]; then mkdir $D; fi
  cd $D
- MAKEDONE=`sbatch -J ${JOBPRE}${BASE}_makeblastdb -o ${OUT}/makeblastdb.slurm.%A.out --mem=$MMEM --time=$MTIME -c $MTHREADS --account=${QOS} --export=ASM=${ASM},DBTYPE=nucl,OUT=asm $SCRIPTS/makeblastdb.sh | awk '{print $4}'`
+ MAKEDONE=`sbatch -J ${JOBPRE}${BASE}_makeblastdb -o ${OUT}/makeblastdb.slurm.%A.out --mem=$MMEM --time=$MTIME -c $MTHREADS --account=${QOS} --export=ALL,ASM=${ASM},DBTYPE=nucl,OUT=asm $SCRIPTS/makeblastdb.sh | awk '{print $4}'`
  cd ../
 fi
 BDB=$(echo `readlink -f ${MAIN}/${D}`/asm)
@@ -74,7 +74,7 @@ BDB=$(echo `readlink -f ${MAIN}/${D}`/asm)
 ## BLAST
 ##############################################################################
 BLASTDONE=`sbatch --dependency=afterok:${MAKEDONE} -a 1-$NJOBS -J ${JOBPRE}${BASE}_blast_trans -o ${OUT}/blast_trans.slurm.%A_%a.out --mem=$BMEM --time=$BTIME -c $BTHREADS --account=${QOS} \
-   --export=QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},P=${BTHREADS},BDB=${BDB},TASK=${TASK},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ},BLASTEXTRA="${BLASTEXTRA}" \
+   --export=ALL,QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},P=${BTHREADS},BDB=${BDB},TASK=${TASK},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ},BLASTEXTRA="${BLASTEXTRA}" \
    ${SCRIPTS}/transblast-array.sh | awk '{print $4}'`
 
 
@@ -89,7 +89,7 @@ FOLLOWUPNUM=1
 FOLLOWDONE=`sbatch --dependency=afterany:${BLASTDONE} -J ${JOBPRE}${BASE}_blast_trans_followup_${FOLLOWUPNUM} \
    -o ${OUT}/follow_up_${FOLLOWUPNUM}.slurm.%A.out \
    --mem=2g --time=6:00:00 -c 2 --account=${QOS} \
-   --export=BASE=${BASE},NJOBS=${NJOBS},SLURMOUTDIR=${OUT},SLURMPRE=blast_trans.slurm,FOLLOWUPNUM=${FOLLOWUPNUM},BMEM=${BMEM},BTIME=${BTIME},BTHREADS=${BTHREADS},QOS=${QOS},SCRIPTS=${SCRIPTS},QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},BDB=${BDB},TASK=${TASK},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ},JOBPRE=${JOBPRE},TASK=${TASK},BLASTEXTRA="${BLASTEXTRA}" \
+   --export=ALL,BASE=${BASE},NJOBS=${NJOBS},SLURMOUTDIR=${OUT},SLURMPRE=blast_trans.slurm,FOLLOWUPNUM=${FOLLOWUPNUM},BMEM=${BMEM},BTIME=${BTIME},BTHREADS=${BTHREADS},QOS=${QOS},SCRIPTS=${SCRIPTS},QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${BLASTDIR},BDB=${BDB},TASK=${TASK},EVAL=${EVAL},WORDSIZE=${WORDSIZE},CULL=${CULL},MAXTARGSEQ=${MAXTARGSEQ},JOBPRE=${JOBPRE},TASK=${TASK},BLASTEXTRA="${BLASTEXTRA}" \
    ${SCRIPTS}/followup.sh | awk '{print $4}'`
 
 
@@ -100,7 +100,7 @@ FOLLOWDONE=`sbatch --dependency=afterany:${BLASTDONE} -J ${JOBPRE}${BASE}_blast_
 if $TBLASTX; then
 
 TBLASTXDONE=`sbatch --dependency=afterok:${MAKEDONE} -a 1-$NJOBS -J ${JOBPRE}${BASE}_tblastx -o ${OUT}/tblastx.slurm.%A_%a.out --mem=$BMEM --time=$BTIME -c $BTHREADS --account=${QOS} \
-   --export=QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${TBLASTXDIR},P=${BTHREADS},BDB=${BDB},EVAL=${TBXEVAL},WORDSIZE=${TBXWORDSIZE},CULL=${TBXCULL},MAXTARGSEQ=${TBXMAXTARGSEQ},JOBPRE=${JOBPRE},TBLASTEXTRA="${TBLASTEXTRA}" \
+   --export=ALL,QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${TBLASTXDIR},P=${BTHREADS},BDB=${BDB},EVAL=${TBXEVAL},WORDSIZE=${TBXWORDSIZE},CULL=${TBXCULL},MAXTARGSEQ=${TBXMAXTARGSEQ},JOBPRE=${JOBPRE},TBLASTEXTRA="${TBLASTEXTRA}" \
    ${SCRIPTS}/transtblastx-array.sh | awk '{print $4}'`
 
 fi
@@ -114,7 +114,7 @@ FOLLOWUPNUM=1
 TBXFOLLOWDONE=`sbatch --dependency=afterany:${TBLASTXDONE} -J ${JOBPRE}${BASE}_tblastx_followup_${FOLLOWUPNUM} \
    -o ${OUT}/tbx_follow_up_${FOLLOWUPNUM}.slurm.%A.out \
    --mem=2g --time=6:00:00 -c 2 --account=${QOS} \
-   --export=BASE=${BASE},NJOBS=${NJOBS},SLURMOUTDIR=${OUT},SLURMPRE=tblastx.slurm,FOLLOWUPNUM=${FOLLOWUPNUM},BMEM=${BMEM},BTIME=${BTIME},BTHREADS=${BTHREADS},QOS=${QOS},SCRIPTS=${SCRIPTS},QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${TBLASTXDIR},BDB=${BDB},EVAL=${TBXEVAL},WORDSIZE=${TBXWORDSIZE},CULL=${TBXCULL},MAXTARGSEQ=${TBXMAXTARGSEQ},JOBPRE=${JOBPRE},TBLASTEXTRA="${TBLASTEXTRA}" \
+   --export=ALL,BASE=${BASE},NJOBS=${NJOBS},SLURMOUTDIR=${OUT},SLURMPRE=tblastx.slurm,FOLLOWUPNUM=${FOLLOWUPNUM},BMEM=${BMEM},BTIME=${BTIME},BTHREADS=${BTHREADS},QOS=${QOS},SCRIPTS=${SCRIPTS},QUERYDIR=${QUERYDIR},PRE=${PRE},BLASTDIR=${TBLASTXDIR},BDB=${BDB},EVAL=${TBXEVAL},WORDSIZE=${TBXWORDSIZE},CULL=${TBXCULL},MAXTARGSEQ=${TBXMAXTARGSEQ},JOBPRE=${JOBPRE},TBLASTEXTRA="${TBLASTEXTRA}" \
    ${SCRIPTS}/followup-tbx.sh | awk '{print $4}'`
 
 fi

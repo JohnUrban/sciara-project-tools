@@ -71,7 +71,7 @@ if $BUILDBT2 || [ ! -d bt2 ]; then
   if [ -d bt2 ]; then rm -r bt2; fi
   mkdir bt2
   cd bt2
-  BT2DEP=`sbatch -J ${BASE}_buildbt2 -o ${OUT}/bt2.slurm.%A.out --mem=$B2MEM --time=$B2TIME -c $B2THREADS --account=${QOS} --export=ASM=${ASM},BASE=${BASE} ${SCRIPTS}/build.sh | awk '{print $4}'`
+  BT2DEP=`sbatch -J ${BASE}_buildbt2 -o ${OUT}/bt2.slurm.%A.out --mem=$B2MEM --time=$B2TIME -c $B2THREADS --account=${QOS} --export=ALL,ASM=${ASM},BASE=${BASE} ${SCRIPTS}/build.sh | awk '{print $4}'`
   cd ../
 fi
 BT2=`readlink -f bt2/`/$BASE
@@ -84,9 +84,9 @@ if $MAPREADS; then
  if [ ! -d mreads ]; then mkdir mreads; fi
  cd mreads
  if $BUILDBT2; then
-  MAPDONE=`sbatch -J ${BASE}_mapreads --dependency=afterok:${BT2DEP} -o ${OUT}/mapreads.slurm.%A.out --mem=$MMEM --time=$MTIME -c $MTHREADS --account=${QOS} --export=MEM=${MMEM},BT2=${BT2},P=${MTHREADS},R1=${R1},R2=${R2},PRE=reads  ${SCRIPTS}/map.sh | awk '{print $4}'`
+  MAPDONE=`sbatch -J ${BASE}_mapreads --dependency=afterok:${BT2DEP} -o ${OUT}/mapreads.slurm.%A.out --mem=$MMEM --time=$MTIME -c $MTHREADS --account=${QOS} --export=ALL,MEM=${MMEM},BT2=${BT2},P=${MTHREADS},R1=${R1},R2=${R2},PRE=reads  ${SCRIPTS}/map.sh | awk '{print $4}'`
  else
-  MAPDONE=`sbatch -J ${BASE}_mapreads -o ${OUT}/mapreads.slurm.%A.out --mem=$MMEM --time=$MTIME -c $MTHREADS --account=${QOS} --export=MEM=${MMEM},BT2=${BT2},P=${MTHREADS},R1=${R1},R2=${R2},PRE=reads  ${SCRIPTS}/map.sh | awk '{print $4}'`
+  MAPDONE=`sbatch -J ${BASE}_mapreads -o ${OUT}/mapreads.slurm.%A.out --mem=$MMEM --time=$MTIME -c $MTHREADS --account=${QOS} --export=ALL,MEM=${MMEM},BT2=${BT2},P=${MTHREADS},R1=${R1},R2=${R2},PRE=reads  ${SCRIPTS}/map.sh | awk '{print $4}'`
  fi
  cd ../
 fi
@@ -100,9 +100,9 @@ BAM=`readlink -f $MAIN/mreads/reads.bam`
 if $FLAG1; then
  cd mreads
  if $MAPREADS; then
-  F1DONE=`sbatch -J ${BASE}_flag1 --dependency=afterok:${MAPDONE} -o ${OUT}/flag1.slurm.%A.out --mem=$FMEM --time=$FTIME -c $FTHREADS --account=${QOS} --export=PRE=reads ${SCRIPTS}/flagstat.sh | awk '{print $4}'`
+  F1DONE=`sbatch -J ${BASE}_flag1 --dependency=afterok:${MAPDONE} -o ${OUT}/flag1.slurm.%A.out --mem=$FMEM --time=$FTIME -c $FTHREADS --account=${QOS} --export=ALL,PRE=reads ${SCRIPTS}/flagstat.sh | awk '{print $4}'`
  else
-  F1DONE=`sbatch -J ${BASE}_flag1 -o ${OUT}/flag1.slurm.%A.out --mem=$FMEM --time=$FTIME -c $FTHREADS --account=${QOS} --export=PRE=reads ${SCRIPTS}/flagstat.sh | awk '{print $4}'`
+  F1DONE=`sbatch -J ${BASE}_flag1 -o ${OUT}/flag1.slurm.%A.out --mem=$FMEM --time=$FTIME -c $FTHREADS --account=${QOS} --export=ALL,PRE=reads ${SCRIPTS}/flagstat.sh | awk '{print $4}'`
   ##same but not --dep
  fi
  cd ../
@@ -116,9 +116,9 @@ fi
 if $MARK; then
  cd mreads
  if $MAPREADS; then
-  MKDONE=`sbatch -J ${BASE}_mkdup --dependency=afterok:${MAPDONE} -o ${OUT}/mkdup.slurm.%A.out --mem=$MDMEM --time=$MDTIME -c $MDTHREADS --account=${QOS} --export=JX=${PICJX},JAR=$PICARDJAR,PRE=reads ${SCRIPTS}/markdups.sh | awk '{print $4}'`
+  MKDONE=`sbatch -J ${BASE}_mkdup --dependency=afterok:${MAPDONE} -o ${OUT}/mkdup.slurm.%A.out --mem=$MDMEM --time=$MDTIME -c $MDTHREADS --account=${QOS} --export=ALL,JX=${PICJX},JAR=$PICARDJAR,PRE=reads ${SCRIPTS}/markdups.sh | awk '{print $4}'`
  else
-  MKDONE=`sbatch -J ${BASE}_mkdup -o ${OUT}/mkdup.slurm.%A.out --mem=$MDMEM --time=$MDTIME -c $MDTHREADS --account=${QOS} --export=JX=${PICJX},JAR=$PICARDJAR,PRE=reads ${SCRIPTS}/markdups.sh | awk '{print $4}'`
+  MKDONE=`sbatch -J ${BASE}_mkdup -o ${OUT}/mkdup.slurm.%A.out --mem=$MDMEM --time=$MDTIME -c $MDTHREADS --account=${QOS} --export=ALL,JX=${PICJX},JAR=$PICARDJAR,PRE=reads ${SCRIPTS}/markdups.sh | awk '{print $4}'`
   ##same but not --dep
  fi
  cd ../
@@ -139,9 +139,9 @@ fi
 if $FLAG2; then
  cd mreads
  if $MARK; then
-  F2DONE=`sbatch -J ${BASE}_flag2 --dependency=afterok:${MKDONE} -o ${OUT}/flag2.slurm.%A.out --mem=$FMEM --time=$FTIME -c $FTHREADS --account=${QOS} --export=PRE=reads.markdup ${SCRIPTS}/flagstat.sh | awk '{print $4}'`
+  F2DONE=`sbatch -J ${BASE}_flag2 --dependency=afterok:${MKDONE} -o ${OUT}/flag2.slurm.%A.out --mem=$FMEM --time=$FTIME -c $FTHREADS --account=${QOS} --export=ALL,PRE=reads.markdup ${SCRIPTS}/flagstat.sh | awk '{print $4}'`
  else
-  F2DONE=`sbatch -J ${BASE}_flag2 -o ${OUT}/flag2.slurm.%A.out --mem=$FMEM --time=$FTIME -c $FTHREADS --account=${QOS} --export=PRE=reads.markdup ${SCRIPTS}/flagstat.sh | awk '{print $4}'`
+  F2DONE=`sbatch -J ${BASE}_flag2 -o ${OUT}/flag2.slurm.%A.out --mem=$FMEM --time=$FTIME -c $FTHREADS --account=${QOS} --export=ALL,PRE=reads.markdup ${SCRIPTS}/flagstat.sh | awk '{print $4}'`
   ##same but not --dep
  fi
  cd ../
@@ -155,9 +155,9 @@ if $PILON; then
  if [ ! -d $DIR ]; then mkdir $DIR; fi
  cd $DIR
  if $MARK; then
-  PDONE=`sbatch -J ${BASE}_pilon --dependency=afterok:${MKDONE} -o ${OUT}/pilon.slurm.%A.out --mem=$PMEM --time=$PTIME -c $PTHREADS --account=${QOS} --export=NOSTRAYS=${NOSTRAYS},JX=${PILJX},PILONJAR=${PILONJAR},ASM=${ASM},READS=${BAM},PRE=${OUTPRE},FIX=${FIX} ${SCRIPTS}/pilon.sh | awk '{print $4}'`
+  PDONE=`sbatch -J ${BASE}_pilon --dependency=afterok:${MKDONE} -o ${OUT}/pilon.slurm.%A.out --mem=$PMEM --time=$PTIME -c $PTHREADS --account=${QOS} --export=ALL,NOSTRAYS=${NOSTRAYS},JX=${PILJX},PILONJAR=${PILONJAR},ASM=${ASM},READS=${BAM},PRE=${OUTPRE},FIX=${FIX} ${SCRIPTS}/pilon.sh | awk '{print $4}'`
  else
-  PDONE=`sbatch -J ${BASE}_pilon -o ${OUT}/pilon.slurm.%A.out --mem=$PMEM --time=$PTIME -c $PTHREADS --account=${QOS} --export=NOSTRAYS=${NOSTRAYS},JX=${PILJX},PILONJAR=${PILONJAR},ASM=${ASM},READS=${BAM},PRE=${OUTPRE},FIX=${FIX} ${SCRIPTS}/pilon.sh | awk '{print $4}'`
+  PDONE=`sbatch -J ${BASE}_pilon -o ${OUT}/pilon.slurm.%A.out --mem=$PMEM --time=$PTIME -c $PTHREADS --account=${QOS} --export=ALL,NOSTRAYS=${NOSTRAYS},JX=${PILJX},PILONJAR=${PILONJAR},ASM=${ASM},READS=${BAM},PRE=${OUTPRE},FIX=${FIX} ${SCRIPTS}/pilon.sh | awk '{print $4}'`
   ##same but not --dep
  fi
  cd ../
@@ -169,7 +169,7 @@ fi
 
 if $CLEAN && $PILON; then
   cd mreads
-  CRDONE=`sbatch -J ${BASE}_cleanreads2 --dependency=afterok:${PDONE} -o ${OUT}/cleanreads2.slurm.%A.out --mem=2g --time=2:00:00 -c 2 --account=${QOS} --export=OUTPRE=${OUTPRE} ${SCRIPTS}/cleanreads2.sh | awk '{print $4}'`
+  CRDONE=`sbatch -J ${BASE}_cleanreads2 --dependency=afterok:${PDONE} -o ${OUT}/cleanreads2.slurm.%A.out --mem=2g --time=2:00:00 -c 2 --account=${QOS} --export=ALL,OUTPRE=${OUTPRE} ${SCRIPTS}/cleanreads2.sh | awk '{print $4}'`
   ##cleanreads2.sh
   cd ../
 fi
