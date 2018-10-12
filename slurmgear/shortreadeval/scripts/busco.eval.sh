@@ -3,6 +3,7 @@
 ## for use with busco.loop.slurm.in or eval script
 ## Need: TARGET, OUT, CPU
 
+module load python/3.5.2 ## In case 3.4.1 below is not on RedHatOscar
 module load python/3.4.1 
 module load boost/1.55.0
 module load boost/1.55 ## need both lines for now to work on 2 different systems
