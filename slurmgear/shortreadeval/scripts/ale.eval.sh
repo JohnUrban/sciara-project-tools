@@ -1,6 +1,12 @@
 #!/bin/bash
 
-module load ale/20140120
+#module load ale/20140120 ## Now using "alenano" in sciaratools
+
+PATH=~/software/sciaratools/sciara-project-tools/alenano/src/:$PATH
+PATH=~/software/alenano/src/:/users/jurban/software/sciaratools/sciara-project-tools/:$PATH 
+
+
+
 PATH=~/software/frcbam/FRC_align/bin/:/users/jurban/software/sciaratools/sciara-project-tools/:$PATH
 
 
