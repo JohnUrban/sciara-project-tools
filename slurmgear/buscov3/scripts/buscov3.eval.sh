@@ -3,7 +3,7 @@
 ## for use with busco.loop.slurm.in or eval script
 ## Need: FASTA, OUT, CPU
 
-module load boost/1.55.0
+##module load boost/1.55.0
 module load boost/1.55 ## to catch error on new system I have both these lines just in case
 module load bamtools/2.3.0
 module load blast/2.2.30+
