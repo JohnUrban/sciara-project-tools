@@ -1,6 +1,7 @@
 #!/bin/bash
 
 module load boost/1.55.0  ##for frc
+module load boost/1.55  ## need both lines for 2 systems for now
 PATH=~/software/frcbam/FRC_align/bin/:/users/jurban/software/sciaratools/sciara-project-tools/:$PATH
 
 echo BAM ${BAM}

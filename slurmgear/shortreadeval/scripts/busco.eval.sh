@@ -5,6 +5,7 @@
 
 module load python/3.4.1 
 module load boost/1.55.0
+module load boost/1.55 ## need both lines for now to work on 2 different systems
 module load bamtools/2.3.0
 module load blast/2.2.30+
 export PATH=/users/jurban/software/busco/BUSCO_v1.22/:~/software/busco/hmmer-3.1b2-linux-intel-x86_64/binaries/:/gpfs_home/jurban/software/busco/augustus-3.2.2/bin:$PATH
