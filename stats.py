@@ -223,10 +223,6 @@ if not args.table:
     if args.scale and nxvalues is not None:
             for g in G:
                 for e in x:
-                    print "Contig NG%s (G=%d)\t%d" % (str(e), g, ngxvalues[e])
-                for e in x:
-                    print "Contig LG%s (G=%d)\t%d" % (str(e), g, lgxvalues[e])
-                for e in x:
                     print "Contig NG%s (G=%d)\t%d" % (str(e), g, round(gdict[g][0][e],3))
                 for e in x:
                     print "Contig LG%s (G=%d)\t%d" % (str(e), g, int((gdict[g][1][e])))
