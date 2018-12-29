@@ -245,7 +245,13 @@ if args.namesfile or args.names or args.annotatednamesfile:
             if record.id in names:
                 if args.annotatednamesfile:
                     if args.annotation2id:
-                        record.id = record.id + "_" + ("-").join(annotations[record.id].split())
+                        if record.id == record.description:
+                            record.id = record.id + "_" + ("-").join(annotations[record.id].split())
+                            record.description = record.id
+                        else:
+                            record.id = record.id + "_" + ("-").join(annotations[record.id].split())
+                            record.description = record.id + ' ' + ' '.join(record.description.split()[1:]) 
+                            
                     else:
                         record.description = record.description + "\t" + annotations[record.id]
                 if args.separate:
@@ -255,7 +261,7 @@ if args.namesfile or args.names or args.annotatednamesfile:
                     SeqIO.write(record, out, fastx)
                 if not args.multiple:
                     if args.annotatednamesfile and args.annotation2id:
-                        record.id = ("_").join(record.id.split("_")[:-1]).strip('_')
+                        record.id = ("_").join(record.id.split("_")[:-1]) #.strip('_')
                     names.remove(record.id)
                 pctdone += 100*1.0/setsize
                 if pctdone >= gatepct and args.verbose:
