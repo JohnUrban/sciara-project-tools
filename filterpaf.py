@@ -9,6 +9,17 @@ parser = argparse.ArgumentParser(description="""
 
  Return PAF lines given rules.
 
+
+    Note: I've only begun tinkering with this script.
+
+    For bubbles, I'd recommend using awk for now.
+
+    Something similar to:
+    # create a modified PAF describing putative bubbles/redundant contigs (RCs).
+    awk '$1!=$6 && (($4-$3)/$2 >= 0.6 || ($9-$8)/$7 >= 0.6) {OFS="\t"; A=($4-$3)/$2; B=($9-$8)/$7; C=$10/$11; if (A >= 0.6 && B < 0.6) print "query",A,B,C,$0; else if (A < 0.6 && B >= 0.6) print "orig_target",B,A,C,$6,$7,$8,$9,$5,$1,$2,$3,$4,$10,$11,$12,$13,$14,$15,$16; else if (A>=0.6 && B>=0.6 && A>=B) print "both_q",A,B,C,$0; else if (A>=0.6 && B>=0.6 && B>=A) print "both_t",B,A,C,$6,$7,$8,$9,$5,$1,$2,$3,$4,$10,$11,$12,$13,$14,$15,$16; else print  "none",A,B,C,$0}' bubble-search-asm10.paf > filtered-bubble-search-asm10.paf
+    # define a set of bubbles/RCs using cutoffs on the putative bubble set
+    awk '(($2>=0.8 && $4>=0.8)) && $6/$11 < 0.8' filtered-bubble-search-asm10.paf 
+
     """, formatter_class= argparse.RawTextHelpFormatter)
 
 
@@ -34,7 +45,7 @@ parser.add_argument('--same_rules', '-SR',
 
 parser.add_argument('--bubble', '-B',
                    action='store_true', default=False,
-                   help='''Return lines where there the query was a "bubble" alignment as defined by some rules.
+                   help='''Return lines where there the query was a "bubble"/redundant contig alignment as defined by some rules.
                         ''')
 
 
