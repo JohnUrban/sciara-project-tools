@@ -14,13 +14,18 @@ Break sequence at Ns.
 Return FASTA file with each scf broken into sequence between Ns (gaps).
 
 Naming will be:
-scfname_1
-.
-.
-.
-scfname_n
+$(scfname)_ctg$(C)_len$(L)bp_after$(N)Ns
 
-If there are n-1 such gaps.
+Where:
+    scfname     = original fasta entry name
+    C           = contig number along scaffold
+    L           = contig length (after breaking off from scaffold)
+    N           = number of Ns between this and previous contig
+
+e.g.
+scaff1_ctg1_len10153bp_after0Ns
+
+Given n contigs in a scaffold, there are n-1 intervening regions/gaps.
 
     """, formatter_class= argparse.RawTextHelpFormatter)
 
