@@ -53,6 +53,10 @@ parser.add_argument('--force', '-F',
                     In other words, there may be untranslated values in the output table that were not anticipated by your input dictionary.
                     Thie can be good, but is not default to avoid a "silent failure" in pipelines that don't want this.''')
 
+parser.add_argument('--list', '-L',
+                   type=str, default=False,
+                   help='''By default, this script assumes A in one column and B in the other.
+                    This tells it to expect lists separated by given character (usually comma, semi-colon, colon, dash, or underscore).''')
 
 args = parser.parse_args()
 
@@ -73,16 +77,23 @@ with open(args.dict) as d:
 # Create key:val function 
 if args.force:
     # that returns input value upon failure
-    def translate(x):
+    def stranslate(x):
         try:
             return transdict[x]
         except KeyError:
             return x
 else:
     # that fails upon failure
-    def translate(x):
+    def stranslate(x):
         return transdict[x]
 
+# Create final translate function if lists are expected or not
+if args.list is not False:
+    def translate(x,delim=args.list):
+        return (delim).join([stranslate(e) for e in x.strip().split(delim)])
+else:
+    def translate(x):
+        return stranslate(x)
     
 # Translate table
 with open(args.table) as table:
