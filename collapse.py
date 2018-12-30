@@ -31,7 +31,7 @@ parser.add_argument('--column2', '-c2', type=int, default=2,
 
 parser.add_argument('--operation', '-o', type=str, default='sum',
                     help=''' Operation to perform on column2. Default: sum.
-Options: max, min, mean, median, sum, list.''')
+Options: max, min, mean, median, sum, list, distinct.''')
 
 parser.add_argument('--addcol', '-c3', type=str, default=False,
                     help='''Legacy (see --othercols too): When using ONLY max or min, also report these columns -- provide comma-separated list.''')
@@ -80,6 +80,7 @@ if args.othercols:
 
 ops = []
 listfxn = lambda x: (",").join([str(e) for e in x])
+distinctfxn = lambda x: (",").join([str(e) for e in list(set(x))])
 for e in fxns:
     if e == 'sum':
         fxn = sum
@@ -93,6 +94,8 @@ for e in fxns:
         fxn = np.median
     elif e == 'list':
         fxn = listfxn
+    elif e == 'distinct':
+        fxn = distinctfxn
     ops.append(fxn)
 
 d = defaultdict(list)
