@@ -61,7 +61,7 @@ The annotation in 2nd column (tab-sep) is added to the fasta header of the extra
 Does NOT have any effect when --exclude is being used -- works same as --namesfile.
 Does NOT have effect when --indexes, --head, --minlen, --maxlen used...''')
 
-names.add_argument('--regex', '-r', type=str, help='''Provide a regular expression. If it is in the record.description, the record will be printed.''')
+names.add_argument('--regex', '-r', type=str, help='''Provide a regular expression. If it is in the record.description, the record will be printed. Use --exclude to print only those without regex.''')
 
 
 parser.add_argument('--ignore_case', '-I', action='store_true', default=False, help='''Only has an effect in conjunction with --regex.
@@ -78,7 +78,7 @@ With this flag, the annotation is appended with a '_' character to the record.id
 Any white space in the annotation is replaced with '-'.''')
 
 parser.add_argument('--exclude', '-e', action='store_true', default=False,
-                   help='''All sequences in fastx file EXCEPT names given will be returned.''')
+                   help='''All sequences in fastx file EXCEPT names given will be returned. Can also be used with some other options such as --regex.''')
 
 parser.add_argument('--multiple', '-m', action='store_true', default=False,
                     help=''' Only use this if given names possibly occur multiple times in the file. This is unusual.
@@ -323,7 +323,9 @@ elif args.regex:
     regex = re.compile(args.regex)
     for record in SeqIO.parse(fastxFile, fastx):
         regex_present = len( re.findall( regex, record.description ) )
-        if regex_present:
+        if regex_present and not args.exclude:
+            SeqIO.write(record, out, fastx)
+        elif args.exclude and not regex_present :
             SeqIO.write(record, out, fastx)
 
 elif args.subseqs:
