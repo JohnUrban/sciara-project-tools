@@ -1,6 +1,7 @@
 #!/usr/bin/env python2.7
 import sys, string
 import argparse
+from numpy.random import binomial as binomial
 from Bio import SeqIO
 from collections import defaultdict
 
@@ -108,6 +109,15 @@ Indexes are 0-based like Python. Slices will go up to but not include end of ran
 parser.add_argument('--head', type=int, default=False,
                     help=''' Use this if you just want to extract the head (first N bases) of all sequences.''')
 
+parser.add_argument('--grab', type=int, default=1e15,
+                    help=''' Use this if you just want to grab the first N entries. Currently, this only works with --minlen and --maxlen.
+It does not have an effect on any other flag. Defaults to 1e15 records assuming that will never be hit.
+If you have more than 1e15 records, this will need to be adjusted.''')
+
+parser.add_argument('--grabprob', type=float, default=1.0,
+                    help=''' Use this with --grab to return sequences with a probability given betwen 0-1. It will continue iterating/deciding on whether or not to return the current record until N records are returned.
+At most N sequences will be returned Default: 1.0. i.e. grab the first N sequences.''')
+
 parser.add_argument('--subseqs', type=str, default=False,
                     help=''' Use this if you just want to extract only reads that contain sub-sequences/kmers in given file (sub-sequences assumed to be in first column of file regardless of how many other columns).
 This can handle kmers (subseqs all of length k) as well as variable-length subseqs. This does not currently work with --exclude. (TODO)''')
@@ -117,8 +127,8 @@ parser.add_argument('--revsubseqs', action='store_true', default=False,
 
 parser.add_argument('--Nsubseqs', type=int, default=1,
                     help='''Use this with --subseqs to instruct how many times a subseq needs to be found to extract read.
-                            This is NOT requiring them to be N distinct subseqs - the same subseq can occur N times.
-                            Default: 1.''')
+This is NOT requiring them to be N distinct subseqs - the same subseq can occur N times.
+Default: 1.''')
 
 ##
 ##parser.add_argument('-U', '--touppercase', type=int, default=False,
@@ -371,9 +381,14 @@ elif args.subseqs:
 
 ## NEW ELIFs SHOULD BE ABOVE THIS LINE    
 elif args.minlen or args.maxlen:
+    returned = 0
     for record in SeqIO.parse(fastxFile, fastx):
-        if len(record) >= args.minlen and len(record) <= args.maxlen:
+        sample_this_one = binomial(1,args.grabprob)
+        if len(record) >= args.minlen and len(record) <= args.maxlen and sample_this_one:
+            returned += 1
             SeqIO.write(record, out, fastx)
+            if returned >= args.grab:
+                break
                    
 
 fastxFile.close()
