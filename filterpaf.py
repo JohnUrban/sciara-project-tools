@@ -12,13 +12,45 @@ parser = argparse.ArgumentParser(description="""
 
     Note: I've only begun tinkering with this script.
 
-    For bubbles, I'd recommend using awk for now.
+    For sorting, assuming a normal PAF, this unix command will give the same results (or should and has in some tests):
+    sort -k1,1 -k3,3n -k4,4n -k6,6 -k7,7n -k8,8n
 
+    For bubbles/redundant contigs, I'd recommend using awk for now.
     Something similar to:
     # create a modified PAF describing putative bubbles/redundant contigs (RCs).
     awk '$1!=$6 && (($4-$3)/$2 >= 0.6 || ($9-$8)/$7 >= 0.6) {OFS="\t"; A=($4-$3)/$2; B=($9-$8)/$7; C=$10/$11; if (A >= 0.6 && B < 0.6) print "query",A,B,C,$0; else if (A < 0.6 && B >= 0.6) print "orig_target",B,A,C,$6,$7,$8,$9,$5,$1,$2,$3,$4,$10,$11,$12,$13,$14,$15,$16; else if (A>=0.6 && B>=0.6 && A>=B) print "both_q",A,B,C,$0; else if (A>=0.6 && B>=0.6 && B>=A) print "both_t",B,A,C,$6,$7,$8,$9,$5,$1,$2,$3,$4,$10,$11,$12,$13,$14,$15,$16; else print  "none",A,B,C,$0}' bubble-search-asm10.paf > filtered-bubble-search-asm10.paf
+
     # define a set of bubbles/RCs using cutoffs on the putative bubble set
     awk '(($2>=0.8 && $4>=0.8)) && $6/$11 < 0.8' filtered-bubble-search-asm10.paf 
+
+
+    # Merging -- if bubbles can be query or target, will want to merge twice: once on the normal PAF, once on a re-structured PAF using awk:
+    awk 'OFS="\t" {print $6,$7,$8,$9,$5,$1,$2,$3,$4,$10,$11,$12}' normal.paf > restructured.paf
+    sort -k1,1 -k3,3n -k4,4n -k6,6 -k7,7n -k8,8n normal.paf > sorted-normal.paf
+    sort -k1,1 -k3,3n -k4,4n -k6,6 -k7,7n -k8,8n restructured.paf > sorted-restructured.paf
+    filterpaf.py --merge -MR 1e3,1e3 -i sorted-normal.paf > merged-sorted-normal.paf
+    filterpaf.py --merge -MR 1e3,1e3 -i sorted-restructured.paf > merged-sorted-restructured.paf
+    Then call bubbles on each.
+
+    Can also use awk for SAME operations:
+    e.g. for -SR 0.6,1.66,0.75,0.75,0.5
+    awk '$2/$7 >= 0.6 && $2/$7 <= 1.66 && $10/$2 >=0.75 && $10/$7 >= 0.75 && $10/$11 >= 0.5' aln.paf > same.paf
+    Or if you want to merge first, do it w/ filterpaf.py then
+    awk '$2/$7 >= 0.6 && $2/$7 <= 1.66 && $10/$2 >=0.75 && $10/$7 >= 0.75 && $10/$11 >= 0.5' merge.paf > same.paf 
+
+    One application of --same is:
+    In an initial asm, Canu or Falcon might give bubble tigs -- or maybe you perform a less-stringent filtering in the last step to yield more tigs.
+    You can mark these tigs for removal with something in their name, but use them as part of downstream steps, such as evals, polishing, scaffolding etc.
+    Ideally, you have kept track of these "rmtigs" throughout all these steps, many of which change the names or require simpler names.
+    If not, you can map the original rmtigs back to the final assembly and use --same to determine which tigs in the final asm descend fromt the rmtigs.
+    If scaffolding was done, rmtigs might have been combined together. To search for these as well as those above, one can also use awk in combination w/ BEDtools.
+    (i) Merge with filterpaf (or an awk/bedtools version of it)
+    (ii) awk and bedtools to collapse queries that align on the same target within some distance before "same" calling:
+     awk 'OFS="\t" {print $6,$8,$9,$7,$1,$3,$4,$2, $5, $10,$11,$12}' mergedel | sortBed -i - | mergeBed -d 1000 -i - -c 4,5,6,7,8,9,10,11,12 -o distinct,collapse,min,sum,sum,collapse,sum,sum,mean | awk '{OFS="\t"; print $5,$8,$6,$7,$9,$1,$4,$2,$3,$10,$11,$12}' >targetmerged.paf
+    (iii) same-calling
+    awk '$2/$7 >= 0.6 && $2/$7 <= 1.66 && $10/$2 >=0.75 && $10/$7 >= 0.75 && $10/$11 >= 0.5' targetmerged.paf > same.paf
+    (iv) collect target names for re-marking as rmtigs
+    (v) You may also want to note where rmtigs were integrated inside large contigs during a scaffolding step (as this may be a mis-assembly)
 
     """, formatter_class= argparse.RawTextHelpFormatter)
 
