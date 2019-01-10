@@ -62,7 +62,8 @@ The annotation in 2nd column (tab-sep) is added to the fasta header of the extra
 Does NOT have any effect when --exclude is being used -- works same as --namesfile.
 Does NOT have effect when --indexes, --head, --minlen, --maxlen used...''')
 
-names.add_argument('--regex', '-r', type=str, help='''Provide a regular expression. If it is in the record.description, the record will be printed. Use --exclude to print only those without regex.''')
+names.add_argument('--regex', '-r', type=str, default=False, help='''Provide a regular expression. If it is in the record.description, the record will be printed. Use --exclude to print only those without regex.''')
+names.add_argument('--regexfile', '-R', type=str, default=False, help='''Path to file with regular expressions, one per line. Use --exclude to print only those without regex.''')
 
 
 parser.add_argument('--ignore_case', '-I', action='store_true', default=False, help='''Only has an effect in conjunction with --regex.
@@ -137,7 +138,7 @@ Default: 1.''')
 ##                    help=''' Will ensure all letters in sequence returned are lowercase.''')
 
 args = parser.parse_args()
-if args.regex: import re
+if args.regex or args.regexfile: import re
 if args.ignore_case: import string
 
 ############################################
@@ -146,6 +147,15 @@ if args.ignore_case: import string
 
 def find(string, char):
     return [i for i, ltr in enumerate(string) if ltr == char]
+
+def ignore_case_regex(regex):
+    new_re = ''
+    for ltr in regex.lower():
+        if ltr in string.ascii_lowercase:
+            new_re += '[' + ltr.upper() + ltr + ']'
+        else:
+            new_re += ltr
+    return new_re
 
 ############################################
 '''           check options              '''
@@ -223,7 +233,7 @@ if args.verbose:
 out = sys.stdout
 msg = sys.stderr
 
-if args.namesfile or args.names or args.annotatednamesfile:
+if (args.namesfile or args.names or args.annotatednamesfile):
     ## Make set of record IDs (names)
     names = set()
     if args.namesfile or args.annotatednamesfile:
@@ -321,16 +331,21 @@ elif args.head:
         SeqIO.write(record, out, fastx)
 
 
-elif args.regex:
+elif args.regex or args.regexfile:
+    if args.regexfile:
+        regex = '|'.join([e.strip() for e in open(args.regexfile).readlines()])
+    else:
+        regex = args.regex
     if args.ignore_case:
-        new_re = ''
-        for ltr in args.regex.lower():
-            if ltr in string.ascii_lowercase:
-                new_re += '[' + ltr.upper() + ltr + ']'
-            else:
-                new_re += ltr
-        args.regex = new_re
-    regex = re.compile(args.regex)
+##        new_re = ''
+##        for ltr in args.regex.lower():
+##            if ltr in string.ascii_lowercase:
+##                new_re += '[' + ltr.upper() + ltr + ']'
+##            else:
+##                new_re += ltr
+##        args.regex = new_re      
+        regex = ignore_case_regex(regex)
+    regex = re.compile(regex)
     for record in SeqIO.parse(fastxFile, fastx):
         regex_present = len( re.findall( regex, record.description ) )
         if regex_present and not args.exclude:
