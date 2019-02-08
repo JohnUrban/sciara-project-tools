@@ -65,6 +65,13 @@ Does NOT have effect when --indexes, --head, --minlen, --maxlen used...''')
 names.add_argument('--regex', '-r', type=str, default=False, help='''Provide a regular expression. If it is in the record.description, the record will be printed. Use --exclude to print only those without regex.''')
 names.add_argument('--regexfile', '-R', type=str, default=False, help='''Path to file with regular expressions, one per line. Use --exclude to print only those without regex.''')
 
+names.add_argument('--bed', '-b', type=str, default=False, help='''Provide a coordinate as: seqname:start-end.
+0-based and exclusive of end as BED format (or python generally).
+Optionally include any other annotation with semi-colons to be used as part of naming: seqname:start-end;info1;info2;etc.
+BEFORE using this, ask yourself if fastaFromBed (bedtools) wouldn't be better.I only created this option for simple tasks with better naming.''')
+names.add_argument('--bedfile', '-B', type=str, default=False, help='''Path to BED file. First 3 columns need to be seqname, start, end. Any subsequent columns will be used as part of the name.
+BEFORE using this, ask yourself if fastaFromBed (bedtools) wouldn't be better.I only created this option for simple tasks with better naming.''')
+
 
 parser.add_argument('--ignore_case', '-I', action='store_true', default=False, help='''Only has an effect in conjunction with --regex.
 This simplifies writing the regex when you want to search for the presence of a word, but do not care how it appears.
@@ -130,6 +137,10 @@ parser.add_argument('--Nsubseqs', type=int, default=1,
                     help='''Use this with --subseqs to instruct how many times a subseq needs to be found to extract read.
 This is NOT requiring them to be N distinct subseqs - the same subseq can occur N times.
 Default: 1.''')
+
+parser.add_argument('--csubseqs', type=str, default=False,
+                    help=''' Same as --subseqs only subseqs are given in comma-sep fashion at command-line - i.e. (c)subseqs.''')
+
 
 ##
 ##parser.add_argument('-U', '--touppercase', type=int, default=False,
@@ -353,8 +364,11 @@ elif args.regex or args.regexfile:
         elif args.exclude and not regex_present :
             SeqIO.write(record, out, fastx)
 
-elif args.subseqs:
-    kmers = [line.strip().split()[0].upper() for line in open(args.subseqs).readlines()]
+elif args.subseqs or args.csubseqs:
+    if args.subseqs:
+        kmers = [line.strip().split()[0].upper() for line in open(args.subseqs).readlines()]
+    elif args.csubseqs:
+        kmers = args.csubseqs.strip().split(',')
     k = len(kmers[0])
     constant = sum([len(kmer)==k for kmer in kmers]) == len(kmers)
     if args.revsubseqs:
@@ -393,7 +407,31 @@ elif args.subseqs:
         
     
 
-
+elif args.bed or args.bedfile:
+    seqs = {}
+    for record in SeqIO.parse(fastxFile, fastx):
+        seqs[str(record.name)] = str(record.seq)
+    if args.bed:
+        bed = args.bed.split(':')
+        seqname = bed[0]
+        coords = bed[1].split('-')
+        start = int(coords[0])
+        end = int(coords[1])
+        outname = '>'+args.bed
+        print outname
+        print seqs[seqname][start:end]
+    if args.bedfile:
+        if args.bedfile in ('-','stdin') or args.bedfile.startswith('<('):
+            beds = [e.strip().split() for e in sys.stdin]
+        else:
+            beds = [e.strip().split() for e in open(args.bedfile).readlines()]
+        for bed in beds:
+            outname = '>'+bed[0]+':'+bed[1]+'-'+bed[2]
+            if len(bed) > 3:
+                outname += ':'+':'.join(bed[3:])
+            print outname
+            print seqs[bed[0]][int(bed[1]):int(bed[2])]
+    
 ## NEW ELIFs SHOULD BE ABOVE THIS LINE    
 elif args.minlen or args.maxlen:
     returned = 0
