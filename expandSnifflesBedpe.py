@@ -8,6 +8,13 @@ parser = argparse.ArgumentParser(description = """
 
     EXPLAIN.
 
+   Do this to sniffles bedpe output:
+   awk '$1 !~ /^#/ {OFS="\t"; print $1,$2,$3,$4,$5,$6,$7,$12,$9,$10,$11}' SV.bedpe > SV.forR.bedpe
+
+   This works on that file directly by default...
+
+   expandSnifflesBedpe.py SV.forR.bedpe > SV.forR-expanded.bedpe
+
     """, formatter_class = argparse.RawTextHelpFormatter)
 
 
