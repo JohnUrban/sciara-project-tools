@@ -129,7 +129,7 @@ with open(args.readpre+'.fasta','w') as f:
             breakpoint_in_read = svstart-start
             read = newref[start:end]
             rlen = newrlen
-            SV += "DEL:"+str(svstart)+"-"+str(svend)+"_bpir:"+str(breakpoint_in_read)
+            SV += "DEL:"+str(svstart)+"-"+str(svend)+"_len:"+str(svend-svstart)+"_bpir:"+str(breakpoint_in_read)
         elif np.random.binomial(1,args.lginsrate):
             pass
         elif np.random.binomial(1,args.lginvrate):
