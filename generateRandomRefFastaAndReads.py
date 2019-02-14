@@ -132,10 +132,11 @@ with open(args.readpre+'.fasta','w') as f:
             start = int( np.random.uniform( relearliestlstart, max(relearliestlstart,svstart-1) ) )
             end = start + newrlen
             breakpoint_in_read = svstart-start
+            remainder = newrlen - breakpoint_in_read
             read = newref[start:end]
             rlen = newrlen
             assert svend-svstart == size
-            SV += "DEL:"+str(svstart)+"-"+str(svend)+"_len:"+str(svend-svstart)+"_bpir:"+str(breakpoint_in_read)
+            SV += "DEL:"+str(svstart)+"-"+str(svend)+"_len:"+str(svend-svstart)+"_bpir/LHS:"+str(breakpoint_in_read)+'_RHSlen:'+str(remainder)
         elif np.random.binomial(1,args.lginsrate):
             pass
         elif np.random.binomial(1,args.lginvrate):
