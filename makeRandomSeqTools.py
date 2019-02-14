@@ -1,3 +1,4 @@
+import string
 def getmodel(b,nonself_weight,alphabet, A_weight=1,C_weight=1,G_weight=1,T_weight=1):
     if b in "aA":
         return A_weight*"A" + C_weight*"C"*nonself_weight + G_weight*"G"*nonself_weight + T_weight*"T"*nonself_weight
