@@ -102,6 +102,10 @@ with open(args.refpre+'.fasta','w') as f:
         reflen[i] = len(seq)
 
 
+
+tra_possible = len(d.keys()) > 1
+
+
 with open(args.readpre+'.fasta','w') as f:
     for i in range(args.nreads):
         rlen = int( np.random.normal(args.meanreadlen,args.sdreadlen) )
@@ -138,10 +142,79 @@ with open(args.readpre+'.fasta','w') as f:
             assert svend-svstart == size
             SV += "DEL:"+str(svstart)+"-"+str(svend)+"_len:"+str(svend-svstart)+"_bpir/LHS:"+str(breakpoint_in_read)+'_RHSlen:'+str(remainder)
         elif np.random.binomial(1,args.lginsrate):
-            pass
+            ## for now I am limiting lg insertions to be 90% RL
+            ##  and be 100% internal to read only
+            largest = int(0.9*rlen)
+            minsvsize = min(minsvsize, largest)
+            size = np.random.randint(minsvsize, largest)
+            refrlen = rlen-size
+            start = int( np.random.uniform(0, len(d[refsel])-rlen) )
+            end = start + refrlen
+            refread = d[refsel][start:end]
+            insertref = np.random.choice(d.keys())
+            insert_start = int( np.random.uniform(0, reflen[insertref]-size) )
+            insert_end = insert_start+size
+            insert = d[insertref][insert_start:insert_end]
+            breakpoint_in_read = np.random.randint(0, refrlen)
+            refstart = start+breakpoint_in_read
+            #sys.stderr.write(str(breakpoint_in_read)+'\n')
+            read = refread[:breakpoint_in_read] + insert + refread[breakpoint_in_read:]
+            SV += "INS:"+str(refstart-1)+"-"+str(refstart+1)+'from:'+str(insertref)+":"+str(insert_start)+"-"+str(insert_end)+"_len:"+str(size)+"_bpir/LHS:"+str(breakpoint_in_read)+'_RHSlen:'+str(breakpoint_in_read+size)
         elif np.random.binomial(1,args.lginvrate):
-            pass
+            #largest = int(reflen[refsel]*0.5) ## This allows too many reads to be inside the INV completely
+            largest = int(rlen*0.95)
+            size = np.random.randint(minsvsize, largest)
+            finalstart = reflen[refsel] - size
+            svstart = int( np.random.uniform(0, finalstart) )
+            svend = svstart + size
+            newref = d[refsel][:svstart] + revcomp(d[refsel][svstart:svend]) + d[refsel][svend:]
+            fudge = int(max(rlen-200, rlen*0.9))
+            earlieststart = min(max(0, svstart-fudge), reflen[refsel]-rlen)
+            fudge = int(min(200, rlen*0.1))
+            laststart = min(reflen[refsel]-rlen, svend-fudge)
+            #sys.stderr.write(str(earlieststart)+' '+str(laststart)+'\n')
+            start = np.random.randint( earlieststart, laststart ) 
+            end = start + rlen
+            if start > svstart:
+                bp1 = '5pToRead'
+            else:
+                bp1 = svstart - start
+            if end < svend:
+                bp2 = '3ptoRead'
+            else:
+                bp2 = svend - start
+            read = newref[start:end]
+            assert svend-svstart == size
+            SV += "INV:"+str(svstart)+"-"+str(svend)+"_len:"+str(size)+"_bp1-2_wrtr:"+str(bp1)+'-'+str(bp2)
         elif np.random.binomial(1,args.lgduprate):
+            ## WORKING ON 20190214
+            largest = int(rlen*0.95)
+            size = np.random.randint(minsvsize, largest)
+            finalstart = reflen[refsel] - size
+            svstart = int( np.random.uniform(0, finalstart) )
+            svend = svstart + size
+            newref = d[refsel][:svstart] + 2*d[refsel][svstart:svend] + d[refsel][svend:]
+            newreflen = len(newref)
+            fudge = int(max(rlen-200, rlen*0.9))
+            earlieststart = min(max(0, svstart-fudge), newreflen-rlen)
+            fudge = int(min(200, rlen*0.1))
+            laststart = min(newreflen-rlen, svend+size-fudge)
+            #sys.stderr.write(str(earlieststart)+' '+str(laststart)+'\n')
+            start = np.random.randint( earlieststart, laststart ) 
+            end = start + rlen
+            if start > svstart:
+                bp1 = '5pToRead'
+            else:
+                bp1 = svstart - start
+            if end < svend+size:
+                bp2 = '3ptoRead'
+            else:
+                bp2 = svend + size - start
+            read = newref[start:end]
+            #assert svend-svstart == size
+            SV += "DUP:"+str(svstart)+"-"+str(svend)+"_len:"+str(size)+"_bp1-2_wrtr:"+str(bp1)+'-'+str(bp2)
+
+        elif np.random.binomial(1,args.trarate) and tra_possible:
             pass
         else:
             start = int( np.random.uniform(0, len(d[refsel])-rlen) )
@@ -182,7 +255,9 @@ with open(args.readpre+'.fasta','w') as f:
             errors += error
             alnlen += aln
         finalrlen = len(mutread)
-        name = args.readpre +'_' + str(i) + '\tref:' + str(refsel)+';start:'+str(start)+';rlen_init:'+str(rlen)+';rlen_final:'+str(finalrlen) + ';' + SV
+        name = args.readpre +'_' + str(i) + '\tref:' + str(refsel)+';start:'+str(start)
+        name += ';rlen_init:'+str(rlen)+';rlen_final:'+str(finalrlen)
+        name += ';' + SV
         approx_pctsim = cnt['M']/float(sum(cnt.values()))
         alt_approx_pctsim = (alnlen-errors)/float(alnlen)
         name += ';' + 'approx_pctsim:' + str(approx_pctsim) + ';' + 'alt_approx_pctsim:' + str(alt_approx_pctsim)
@@ -192,4 +267,37 @@ with open(args.readpre+'.fasta','w') as f:
 
         f.write('>'+name+'\n'+mutread+'\n')
         
-        
+
+
+
+
+
+
+## ALT FOR INSERTION
+##        elif np.random.binomial(1,args.lginsrate):
+##            ## for now I am limiting lg insertions to be 90% RL
+##            ##  and be 100% internal to read only
+##            largest = int(0.9*rlen)
+##            minsvsize = min(minsvsize, largest)
+##            size = np.random.randint(minsvsize, largest)
+##            #rlen = rlen-size
+##            #start = int( np.random.uniform(0, len(d[refsel])-rlen) )
+##            #end = start+rlen
+##            #read = d[refsel][start:end]
+##            insertref = np.random.choice(d.keys())
+##            insert_start = int( np.random.uniform(0, reflen[insertref]-size) )
+##            insert_end = insert_start+size
+##            insert = d[insertref][insert_start:insert_end]
+##            #breakpoint_in_read =
+##            svstart = int( np.random.uniform(0, len(d[refsel])-minsvsize) )
+##            newref = d[refsel][:svstart] + insert + d[refsel][svstart:]
+##            newreflen =len(newref)
+##            earliest_start = max(0, svstart-readlen+10)
+##            latest_start = max(earliest_start, min(svstart-size-10, newreflen-rlen))
+##            start = int( np.random.uniform(earliest_start, latest_start) )
+##            end = start+rlen
+##            read = newref[start:end]
+##            breakpoint_in_read = svstart-start
+##            remainder = newrlen - breakpoint_in_read
+##            SV += "INS:"+str(svstart-1)+"-"+str(svstart+1)+"_len:"+str(size)+"_bpir/LHS:"+str(breakpoint_in_read)+'_RHSlen:'+str(remainder)
+
