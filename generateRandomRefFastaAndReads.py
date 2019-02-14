@@ -142,9 +142,9 @@ with open(args.readpre+'.fasta','w') as f:
             assert svend-svstart == size
             SV += "DEL:"+str(svstart)+"-"+str(svend)+"_len:"+str(svend-svstart)+"_bpir/LHS:"+str(breakpoint_in_read)+'_RHSlen:'+str(remainder)
         elif np.random.binomial(1,args.lginsrate):
-            ## for now I am limiting lg insertions to be 90% RL
+            ## for now I am limiting lg insertions to be 50% RL
             ##  and be 100% internal to read only
-            largest = int(0.9*rlen)
+            largest = int(0.5*rlen)
             minsvsize = min(minsvsize, largest)
             size = np.random.randint(minsvsize, largest)
             refrlen = rlen-size
