@@ -112,11 +112,16 @@ with open(args.readpre+'.fasta','w') as f:
         refsel = np.random.choice(d.keys())
         minsvsize = 200
         SV = ''
+        #sys.stderr.write(str(reflen[refsel])+'\n')
         if np.random.binomial(1,args.lgdelrate):
-            finalstart = len(d[refsel]) - min(minsvsize*3, reflen[refsel]-minsvsize)
-            svstart = int( np.random.uniform(0, finalstart) )
-            largest = max(minsvsize, reflen[refsel]-finalstart-minsvsize)
+            largest = int(reflen[refsel]*0.5)
             size = np.random.randint(minsvsize, largest)
+            finalstart = int(reflen[refsel] - size - (0.01*rlen+1)) # should give just a tiny bit of wiggle room for the breakpoint to actually be on the read in edge case
+            #finalstart = reflen[refsel] - min(minsvsize*3, reflen[refsel]-minsvsize)
+            svstart = int( np.random.uniform(0, finalstart) )
+            #largest = max(minsvsize, reflen[refsel]-finalstart-minsvsize)
+            #size = np.random.randint(minsvsize, largest)
+            #sys.stderr.write(str(finalstart) + ' ' + str(svstart) + ' ' + str(largest)+' ' + str(size) + '\n')
             svend = svstart + size
             newref = d[refsel][:svstart] + d[refsel][svend:]
             newreflen = len(newref)
@@ -129,6 +134,7 @@ with open(args.readpre+'.fasta','w') as f:
             breakpoint_in_read = svstart-start
             read = newref[start:end]
             rlen = newrlen
+            assert svend-svstart == size
             SV += "DEL:"+str(svstart)+"-"+str(svend)+"_len:"+str(svend-svstart)+"_bpir:"+str(breakpoint_in_read)
         elif np.random.binomial(1,args.lginsrate):
             pass
