@@ -124,7 +124,7 @@ with open(args.readpre+'.fasta','w') as f:
             fudge = int(max(newrlen-200, newrlen*0.9))
             relearliestlstart = min(max(0, svstart-fudge), newreflen-newrlen)
             rellastend = min(newreflen, svstart+fudge)
-            start = int( np.random.uniform( relearliestlstart, rellastend ) )
+            start = int( np.random.uniform( relearliestlstart, max(relearliestlstart,svstart-1) ) )
             end = start + newrlen
             breakpoint_in_read = svstart-start
             read = newref[start:end]
