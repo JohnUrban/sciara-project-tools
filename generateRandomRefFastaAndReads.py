@@ -126,9 +126,10 @@ with open(args.readpre+'.fasta','w') as f:
             rellastend = min(newreflen, svstart+fudge)
             start = int( np.random.uniform( relearliestlstart, rellastend ) )
             end = start + newrlen
+            breakpoint_in_read = svstart-start
             read = newref[start:end]
             rlen = newrlen
-            SV += "DEL:"+str(svstart)+"-"+str(svend)
+            SV += "DEL:"+str(svstart)+"-"+str(svend)+"_bpir:"+str(breakpoint_in_read)
         elif np.random.binomial(1,args.lginsrate):
             pass
         elif np.random.binomial(1,args.lginvrate):
