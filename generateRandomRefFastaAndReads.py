@@ -49,7 +49,15 @@ parser.add_argument('-l', '--minreadlen',
                     type=int, default=500,
                     help='''Default 500.''')
 
+parser.add_argument('-X', '--mismatchrate', type=float, default=0, help=''' 0-1''')
+parser.add_argument('-D', '--delrate', type=float, default=0, help=''' 0-1''')
+parser.add_argument('-I', '--insrate', type=float, default=0, help=''' 0-1''')
 
+parser.add_argument('-DEL', '--lgdelrate', type=float, default=0, help=''' 0-1''')
+parser.add_argument('-INS', '--lginsrate', type=float, default=0, help=''' 0-1''')
+parser.add_argument('-INV', '--lginvrate', type=float, default=0, help=''' 0-1''')
+parser.add_argument('-DUP', '--lgduprate', type=float, default=0, help=''' 0-1''')
+parser.add_argument('-TRA', '--trarate', type=float, default=0, help=''' 0-1''')
 
 parser.add_argument("-A", "--alphabet",
                    type=str, default='A,C,G,T',
@@ -79,9 +87,9 @@ if args.weights:
 
 
 init = alphabet
-
 with open(args.refpre+'.fasta','w') as f:
     d={}
+    reflen = {}
     for i in range(args.nrefs):
         f.write( '>'+args.refpre+'_'+str(i)+'\n')
         seq = init[random.randint(0,len(init)-1)]
@@ -91,6 +99,7 @@ with open(args.refpre+'.fasta','w') as f:
             model = getmodel(seq[-1],args.nonself,alphabet,weights)
         f.write(seq+'\n')
         d[i] = seq
+        reflen[i] = len(seq)
 
 
 with open(args.readpre+'.fasta','w') as f:
@@ -98,8 +107,81 @@ with open(args.readpre+'.fasta','w') as f:
         rlen = int( np.random.normal(args.meanreadlen,args.sdreadlen) )
         while rlen < args.minreadlen:
             rlen = int( np.random.normal(args.meanreadlen,args.sdreadlen) )
+
+        # Add large events
         refsel = np.random.choice(d.keys())
-        start = int( np.random.uniform(0, len(d[refsel])-rlen) )
-        f.write('>'+args.readpre+'_'+str(i)+'\n'+d[refsel][start:start+rlen]+'\n')
+        minsvsize = 200
+        SV = ''
+        if np.random.binomial(1,args.lgdelrate):
+            finalstart = len(d[refsel]) - min(minsvsize*3, reflen[refsel]-minsvsize)
+            svstart = int( np.random.uniform(0, finalstart) )
+            largest = max(minsvsize, reflen[refsel]-finalstart-minsvsize)
+            size = np.random.randint(minsvsize, largest)
+            svend = svstart + size
+            newref = d[refsel][:svstart] + d[refsel][svend:]
+            newreflen = len(newref)
+            newrlen = min(rlen, newreflen)
+            fudge = int(max(newrlen-200, newrlen*0.9))
+            relearliestlstart = min(max(0, svstart-fudge), newreflen-newrlen)
+            rellastend = min(newreflen, svstart+fudge)
+            start = int( np.random.uniform( relearliestlstart, rellastend ) )
+            end = start + newrlen
+            read = newref[start:end]
+            rlen = newrlen
+            SV += "DEL:"+str(svstart)+"-"+str(svend)
+        elif np.random.binomial(1,args.lginsrate):
+            pass
+        elif np.random.binomial(1,args.lginvrate):
+            pass
+        elif np.random.binomial(1,args.lgduprate):
+            pass
+        else:
+            start = int( np.random.uniform(0, len(d[refsel])-rlen) )
+            end = start+rlen
+            read = d[refsel][start:end]
+
+        ## Add small "technology" errors
+        mutread = ''
+        cnt = {'M':0, 'X':0, 'D':0, 'I':0}
+        errors = 0
+        alnlen = 0
+        for b in read:
+            newb = b
+            error = 0
+            aln = 1
+            if np.random.binomial(1,args.mismatchrate):
+                ntweights = {k:v for k,v in weights.iteritems()}
+                ntweights[b] = 0
+                model = getmodel(b,1,alphabet,ntweights)
+                newb = model[random.randint(0,max(len(model)-1,0))]
+                cnt['X']+=1
+                error = 1
+            if np.random.binomial(1,args.delrate):
+                newb = ''
+                cnt['D']+=1
+                error = 1
+            if np.random.binomial(1,args.insrate):
+                model = getmodel(b,1,alphabet,weights)
+                if len(newb) > 0:
+                    aln = 2
+                newb = newb + model[random.randint(0,len(model)-1)]
+                cnt['I']+=1
+                error = 1
+            if not error:
+                newb = b
+                cnt['M']+=1
+            mutread += newb
+            errors += error
+            alnlen += aln
+        finalrlen = len(mutread)
+        name = args.readpre +'_' + str(i) + '\tref:' + str(refsel)+';start:'+str(start)+';rlen_init:'+str(rlen)+';rlen_final:'+str(finalrlen) + ';' + SV
+        approx_pctsim = cnt['M']/float(sum(cnt.values()))
+        alt_approx_pctsim = (alnlen-errors)/float(alnlen)
+        name += ';' + 'approx_pctsim:' + str(approx_pctsim) + ';' + 'alt_approx_pctsim:' + str(alt_approx_pctsim)
+        for key in cnt.keys():
+            name += ';' + key + ':' + str(cnt[key])
+        # could also add MXDI counts, orig read len, new readlen, etc
+
+        f.write('>'+name+'\n'+mutread+'\n')
         
         

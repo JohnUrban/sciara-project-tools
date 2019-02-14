@@ -8,8 +8,8 @@ def getmodel(b,nonself_weight,alphabet, A_weight=1,C_weight=1,G_weight=1,T_weigh
     elif b in "tT":
         return A_weight*"A"*nonself_weight + C_weight*"C"*nonself_weight + G_weight*"G"*nonself_weight + T_weight*"T"
 
-def getmodel(b,nonself_weight,alphabet):
-    return b + ('').join([e*nonself_weight for e in alphabet if e != b])
+##def getmodel(b,nonself_weight,alphabet):
+##    return b + ('').join([e*nonself_weight for e in alphabet if e != b])
 
 def getmodel(b,nonself_weight,alphabet, weights):
     return b*weights[b] + ('').join([e*nonself_weight*weights[e] for e in alphabet if e != b])
