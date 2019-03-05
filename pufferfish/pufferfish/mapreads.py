@@ -71,7 +71,7 @@ def samtools_index(bamfile, errfile):
 
 def map_reads(fastx, bt2, threads, dry=False):
     prefix = os.path.basename(fastx).split(".")[0]
-    errfile = prefix + ".err"
+    errfile = prefix + ".mapread.err"
     mapreads = (" | ").join([bowtie2(bt2,fastx,threads,errfile), samtools_view(errfile), samtools_sort(prefix, threads, errfile)])
     bam = prefix + ".bam"
     run_cmd( mapreads, dry )
