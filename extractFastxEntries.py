@@ -78,7 +78,10 @@ This simplifies writing the regex when you want to search for the presence of a 
 For example: word, Word, wOrd, WOrD....
 Normal regex: [Ww][Oo][Rr][Dd]
 Regex with --ignore_case: word''')
-
+parser.add_argument('--firstregex', action='store_true', default=False, help='''Only has an effect in conjunction with --regex.
+Cannot be used with --exclude or --ignore.
+This only takes the first hit to each regex in a regex file.
+The use case was taking the first Maker protein found for each in a file where multiple isoforms might be present.''')
 
 parser.add_argument('--annotation2id', '-A', action='store_true', default=False,
                    help='''When using --annotatednamesfile, append annotation to record.id (first string before white space in fasta header).
@@ -116,6 +119,9 @@ Indexes are 0-based like Python. Slices will go up to but not include end of ran
 
 parser.add_argument('--head', type=int, default=False,
                     help=''' Use this if you just want to extract the head (first N bases) of all sequences.''')
+
+##parser.add_argument('--tail', type=int, default=False,
+##                    help=''' Use this if you just want to extract the tail (last N bases) of all sequences.''')
 
 parser.add_argument('--grab', type=int, default=1e15,
                     help=''' Use this if you just want to grab the first N entries. Currently, this only works with --minlen and --maxlen.
@@ -344,10 +350,13 @@ elif args.head:
 
 elif args.regex or args.regexfile:
     if args.regexfile:
-        regex = '|'.join([e.strip() for e in open(args.regexfile).readlines()])
+        regex = [e.strip() for e in open(args.regexfile).readlines()]
+        if not args.firstregex: ## usually the case
+            regex = '|'.join(regex)
     else:
         regex = args.regex
-    if args.ignore_case:
+    if args.ignore_case: ## doesn't work with args.firstregex
+        assert not args.firstregex
 ##        new_re = ''
 ##        for ltr in args.regex.lower():
 ##            if ltr in string.ascii_lowercase:
@@ -356,13 +365,25 @@ elif args.regex or args.regexfile:
 ##                new_re += ltr
 ##        args.regex = new_re      
         regex = ignore_case_regex(regex)
-    regex = re.compile(regex)
-    for record in SeqIO.parse(fastxFile, fastx):
-        regex_present = len( re.findall( regex, record.description ) )
-        if regex_present and not args.exclude:
-            SeqIO.write(record, out, fastx)
-        elif args.exclude and not regex_present :
-            SeqIO.write(record, out, fastx)
+    if not args.firstregex:
+        regex = re.compile(regex)
+        for record in SeqIO.parse(fastxFile, fastx):
+            regex_present = len( re.findall( regex, record.description ) )
+            if regex_present and not args.exclude:
+                SeqIO.write(record, out, fastx)
+            elif args.exclude and not regex_present :
+                SeqIO.write(record, out, fastx)
+    else:
+        ## for now I am disabling using this with --exclude. It could be enabled, but hard to think of a use case.
+        assert not args.exclude
+        regexes = [re.compile(e) for e in regex]
+        for record in SeqIO.parse(fastxFile, fastx):
+            for regex in regexes:
+                regex_present = len( re.findall( regex, record.description ) )
+                if regex_present:
+                    SeqIO.write(record, out, fastx)
+                    regexes.remove(regex)
+                    break
 
 elif args.subseqs or args.csubseqs:
     if args.subseqs:
