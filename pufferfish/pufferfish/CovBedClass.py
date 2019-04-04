@@ -48,7 +48,9 @@ TMP_DIR = ".pufferfish_tmp_dir"
 TMP_DIR = TMP_DIR[1:]
 
 class CovBed(object):
-    def __init__(self, covbedfile, count_only=False):
+    def __init__(self, covbedfile, count_only=False, replace=False, replace_with='0', replace_this='.'):
+        ## "replace" means if you see the "replace_this" character in the count column, make it "replace_with"
+        ## Made to deal with "." --> 0 by default when replace used.
         self.fopen = False
         self.connection = None
         self.file = covbedfile
@@ -60,7 +62,7 @@ class CovBed(object):
         self.mean = None
         self.sd = None
         self.count_only=count_only ## When False, start/end dicts are initialized, but remain empty: useful when comparing 2 bedgraphs of identical coords. See also MultiCovBed (though that currently requires a "stage file")
-        self._extract_data()
+        self._extract_data(replace, replace_with, replace_this)
         
     def open(self):
         if self.fopen:
@@ -96,10 +98,12 @@ class CovBed(object):
             self.count[chrom] = np.array(self.count[chrom])
 
                 
-    def _extract_data(self):
+    def _extract_data(self, replace=False, replace_with='0', replace_this='.'):
         self.open()
         for line in self.connection:
             chrom, start, end, count = line.strip().split()
+            if replace and count == replace_this:
+                count = replace_with
             self._update_data(chrom, int(start), int(end), float(count))
             ### JAN 9, 2018 -- I changed above int(float(count)) to float(count)
             ###         At this point, I don't know what it might break...

@@ -76,10 +76,10 @@ def protocol7(late, early, pseudocount=0.1):
 ##  then late will get value close to other values, but early will remain near 0 -- so you get massive spike
 ##  would want to change same bins in both samples...
 ##  didnt seem to change state path at all
-def normalize(latestage, protocol=1, earlystage=False, pseudo=0.1, bandwidth=2500, quiet=False, impute=False):
+def normalize(latestage, protocol=1, earlystage=False, pseudo=0.1, bandwidth=2500, quiet=False, impute=False, replace=False, replace_with='0', replace_this='.'):
     if not quiet:
         newmsg("loading late stage file")
-    late = CovBed(latestage)
+    late = CovBed(latestage, replace=replace, replace_with=replace_with, replace_this=replace_this)
     if impute:
         if not quiet:
             newmsg("imputing late stage bins with missing data")
@@ -88,7 +88,7 @@ def normalize(latestage, protocol=1, earlystage=False, pseudo=0.1, bandwidth=250
     if earlystage:
         if not quiet:
             newmsg("loading early stage file")
-        early = CovBed(earlystage)
+        early = CovBed(earlystage, replace=replace, replace_with=replace_with, replace_this=replace_this)
         if impute:
             if not quiet:
                 newmsg("imputing early stage bins with missing data")
@@ -150,5 +150,5 @@ def run(parser, args):
         protocol=6
     elif args.protocol7:
         protocol=7
-    late = normalize(latestage=args.latestage, protocol=protocol, earlystage=args.earlystage, pseudo=args.pseudo, bandwidth=args.bandwidth, quiet=args.quiet, impute=args.impute)
+    late = normalize(latestage=args.latestage, protocol=protocol, earlystage=args.earlystage, pseudo=args.pseudo, bandwidth=args.bandwidth, quiet=args.quiet, impute=args.impute, replace=args.replace, replace_with=args.replace_with, replace_this=args.replace_this)
     sys.stdout.write( late.get_bdg(late.count, args.collapsed) )

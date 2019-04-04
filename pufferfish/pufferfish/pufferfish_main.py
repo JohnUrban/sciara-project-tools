@@ -232,6 +232,14 @@ Ideally, this can give an idea of where replication forks approximately reach fr
                                 help='''Provide path to bedGraph (e.g. made from getcov) for a late stage sample.''')
     parser_puffcn.add_argument('-e','--earlystage', type=str, required=False, default=False,
                                help=''' Optional: Provide path to bedGraph (e.g. made from getcov) for an early stage sample. This is used after smoothing and median normalization to further normalize the late-stage sample (e.g. can correct for sequencing biases)''')
+    parser_puffcn.add_argument('--replace', action='store_true', default=False,
+                                        help='''Turn on "replace" functionality. By default this will replace '.' in the count column of bedGraphs with '0'.
+Use --replace_with and --replace_this to change.''')
+    parser_puffcn.add_argument('--replace_this', type=str, default='.',
+                                        help='''Used with --replace. Specify the character in count column to replace. Default = '.' ''')
+    parser_puffcn.add_argument('--replace_with', type=str, default='0',
+                                        help='''Used with --replace. Specify the character to replace the --replace_this character with.
+Must be a string that can be converted to a float. Default = '0' ''')
     parser_puffcn_protocol = parser_puffcn.add_mutually_exclusive_group(required=True)
     parser_puffcn_protocol.add_argument('-1', '--protocol1', action='store_true', default=False,
                                         help='''Late stage (and early stage if present) bin counts are median normalized.
@@ -566,6 +574,15 @@ only retain the remaining merged regions if their maximum state is > --max_State
                                 help='''Provide path to bedGraph (e.g. made from getcov) for a late stage sample.''')
     parser_normalize.add_argument('-e','--earlystage', type=str, required=False, default=False,
                                help=''' Optional: Provide path to bedGraph (e.g. made from getcov) for an early stage sample. This is used after smoothing and median normalization to further normalize the late-stage sample (e.g. can correct for sequencing biases)''')
+    parser_normalize.add_argument('--replace', action='store_true', default=False,
+                                        help='''Turn on "replace" functionality. By default this will replace '.' in the count column of bedGraphs with '0'.
+Use --replace_with and --replace_this to change.''')
+    parser_normalize.add_argument('--replace_this', type=str, default='.',
+                                        help='''Used with --replace. Specify the character in count column to replace. Default = '.' ''')
+    parser_normalize.add_argument('--replace_with', type=str, default='0',
+                                        help='''Used with --replace. Specify the character to replace the --replace_this character with.
+Must be a string that can be converted to a float. Default = '0' ''')
+
     parser_normalize_protocol = parser_normalize.add_mutually_exclusive_group(required=True)
     parser_normalize_protocol.add_argument('-1', '--protocol1', action='store_true', default=False,
                                         help='''Late stage (and early stage if present) bin counts are median normalized.
