@@ -4,6 +4,7 @@ import argparse
 import numpy as np
 from collections import defaultdict
 from Bio import SeqIO
+from paf_class import *
 
 parser = argparse.ArgumentParser(description="""
 
@@ -115,10 +116,22 @@ parser.add_argument('--merge', '-M',
 parser.add_argument('--merge_rules', '-MR',
                    type=str, default='1e9,1e9',
                    help='''Define "merge" alignments with these rules.
-                        Provide comma-sep list of: maxQueryGap, maxTargetGap.
-                        Default: 1e9,1e9.
-                        That is: merge anything along the same sequences (in most cases where seqs are <<< 1e9 bp).
+                        Provide comma-sep list of: maxQueryGap, maxTargetGap, [maxQueryBackTrack, maxTargetBackTrack, requireOrderedStarts=0,1].
+                        Gap = gap between end coordinate along target/query of one alignment and start coordinate of the next.
+                        BackTrack = a negative gap; i.e. size of overlap from one alignment's end coord and next alignments start.
+                        Requiring ordered starts = the start coordinate of one alignment must be >= the start coord of the next alignment.
+                        The target starts should be ordered anyway as the file is sorted by target.
+                        So this mainly affects behavior of assessing the query coordinates before merging.
+                        BackTrack size can help control this, but this can give the behavior of requiring ordered starts even when backtrack size wasn't violated.
                         
+                        Only need to provide first 2, which then sets maxQueryGap = maxQueryGap, and maxTargetBackTrack = maxTargetGap, and requireOrderedStarts=0.
+                        
+                        Default: 1e9,1e9.
+                        
+                        That is: merge anything along the same sequences (in most cases where seqs are <<< 1e9 bp).
+
+                        Otherwise, specify all 5 parameters.
+                        Try: 1e3,1e3,1e2,1e2,1
                         ''')
 
 parser.add_argument('--hardmerge', '-H',
@@ -132,11 +145,25 @@ parser.add_argument('--hardmerge', '-H',
                     Otherwise, this may not give a chance for downstream merges to be longer than an upstream merge.
                         ''')
 
+parser.add_argument('--targetmerge', '-T',
+                   action='store_true', default=False,
+                   help='''To be used with --merge.
+                    The merging functionality was originally designed in a query-centric way for query-sorted PAFs.
+                    It would ask that so long it was the same query mapped to the same target,
+                    if the current or previous query was enveloped by the other, then it would
+                    store that as the "previous" query for the next round.
+                    If sorted by target, then this would have strange behavior.
+                    For all subsequent enveloped hits, it acted like -culling_limit 1 in BLAST.
+                    Telling it to do a target merge will be a little more target focused when it comes to enveloped hits.......
+                    It will assume sorted by target if --presorted used. It will sort by target otherwise.
+                        ''')
+
 parser.add_argument('--presorted', '-P',
                    action='store_true', default=False,
                    help='''Assume PAF is pre-sorted by qname, qstart, qend, tname, tstart, tend.
                         This can be done at commandline via "sort -k1,1 -k3,3n -k4,4n -k6,6 -k7,7n -k8,8n".
                         This can save substantial time.
+                        NOTE: This option is also good if you want to sort by target instead.
                         ''')
 
 parser.add_argument('--sort', '-s',
@@ -147,6 +174,16 @@ parser.add_argument('--sort', '-s',
                         Then the merging output will come BEFORE the sort-only output in a series of if/elif statements.
                         In other words, one never needs to use --sort with --merge, but may want to use --presorted with --merge.
                         ''')
+parser.add_argument('--same_strand', '-D',
+                   action='store_true', default=False,
+                   help='''For merging, require same strand.
+                        ''')
+
+parser.add_argument('--strandsort',
+                   action='store_true', default=False,
+                   help='''Before sorting as normal, sort by strand.
+                        ''')
+
 
 parser.add_argument('--verbose', '-v',
                    type=int, default=False,
@@ -158,183 +195,18 @@ args = parser.parse_args()
 ###
 same_rules = dict(zip(['minLenRatio', 'maxLenRatio', 'minPctQueryMatch', 'minPctTargetMatch', 'minPctAlnMatch'], [float(e) for e in args.same_rules.strip().split(',')]))
 bubble_rules = dict(zip(['minPctQueryInTarget','minPctAlnMatch','maxPctOfTarget'], [float(e) for e in args.bubble_rules.strip().split(',')]))
-merge_rules = dict(zip(['maxQueryGap','maxTargetGap'], [float(e) for e in args.merge_rules.strip().split(',')]))
-
+merge_rules = args.merge_rules.strip().split(',')
+if len(merge_rules) == 2:
+    merge_rules = dict(zip(['maxQueryGap','maxTargetGap'], [float(e) for e in args.merge_rules.strip().split(',')]))
+    merge_rules['maxQueryBacktrack'] = merge_rules['maxQueryGap']
+    merge_rules['maxTargetBacktrack'] = merge_rules['maxTargetGap']
+    merge_rules['reqOrderedStarts'] = False
+else:
+    merge_rules = dict(zip(['maxQueryGap','maxTargetGap','maxQueryBacktrack','maxTargetBacktrack','reqOrderedStarts'], [float(e) for e in args.merge_rules.strip().split(',')]))
+    merge_rules['reqOrderedStarts'] = False if merge_rules['reqOrderedStarts']=='0' else True
 ###
 
-class Paf(object):
-    def __init__(self, paffile):
-        f2i = lambda x: int(round(float(x)))
-        #self.fmt = {0:str, 1:int, 2:int, 3:int, 4:str, 5:str, 6:int, 7:int, 8:int, 9:int, 10:int, 11:int}
-        self.fmt = {0:str, 1:f2i, 2:f2i, 3:f2i, 4:str, 5:str, 6:f2i, 7:f2i, 8:f2i, 9:f2i, 10:f2i, 11:f2i}
-        self.file = paffile
-        self.key = {'query':0, 'qlen':1,'qstart':2,'qend':3,'strand':4,'target':5,'tlen':6,'tstart':7,'tend':8,'match':9,'alnlen':10,'mapq':11}
-        with open(self.file) as fh:
-            # only grabs columns 1-12
-            self.paf = [[self.fmt[i](linelist[i]) for i in range(len(linelist))] for linelist in [line.strip().split()[:12] for line in fh.readlines()]]
-        
-        self.iterpaf = iter(self.paf)
 
-    def __iter__(self):
-        return self
-
-    def next(self):
-        return self.iterpaf.next()
-
-    def line2txt(self,line):
-        return '\t'.join([str(e) for e in line])
-
-    def get_dataframe(self):
-        self.pafdf = pandas.DataFrame(self.paf, columns=['query', 'qlen','qstart','qend','strand','target','tlen','tstart','tend','match','alnlen','mapq']).sort_values(by=['target','tstart','tend'])
-        return self.pafdf
-
-    def reset_iter(self):
-        ''' To use after iter complete, or after set iter to something else'''
-        self.iterpaf = iter(self.paf)
-
-    def set_iter(self, l):
-        ''' iter over customized version of paf'''
-        self.iterpaf = iter(l)
-        
-    def get_paf(self):
-        return self.paf
-    
-    def sort_paf(self, key=None):
-        '''Example key:
-            key=lambda x: x[5] to sort on target names
-            or
-            key=lambda x: (x[5],x[7],x[8]) to sort on target names and start/ends'''
-        if key is None:
-            self.paf.sort()
-        else:
-            self.paf.sort(key=key)
-
-    def sort_paf_by_query(self):
-        self.sort_paf(key=lambda x: (x[0],x[2],x[3]))
-
-    def sort_paf_by_target(self):
-        self.sort_paf(key=lambda x: (x[5],x[7],x[8]))
-
-    def sort_paf_by_query_then_target(self):
-        self.sort_paf(key=lambda x: (x[0],x[2],x[3],x[5],x[7],x[8]))
-
-    def merge_adj_ident_queries(self, maxqgap=1e9, maxtgap=1e9, presorted=False, hardmerge=False, verbose=True):
-        if not presorted:
-            self.sort_paf_by_query_then_target()
-        iterable = iter(self.paf)
-        custpaf = []
-        curr = iterable.next()
-        try:
-            nqueries = 1
-            i = 0
-            while iterable:
-                i+=1
-                if verbose >= 2:
-                    sys.stderr.write("Record "+str(i)+"\n")
-                old = curr
-                curr = iterable.next()
-                qgap = curr[2] - old[3]
-                tgap = curr[7] - old[8]
-                #tests
-                samequery = old[0] == curr[0]
-                sametarget = old[5] == curr[5]
-                sane_qgap = qgap <= maxqgap
-                sane_tgap = tgap <= maxtgap
-                old_q_enveloped = (old[2] >= curr[2]) and (old[3] <= curr[3])
-                curr_q_enveloped = (curr[2] >= old[2]) and (curr[3] <= old[3])
-                #old_t_enveloped = (old[7] >= curr[7]) and (old[8] <= curr[8])
-                #curr_t_enveloped = (curr[7] >= old[7]) and (curr[8] <= old[8])
-                #
-                if samequery and sametarget and old_q_enveloped:
-                    ## new q completely encompasses old record, then keep curr and discard old
-                    ## this can mean old t was encompassed or not, but we will take the new t coords either way
-                    if verbose:
-                        sys.stderr.write("Record "+str(i)+"\n")
-                        sys.stderr.write("Old query enveloped... \n")
-                    curr = curr
-                    nqueries += 1
-                elif samequery and sametarget and curr_q_enveloped: ## old q completely encompasses new record, then keep old and discard curr
-                    if verbose:
-                        sys.stderr.write("Record "+str(i)+"\n")
-                        sys.stderr.write("Curr query enveloped... \n")
-                        sys.stderr.write('  '.join([str(e) for e in old])+"\n")
-                        sys.stderr.write('  '.join([str(e) for e in curr])+"\n")
-                        sys.stderr.write(' '.join([str(e) for e in [curr_q_enveloped, curr[2], old[2], curr[3], old[3]]])+"\n")
-                    curr = old
-                    nqueries += 1
-                elif samequery and hardmerge and old_q_enveloped:
-                    ## new q completely encompasses old record, then keep curr and discard old
-                    ## this can mean old t was encompassed or not, but we will take the new t coords either way
-                    if verbose:
-                        sys.stderr.write("Record "+str(i)+"\n")
-                        sys.stderr.write("Old query enveloped... \n")
-                    curr = curr
-                    nqueries += 1
-                elif samequery and hardmerge and curr_q_enveloped: ## old q completely encompasses new record, then keep old and discard curr
-                    if verbose:
-                        sys.stderr.write("Record "+str(i)+"\n")
-                        sys.stderr.write("Curr query enveloped... \n")
-                        sys.stderr.write('  '.join([str(e) for e in old])+"\n")
-                        sys.stderr.write('  '.join([str(e) for e in curr])+"\n")
-                        sys.stderr.write(' '.join([str(e) for e in [curr_q_enveloped, curr[2], old[2], curr[3], old[3]]])+"\n")
-                    curr = old
-                    nqueries += 1
-                ## THE NEXT ARE COMMENTED OUT B/C THIS WAS INTENDED TO BE QUERY-BASED WHEREAS THE NEXT TWO LINES CAN RESULT IN NON-MERGING OF OBVIOUS QUERY MERGES
-##                elif samequery and sametarget and old_t_enveloped:
-##                    if verbose:
-##                        sys.stderr.write("Old target enveloped... \n")
-##                    curr = curr
-##                    nqueries += 1
-##                elif samequery and sametarget and curr_t_enveloped:
-##                    if verbose:
-##                        sys.stderr.write("Curr target enveloped... \n")
-##                        sys.stderr.write('  '.join([str(e) for e in old])+"\n")
-##                        sys.stderr.write('  '.join([str(e) for e in curr])+"\n")
-##                        
-##                    curr = old
-##                    nqueries += 1
-                elif samequery and sametarget and sane_qgap and sane_tgap: ##COMES AFTER ENVELOPED IFs ON PURPOSE
-                    nqueries += 1
-                    # then merge and set merge -> curr (curr will be set to "old" in next iter)
-                    q = old[0]
-                    qlen = old[1]
-                    qstart = min(old[2], curr[2]) #should be old[2]
-                    qend = max(old[3], curr[3]) #should be curr[3]
-                    strand = old[4]
-                    t = old[5]
-                    tlen = old[6]
-                    tstart = min(old[7], curr[7]) #should be old[7]
-                    tend = max(old[8], curr[8]) #should be curr[8]
-                    summatch = old[9] + curr[9] 
-                    sumaln = old[10] + curr[10]
-                    matchrate = float(summatch)/sumaln
-                    errorrate = 1-matchrate
-                    gaplen = max(qgap,tgap)
-                    summatch_w_gap = round(summatch + min(0, matchrate*gaplen)) #adds 0 for positive gaplens, subtracts for neg gap lens (alns overlapped and matches inflated)
-                    sumaln_w_gap = round(sumaln + gaplen) ## Adds gaplen for pos, subtracts for neg
-                    mapq = round((old[11]+curr[11])/2.0) ## NOTE this is not weighted for longer alignments, etc -- uniform weighting
-                    merged = [q, qlen, qstart, qend, strand, t, tlen, tstart, tend, summatch_w_gap, sumaln_w_gap, mapq]
-                    #
-                    if verbose >= 2:
-                        sys.stderr.write("Record "+str(i)+"\n")
-                        sys.stderr.write(self.line2txt(old)+"\n")
-                        sys.stderr.write(self.line2txt(curr)+"\n")
-                        sys.stderr.write(" ".join([str(e) for e in [qgap, tgap, summatch, sumaln, matchrate, gaplen, summatch_w_gap, sumaln_w_gap,mapq]])+"\n")
-                    curr = merged
-                    if verbose:
-                        sys.stderr.write(self.line2txt(curr)+"\n")
-                    
-                else:
-                    #return old
-                    custpaf.append(old+[nqueries])
-                    nqueries = 1
-                        
-        except StopIteration:
-            pass
-        #Don't forget last one
-        custpaf.append(old+[nqueries])
-        return custpaf
-        
 def verbose(msg):
     if not msg.endswith('\n'):
         msg += '\n'
@@ -354,7 +226,7 @@ verbose("FilterPaf:: Processing....\n")
 ## PRE-MERGING (AND SORTING IF NOT PRESORTED) 
 if args.merge:
     rules = merge_rules
-    paf.set_iter( paf.merge_adj_ident_queries(maxqgap=merge_rules['maxQueryGap'], maxtgap=merge_rules['maxTargetGap'], presorted=args.presorted, hardmerge=args.hardmerge, verbose=args.verbose) )
+    paf.set_iter( paf.merge_adj_ident_queries(maxqgap=merge_rules['maxQueryGap'], maxtgap=merge_rules['maxTargetGap'], maxqback=merge_rules['maxQueryBacktrack'], maxtback=merge_rules['maxTargetBacktrack'], reqOrder=merge_rules['reqOrderedStarts'], presorted=args.presorted, targetmerge=args.targetmerge, hardmerge=args.hardmerge, require_same_strand=args.same_strand, strandsort=args.strandsort, verbose=args.verbose) )
 
 
 
@@ -381,8 +253,8 @@ if args.same:
 elif args.bubble:
     rules = bubble_rules
     #print rules
-    if args.reverse_bubble:
-        pass
+##    if args.reverse_bubble:
+##        pass
     for line in paf:
         qlen = float(line[paf.key['qlen']])
         tlen = float(line[paf.key['tlen']])
@@ -411,6 +283,9 @@ elif args.sort:
         paf.sort_paf_by_query_then_target()
     for line in paf:
         print paf.line2txt(line)
+
+
+        
 else:
     for line in paf:
         print paf.line2txt(line)
