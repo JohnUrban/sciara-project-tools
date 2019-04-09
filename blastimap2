@@ -1,0 +1,64 @@
+#!/bin/bash
+
+if [ $# -lt 2 ]; then echo "
+This is just a short cut to blastn with a fixed output similar to PAF from minimap2.
+
+PAF:
+query  qlen qstart qend strand target  tlen tstart tend nmatch alnlen mapq
+
+blastPAF:
+qseqid qlen qstart qend sstrand sseqid slen sstart send nident length pident bitscore evalue
+
+Whereas PAF has only MAPQ at the end in position 12, the raw blastPAF output has 3: 
+	pident, bitscore, and evalue are at the end in positions 12, 13 and 14.
+One can use cut/awk to take only which ever is more useful of desired.
+Bitscore is a better way to compare alignments, but pident is sometimes more applicable/practical.
+pident can simpy be calculated from 100*nident/length too.....
+
+Two other differences between blastPaf and PAF output:
+.1. BLAST is 1-based and inclusive of the end coordinate where as PAF is 0-based and exclusive of end-coordinate (like BED).
+.2. PAF always puts both target/query coordinates from left-most to right-most whereas blast reverses coordinates for one or the other when alignment is on minus strand.
+
+These differences are not corrected to be more PAF-like in this script at this time, BUT:
+The supplemental script blastPAFtoPAF does that, so simply pipe it into that script.
+
+
+Usage::
+blastimap2 subject/target query [options]
+blastimap2 subject/target query [options] | blastPAFtoPAF
+
+The minimum arguments are subject and query, both FASTA.
+If subject does not end in .fasta or .fa, it will be assumed to be a BLAST database.
+
+The commands run will either be:
+blastn -subject ${1} -query ${2} -outfmt '6 qseqid qlen qstart qend sstrand sseqid slen sstart send nident length pident bitscore' [options]
+blastn -db ${1} -query ${2} -outfmt '6 qseqid qlen qstart qend sstrand sseqid slen sstart send nident length pident bitscore'   [options]
+
+For the options, use exactly as you would specify to blastn as they are passed directly.
+
+For more BLASTN options, try blastn -help.
+Common options are:
+	-evalue [float]
+	-culling_limit [int]	(-culling_limit 1 can better reflect minimap2 output decisions)
+	-qcov_hsp_perc [float, 0..100]
+	-perc_identity [float, 0..100]
+	-task [blastn|megblast]
+	-lcase_masking
+
+It is recommend to pipe into  sort and sort  by subject:
+sort -k6,6 -k8,8n -k9,9n
+
+or query:
+sort -k1,1 -k3,3n -k4,4n
+
+";
+exit; fi
+
+
+S=$1
+Q=$2
+if [ ${S: -6} == ".fasta" ] || [ ${S: -3} == ".fa" ] || [ ${S: -4} == ".fna" ]; then
+  blastn -subject ${1} -query ${2} -outfmt '6 qseqid qlen qstart qend sstrand sseqid slen sstart send nident length pident bitscore evalue' ${@:3}
+else
+  blastn -db ${1} -query ${2} -outfmt '6 qseqid qlen qstart qend sstrand sseqid slen sstart send nident length pident bitscore evalue' ${@:3}
+fi 

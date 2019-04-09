@@ -1,0 +1,48 @@
+#!/bin/bash
+
+if [ $# -ne 0 ]; then
+  if [ $1 == "-h" ] || [ $1 == "-help" ] || [ $1 == "--help" ]; then echo "
+
+Usage:
+	blastPAFtoPAF -h|-help|--help 	= this message
+	blastPAFtoPAF file.blastPaf
+        blastimap2 subject query [options] | blastPAFtoPAF
+
+This script is a supplemental script to blastimap2, which outputs a raw blastPAF format.
+The differences between the raw blastPAF format and PAF are described in blastimap2 help.
+This will convert to PAF.
+It assumes the raw blastPaf output from blastimap2:
+qseqid qlen qstart qend sstrand sseqid slen sstart send nident length pident bitscore evalue
+
+It outputs something that could actually pass as PAF where MAPQ is swapped for Bitscore and all other trailing nuggets follow a more PAF/SAM-spec format.
+
+Since it is not strictly PAF due to the MAPQ/Bitscore swap, this format can be called BitPAF, but since they serve similar functions I just go with PAF:
+
+query qlen qstart qend strand target tlen tstart tend nmatch alnlength bitscore NM:i:editDist PI:f:pctIdent EV:f:evalue
+
+NOTE: divergence (dv:f:) appears tos simply be editDist/AlnLen or 1-(pctIdent/100), so I left it out for now.
+
+";
+  exit
+  fi
+fi
+
+if [ $# -eq 0 ]; then
+  awk '{A=$3; B=$4; C=$8; D=$9; S="+"; if ($4<$3) {A=$4; B=$3; S="-"}; if ($9<$8) {C=$9; D=$8; S="-"}; OFS="\t"; print $1,$2,A-1,B,S,$6,$7,C-1,D,$10,$11,$13,"NM:i:"$11-$10,"PI:f:"$12,"EV:f:"$14}'
+else
+  awk '{A=$3; B=$4; C=$8; D=$9; S="+"; if ($4<$3) {A=$4; B=$3; S="-"}; if ($9<$8) {C=$9; D=$8; S="-"}; OFS="\t"; print $1,$2,A-1,B,S,$6,$7,C-1,D,$10,$11,$13,"NM:i:"$11-$10,"PI:f:"$12,"EV:f:"$14}' ${1}
+fi
+
+
+
+exit
+
+    ABCDEFGHIJKL
+    1----------1992------
+----1257-------3273
+    ABCDEFGHIJKL
+    
+    ABCDEFGHIJKL
+    01----------x1992------
+----1256--------x3273
+	ABCDEFGHIJKL
