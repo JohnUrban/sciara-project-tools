@@ -11,6 +11,7 @@ Output: fastx file back w/ entries pasted together in order they appear.
 
 Optional: Add NNNN-gaps of length X in between entries.
 
+See also: pseudo-scaffold.py
 
     """, formatter_class= argparse.RawTextHelpFormatter)
 
