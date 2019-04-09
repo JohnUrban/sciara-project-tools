@@ -121,7 +121,7 @@ primerValidation <- function(qPCRdata, numTechReps=2, startingAmount=2, dilution
     # print(Cts)
     # print(dilSer)
     linMod <- lm(Cts ~ dilSer)
-    print(linMod)
+    # print(linMod)
     slope <- linMod$coeff[2]
     Rsqr <- (cor(dilSer, Cts))^2
     efficiency <- reactionEfficiency(slope, logbase = logbase)
@@ -453,6 +453,46 @@ allFE <- function(qPCRdata, normalizer, numTechReps=3, task="Unknown", method=dd
   feTable
 }
 
+allFE.multiple.controls <- function(qPCRdata, normalizers, numTechReps=3, task="Unknown", method=ddCtFE, testSampFirst=TRUE){
+  fet <- allFE(qPCRdata, normalizers[1], numTechReps, task, method, testSampFirst)
+  fe <- data.frame(FE1=fet$FE)
+  n <- length(normalizers)
+  if(n>=1){
+    for(i in 2:n){
+    newfet <- allFE(qPCRdata, normalizers[i], numTechReps, task, method, testSampFirst)
+    fe[[paste0("FE",i)]] <- newfet$FE
+    }
+  }
+  mu <- apply(fe, 1, mean)
+  stdv <- apply(fe, 1, sd)
+  fet <- cbind(primerPair=fet$primerPair, fe, mu=mu, stdv=stdv)
+  fet
+}
+
+allFE.multiple.controls.multiple.reps.error.prop <- function(fetlist){
+  n <- length(fetlist)
+  mu <- data.frame(mu1=fetlist[[1]]$mu)
+  stdv <- data.frame(sd1=fetlist[[1]]$stdv)
+  if (n>=2){
+    for(i in 2:n){
+      mu[[paste0("mu",i)]] <- fetlist[[i]]$mu
+      stdv[[paste0("sd",i)]] <- fetlist[[i]]$stdv
+    }
+  }
+  biorepsFE <- data.frame(primerPair=fetlist[[1]]$primerPair, mu=apply(mu, 1, mean), stdv=sqrt(apply(stdv^2, 1, sum)))
+  return(biorepsFE)
+}
+
+plot.biorepsFE <- function(biorepsFE, ord=NA, barcol="dark cyan", addh1=TRUE, addplot=FALSE, ymin=NA, ymax=NA, bglines=c(5,10,15), plot_type="bar", sqsub=c(1), ylab="FE", LOG2=FALSE, fevar="mu", ...){
+  if(LOG2){transform <- log2}else{transform <- identity}
+  if(is.na(ymax)){ymax <- max(transform(biorepsFE$mu+biorepsFE$stdv))}
+  if(is.na(ymin)){ymin <- min(transform(biorepsFE$mu-biorepsFE$stdv))}
+  plotFE(biorepsFE, ord, barcol, addh1, addplot, ymin, ymax, bglines, plot_type, sqsub, ylab, LOG2, fevar, ...)
+  n <- nrow(biorepsFE)
+  y0 <- transform(biorepsFE$mu-biorepsFE$stdv)
+  y1 <- transform(biorepsFE$mu+biorepsFE$stdv)
+  segments(x0 = 1:n, x1 = 1:n, y0 = y0, y1 = y1)
+}
 
 allstats <- function(qPCRdata, normalizer, numTechReps=3, task="Unknown", method=ddCtFE, testSampFirst=TRUE){
   ## include mean FE, sd FE
@@ -854,34 +894,47 @@ pairwisePlotAvgCts <- function(avgCtTable, numPoints=4, label=c("1:1", "1:4", "1
 }
 
 ##Currently working on....Jul 2016
-plotFE <- function(fetable, ord=NA, barcol="dark cyan", addh1=TRUE, addplot=FALSE, ylim=NA, bglines=c(5,10,15), plot_type="bar", sqsub=c(1), ylab="FE", LOG2=FALSE, ...){
+plotFE <- function(fetable, ord=NA, barcol="dark cyan", addh1=TRUE, addplot=FALSE, ymin=NA, ymax=NA, bglines=c(5,10,15), plot_type="bar", sqsub=c(1), ylab="FE", LOG2=FALSE, fevar="FE", ...){
   #fetable is output of allFE
   #ord is order to show genes or genomic sites in -- given ordered primer pair names
   if(is.character(barcol)){barcol <- c(barcol)}
   if(length(barcol) == 1){barcol <- rep(barcol[1], length(fetable$primerPair))}
   if(length(sqsub) == 1){sqsub <- rep(sqsub[1], length(fetable$primerPair))}
   if (is.na(ord[1])){ord <- fetable$primerPair}
-  x <- 1:length(ord)
+  #x <- 1:length(ord)
+  x <- 0:(length(ord)+1)
   cap<-1
-  zero <- 0
-  if(LOG2){fetable$FE <- log2(fetable$FE); cap<-0; zero <- -1*max(abs(fetable$FE))}
-  if (is.na(ylim[1])){ylim <- max(abs(fetable$FE))}
+  if(LOG2){
+    #fetable$FE <- log2(fetable$FE);
+    fetable[[fevar]] <- log2(fetable[[fevar]])
+    cap<-0; 
+    #if(is.na(ymin)){ymin <- -1*max(abs(fetable$FE))}
+    if(is.na(ymin)){ymin <- -1*max(abs(fetable[[fevar]]))}
+  } else {
+    if(is.na(ymin)){ymin <- 0}
+  }
+  #if (is.na(ymax[1])){ymax <- max(abs(fetable$FE))}
+  if (is.na(ymax[1])){ymax <- max(abs(fetable[[fevar]]))}
   if (!(addplot)){
-    plot(x, seq(zero, ylim, length.out = length(x)), type="n", xlab="", ylab=ylab, las=1, xaxt="n", ...)
-    axis(side=1, at = x, labels = ord, las=2)
+    plot(x, seq(ymin, ymax, length.out = length(x)), type="n", xlab="", ylab=ylab, las=1, xaxt="n", ...)
+    axis(side=1, at = x[2:(length(ord)+1)], labels = ord, las=2, ...)
     abline(h=bglines,lty=3)
   }
   j<-0
-  for(i in x){
+  for(i in 1:length(ord)){
     j <- j+1
     if (ord[i] %in% fetable$primerPair){
-      l = i-0.32
-      r = i+0.52
+      # l = i-0.32
+      # r = i+0.52
+      l = i-0.5
+      r = i+0.5
       if(plot_type == "bar"){
-        t = fetable$FE[fetable$primerPair == ord[i]]
+        #t = fetable$FE[fetable$primerPair == ord[i]]
+        t = fetable[[fevar]][fetable$primerPair == ord[i]]
         b = 0 
       } else if (plot_type == "square"){
-        p = fetable$FE[fetable$primerPair == ord[i]]
+        #p = fetable$FE[fetable$primerPair == ord[i]]
+        p = fetable[[fevar]][fetable$primerPair == ord[i]]
         t = p+sqsub[j]
         b = p-sqsub[j]
       }
@@ -890,6 +943,7 @@ plotFE <- function(fetable, ord=NA, barcol="dark cyan", addh1=TRUE, addplot=FALS
   }
   if (addh1) {abline(h=cap,lty=3,lwd=2)}
 }
+
 
 
 read_biorad <- function(filename, samplepresent=TRUE){
@@ -906,6 +960,10 @@ read_biorad <- function(filename, samplepresent=TRUE){
   return(data)
 }
 
+read_appbio_quantstudio3 <- function(filename){
+  data <- read.table(filename, header=T, as.is = TRUE, colClasses=c("character", "character", "factor", "factor", "numeric", "numeric", "numeric", "numeric"))
+  return(data)
+}
 
 #TODO/TOFINISH
 stdCurveMethFD <- function(E_target, E_Norm, calibratorSOICt, sampleSOICt, calibratorNormCt, sampleNormCt){

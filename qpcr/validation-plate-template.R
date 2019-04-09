@@ -38,7 +38,8 @@ DF <- 4
 numPoints <- 4
 ## What is the qPCR task -- slightly arbitrary for most we do -- just make sure this matches the file.
 qpcrtask <- "Standard"     ## may need to be: "Unknown"
-
+## Logbase: Usually 10
+logbase <- 10
 
 
 
@@ -91,7 +92,7 @@ sort(h1$mids[order(h1$counts, decreasing = TRUE)][1:4])
 
 
 ## determine slope, efficiency, and R^2 for all
-primerVal <- primerValidation(data, numTechReps=numTechReps, startingAmount=startingAmount, dilutionFactor=DF, numPoints=numPoints, highToLow=TRUE)
+primerVal <- primerValidation(data, numTechReps=numTechReps, startingAmount=startingAmount, dilutionFactor=DF, numPoints=numPoints, qpcrtask = qpcrtask, logbase = logbase, highToLow=TRUE)
 primerVal
 
 
