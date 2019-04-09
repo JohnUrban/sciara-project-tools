@@ -4,6 +4,7 @@ import argparse
 import numpy as np
 from collections import defaultdict
 from Bio import SeqIO
+import re
 
 parser = argparse.ArgumentParser(description="""
 
@@ -58,6 +59,10 @@ parser.add_argument('--list', '-L',
                    help='''By default, this script assumes A in one column and B in the other.
                     This tells it to expect lists separated by given character (usually comma, semi-colon, colon, dash, or underscore).''')
 
+parser.add_argument('--regexkeys', '-R',
+                   action='store_true', default=False,
+                   help='''Treat keys as regexes.''')
+
 args = parser.parse_args()
 
 
@@ -69,10 +74,15 @@ tcols = [int(e)-1 for e in args.columns.strip().split(',')]
 
 # Create key:val dict
 transdict = {}
+
 with open(args.dict) as d:
     for line in d:
         line = line.strip().split()
-        transdict[line[kcol]] = line[vcol]
+        if args.regexkeys:
+            transdict[re.compile(line[kcol])] = line[vcol]
+        else:
+            transdict[line[kcol]] = line[vcol]
+
 
 # Create key:val function 
 if args.force:
@@ -91,6 +101,13 @@ else:
 if args.list is not False:
     def translate(x,delim=args.list):
         return (delim).join([stranslate(e) for e in x.strip().split(delim)])
+elif args.regexkeys:
+    def translate(x):
+        for key in transdict.keys():
+            if len(re.findall(key,x)) > 0:
+                return stranslate(key)
+        raise AssertionError, "Program failed in regex translation step..."
+        return
 else:
     def translate(x):
         return stranslate(x)
