@@ -5,7 +5,7 @@ import numpy as np
 from collections import defaultdict
 
 parser = argparse.ArgumentParser(description="""
-
+dnaInSalGld.py is a simple utility for me when thinking about DNA content in larval sal glands.
 
     """, formatter_class= argparse.RawTextHelpFormatter)
 
