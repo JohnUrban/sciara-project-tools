@@ -37,6 +37,11 @@ parser.add_argument("-no_other",
                     action='store_true', default=False,
                     help='''When using -even, -odd, or -only, the default behavior still returns 'other' sequences as is
                     w/o revcomping. Setting this says only return even, odd, or only arguments with revcomps -- nothing else, no other.''')
+##parser.add_argument("-tag",
+##                    action='store_true', default=False,
+##                    help='''Tag revcomp seqnames with "_revcomp" at end.''')
+
+
 args = parser.parse_args()
 
 ## Process arguments
@@ -65,6 +70,8 @@ if args.out:
 else:
     args.out = sys.stdout
 
+#### append tag to name?
+##tag = "_revcomp" if args.tag else ""
 
 ## Define "records"
 if args.cmdline and fastxFile == sys.stdin:
@@ -75,11 +82,11 @@ elif args.fa or args.fq:
     falist = SeqIO.parse(fastxFile, fastx)
 
 
-def getrevcomp(record, args):
+def getrevcomp(record, args, tag="\trevcomp"):
     if args.fa or args.fq:
-        return ">"+ record.description + "\n" + str(record.seq.reverse_complement()) + "\n"
+        return ">"+ record.description + tag + "\n" + str(record.seq.reverse_complement()) + "\n"
     elif args.cmdline:
-        return revcomp(record) + "\n"
+        return revcomp(record) + tag + "\n"
 
 def returnidentity(record, args):
     if args.fa or args.fq:
