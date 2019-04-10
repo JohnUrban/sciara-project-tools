@@ -62,6 +62,15 @@ The annotation in 2nd column (tab-sep) is added to the fasta header of the extra
 Does NOT have any effect when --exclude is being used -- works same as --namesfile.
 Does NOT have effect when --indexes, --head, --minlen, --maxlen used...''')
 
+parser.add_argument('--in_description', '-D', action='store_true', default=False, help='''
+By default, the script uses names to find exact matches in the record.id.
+An alternative is to use regexes. Sometimes record names cause problems for the regex.
+For example, "gi|1417992960|gb|JZ978077.1|" left unchanged will be interpreted as "gi or ".
+One solution is to use awk to change those names to: "gi\|1417992960\|gb\|JZ978077.1\|" and use -R.
+To do that, try: awk '{gsub(/\|/,"\\|"); print}' names.txt > regex.txt.
+Another solution is to use the --in_description flag that will search for literal matches in the record.description.
+Thus, this option is somewhat of an intermediate between --names and --regex.''')
+
 names.add_argument('--regex', '-r', type=str, default=False, help='''Provide a regular expression. If it is in the record.description, the record will be printed. Use --exclude to print only those without regex.''')
 names.add_argument('--regexfile', '-R', type=str, default=False, help='''Path to file with regular expressions, one per line. Use --exclude to print only those without regex.''')
 
@@ -174,6 +183,17 @@ def ignore_case_regex(regex):
             new_re += ltr
     return new_re
 
+if args.in_description:
+    def requested(record):
+        for name in names:
+            if name in record.description:
+                return True, name
+        return False
+else:
+    def requested(record):
+        return record.id in names, record.id
+    
+
 ############################################
 '''           check options              '''
 ############################################
@@ -279,7 +299,10 @@ if (args.namesfile or args.names or args.annotatednamesfile):
     gatepct=10
     if not args.exclude:
         for record in SeqIO.parse(fastxFile, fastx):
-            if record.id in names:
+            #if record.id in names:
+            found, name = requested(record)
+            #if requested(record):
+            if found:
                 if args.annotatednamesfile:
                     if args.annotation2id:
                         old_id = record.id
@@ -300,14 +323,19 @@ if (args.namesfile or args.names or args.annotatednamesfile):
                 if not args.multiple:
                     if args.annotatednamesfile and args.annotation2id:
                         record.id = old_id #("_").join(record.id.split("_")[:-1]) #.strip('_')
-                    names.remove(record.id)
+                        name = old_id
+                    #names.remove(record.id)
+                    names.remove(name)
                 pctdone += 100*1.0/setsize
                 if pctdone >= gatepct and args.verbose:
                     msg.write(str(pctdone)+"% complete...."+jobname+"\n")
                     gatepct += 10
-    else:
+    else: ## Exclude
         for record in SeqIO.parse(fastxFile, fastx):
-            if record.id not in names:
+            found, name = requested(record)
+            #if record.id not in names:
+            #if not requested(record):
+            if not found:
                 if args.separate:
                     with open(record.id+".fasta", 'w') as f:
                         SeqIO.write(record, f, fastx)
@@ -319,7 +347,8 @@ if (args.namesfile or args.names or args.annotatednamesfile):
                     gatepct += 10
             else: #it is in names, so no need to check for this one anymore
                 if not args.multiple:
-                    names.remove(record.id)
+                    #names.remove(record.id)
+                    names.remove(name)
 
 elif args.indexes:
     extract = []
