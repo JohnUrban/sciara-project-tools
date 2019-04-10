@@ -1,0 +1,118 @@
+#!/bin/bash
+
+if [ $# -lt 2 ]; then echo "
+This is just a short cut to blastn with a fixed output similar to PAF from minimap2.
+
+As of 2.1, blasTPAF is gone. It outputs PAF by incorporating blastPAFtoPAF inside this script.
+
+PAF:
+query  qlen qstart qend strand target  tlen tstart tend nmatch alnlen mapq
+
+blastPAF:
+qseqid qlen qstart qend sstrand sseqid slen sstart send nident length pident bitscore evalue
+
+Whereas PAF has only MAPQ at the end in position 12, the raw blastPAF output has 3: 
+	pident, bitscore, and evalue are at the end in positions 12, 13 and 14.
+One can use cut/awk to take only which ever is more useful of desired.
+Bitscore is a better way to compare alignments, but pident is sometimes more applicable/practical.
+pident can simpy be calculated from 100*nident/length too.....
+
+Two other differences between blastPaf and PAF output:
+.1. BLAST is 1-based and inclusive of the end coordinate where as PAF is 0-based and exclusive of end-coordinate (like BED).
+.2. PAF always puts both target/query coordinates from left-most to right-most whereas blast reverses coordinates for one or the other when alignment is on minus strand.
+
+These differences are not corrected to be more PAF-like in this script at this time, BUT:
+The supplemental script blastPAFtoPAF does that, so simply pipe it into that script.
+
+
+Usage::
+PAF:
+blastimap2 subject/target query [options]
+
+SAM (same option as minimap2 = -a):
+blastimap2 subject/target query -a [options]
+
+To use tblastx, tblastn, blastx, blastp, try:
+blastimap2 subject/target query -tn [options] (search translated nucleotide using protein query)
+blastimap2 subject/target query -tx [options] (subj and query both translated in all ORFs)
+blastimap2 subject/target query -bx [options] (search protein using translated query)
+blastimap2 subject/target query -bp [options] (search protein w/ protein query)
+
+To add more format options (-outfmt) to final PAF file, use "-addfmt" in the following way(s):
+blastimap2 subject/target query [-tn|-tx|-bx|-bp] -addfmt \"extra outfmt words\"
+
+Deprecated: blastimap2 subject/target query [options] | blastPAFtoPAF
+
+The minimum arguments are subject and query, both FASTA.
+If subject does not end in .fasta or .fa, it will be assumed to be a BLAST database.
+
+The commands run will either be:
+blastn -subject ${1} -query ${2} -outfmt '6 qseqid qlen qstart qend sstrand sseqid slen sstart send nident length pident bitscore' [options]
+blastn -db ${1} -query ${2} -outfmt '6 qseqid qlen qstart qend sstrand sseqid slen sstart send nident length pident bitscore'   [options]
+
+For the options, use exactly as you would specify to blastn as they are passed directly.
+
+For more BLASTN options, try blastn -help.
+Common options are:
+	-evalue [float]
+	-culling_limit [int]	(-culling_limit 1 can better reflect minimap2 output decisions)
+	-qcov_hsp_perc [float, 0..100]
+	-perc_identity [float, 0..100]
+	-task [blastn|megblast]
+	-lcase_masking
+
+It is recommend to pipe into  sort and sort  by subject:
+sort -k6,6 -k8,8n -k9,9n
+
+or query:
+sort -k1,1 -k3,3n -k4,4n
+
+";
+exit; fi
+
+
+function paf {
+  S=$1
+  Q=$2
+  if [ ${S: -6} == ".fasta" ] || [ ${S: -3} == ".fa" ] || [ ${S: -4} == ".fna" ]; then
+    #${BLAST} -subject ${1} -query ${2} -outfmt '6 qseqid qlen qstart qend sstrand sseqid slen sstart send nident length pident bitscore evalue' ${@:3} | blastPAFtoPAF 
+    #${BLAST} -subject ${1} -query ${2} -outfmt '6 qseqid qlen qstart qend sstrand sseqid slen sstart send nident length pident bitscore evalue' ${@:${START}} | blastPAFtoPAF
+    eval ${BLAST} -subject ${1} -query ${2} -outfmt ${OUTFMT} ${@:${START}} | blastPAFtoPAF2
+  else
+    #${BLAST} -db ${1} -query ${2} -outfmt '6 qseqid qlen qstart qend sstrand sseqid slen sstart send nident length pident bitscore evalue' ${@:3} | blastPAFtoPAF
+    #${BLAST} -db ${1} -query ${2} -outfmt '6 qseqid qlen qstart qend sstrand sseqid slen sstart send nident length pident bitscore evalue' ${@:${START}} | blastPAFtoPAF
+    eval ${BLAST} -db ${1} -query ${2} -outfmt ${OUTFMT} ${@:${START}} | blastPAFtoPAF2
+  fi 
+}
+
+function sam {
+  S=$1
+  Q=$2
+  if [ ${S: -6} == ".fasta" ] || [ ${S: -3} == ".fa" ] || [ ${S: -4} == ".fna" ]; then
+    ${BLAST} -subject ${1} -query ${2} -outfmt 17 ${@:4}
+  else
+    ${BLAST} -db ${1} -query ${2} -outfmt 17 ${@:4}
+  fi 
+}
+
+
+
+BLAST=blastn; START=3
+if  [ $# -gt 2 ] && [ $3 == "-tn" ]; then BLAST=tblastn ; START=4;
+elif [ $# -gt 2 ] && [ $3 == "-tx" ]; then BLAST=tblastx ; START=4;
+elif [ $# -gt 2 ] && [ $3 == "-bx" ]; then BLAST=blastx ; START=4;
+elif [ $# -gt 2 ] && [ $3 == "-bp" ]; then BLAST=blastp ; START=4;
+else BLAST=blastn ; START=3;
+fi
+
+OUTFMT="\"6 qseqid qlen qstart qend sstrand sseqid slen sstart send nident length pident bitscore evalue"
+if  [ $# -gt 3 ] && [ $4 == "-addfmt" ]; then OUTFMT+=" ${5}" ; START=6;
+elif [ $# -gt 2 ] && [ $3 == "-addfmt" ]; then OUTFMT+=" ${4}" ; START=5;
+fi
+OUTFMT+="\""
+
+if [ $# -gt 2 ] && [ $3 == "-a" ]; then 
+  sam ${@}
+else
+  paf ${@}
+fi
