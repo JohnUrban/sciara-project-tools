@@ -186,9 +186,9 @@ def ignore_case_regex(regex):
 if args.in_description:
     def requested(record):
         for name in names:
-            if name in record.description:
+            if name in str(record.description):
                 return True, name
-        return False
+        return False, ""
 else:
     def requested(record):
         return record.id in names, record.id
@@ -333,6 +333,7 @@ if (args.namesfile or args.names or args.annotatednamesfile):
     else: ## Exclude
         for record in SeqIO.parse(fastxFile, fastx):
             found, name = requested(record)
+            print found, name
             #if record.id not in names:
             #if not requested(record):
             if not found:
