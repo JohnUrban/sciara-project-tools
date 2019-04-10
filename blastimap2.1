@@ -97,7 +97,7 @@ BLAST=blastn; START=3
 if  [ $# -gt 2 ] && [ $3 == "-tn" ]; then BLAST=tblastn ; START=4;
 elif [ $# -gt 2 ] && [ $3 == "-tx" ]; then BLAST=tblastx ; START=4;
 elif [ $# -gt 2 ] && [ $3 == "-bx" ]; then BLAST=blastx ; START=4;
-elif [ $# -gt 2 ] && [ $3 == "-tp" ]; then BLAST=blastp ; START=4;
+elif [ $# -gt 2 ] && [ $3 == "-bp" ]; then BLAST=blastp ; START=4;
 else BLAST=blastn ; START=3;
 fi
 
