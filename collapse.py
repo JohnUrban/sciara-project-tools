@@ -52,7 +52,7 @@ parser.add_argument('--strings', '-str', action='store_true', default=False,
 args = parser.parse_args()
 
 if args.strings:
-    assert args.operation == "list"
+    assert args.operation in ["list", "distinct"]
 
 c1 = args.column-1
 c2 = args.column2-1
