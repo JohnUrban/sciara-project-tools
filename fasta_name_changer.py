@@ -47,6 +47,10 @@ parser.add_argument('--replace', '-r',
 parser.add_argument('--number', '-n',
                    action='store_true', default=False,
                    help='''Add entry number (e.g. _1) to end of name. Often sed with --replace.''')
+parser.add_argument('--join', '-j',
+                   action='store_true', default=False,
+                   help='''Break name/description at white space and join with underscore.''')
+
 parser.add_argument('--key', default=False, type=str, help=''' Provide filename to store new_name-to-old_name map file (3 columns: new name, old name, old description).''')
 parser.add_argument('--sort', default=False, action='store_true', help=''' Before renaming, sort sequences from shortest to longest. Also specify --revsort to do longest to shortest.''')
 parser.add_argument('--namesort', default=False, action='store_true', help=''' Ue with --sort to do sort names instead.''')
@@ -97,6 +101,7 @@ for entry in SS:
     #name = entry.description
     #name = entry[0]
     name = entry[0] if args.sort else entry.description
+    name = ('_').join(name.split()) if args.join else name
     if args.keep:
 ##        i = args.keep-1
         name = name.split()[chunk]
