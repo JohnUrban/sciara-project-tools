@@ -333,7 +333,7 @@ if (args.namesfile or args.names or args.annotatednamesfile):
     else: ## Exclude
         for record in SeqIO.parse(fastxFile, fastx):
             found, name = requested(record)
-            print found, name
+            #print found, name
             #if record.id not in names:
             #if not requested(record):
             if not found:
