@@ -107,7 +107,8 @@ class Paf(object):
                     torderedstarts = curr[7] >= old[7] # should always be true if sorted
                 elif curr[4] == '-': ## and querymerge
                     #tgap = curr[8] - old[7] ## wrong
-                    tgap = old[7] = curr[8] ### more correct than above
+                    ## note: prior to 2019-04-16, this line was accidentally written with "=" not "-": tgap = old[7] = curr[8]; check older results; also ensure correctness
+                    tgap = old[7] - curr[8] ### more correct than above
                     torderedstarts = curr[7] <= old[7]
                 #tests
                 samequery = old[0] == curr[0]
@@ -252,5 +253,10 @@ class Paf(object):
         except StopIteration:
             pass
         #Don't forget last one
-        custpaf.append(old+[nqueries])
+        if not merge_t_info and not merge_q_info:
+            merge_t_info = ['*']
+            merge_q_info = ['*']
+            merge_op = ['*']
+        merge_info = [';'.join(merge_op), ';'.join(merge_t_info), ';'.join(merge_q_info)]
+        custpaf.append(old+[nqueries]+merge_info)
         return custpaf
