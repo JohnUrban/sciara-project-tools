@@ -77,7 +77,8 @@ exit; fi
 function paf {
   S=$1
   Q=$2
-  if [ ${#S} -ge 3 ] && [ ${S: -6} == ".fasta" ] || [ ${S: -3} == ".fa" ] || [ ${S: -4} == ".fna" ]; then
+  ###if [ ${#S} -ge 3 ] && [ ${S: -6} == ".fasta" ] || [ ${S: -3} == ".fa" ] || [ ${S: -4} == ".fna" ]; then
+  if [[ ${#S} -ge 4 && ${S: -3} == ".fa" ]] || [[  ${#S} -ge 5 &&  ${S: -4} == ".fna" ]] || [[  ${#S} -ge 7 && ${S: -6} == ".fasta" ]] ; then 
     #${BLAST} -subject ${1} -query ${2} -outfmt '6 qseqid qlen qstart qend sstrand sseqid slen sstart send nident length pident bitscore evalue' ${@:3} | blastPAFtoPAF 
     #${BLAST} -subject ${1} -query ${2} -outfmt '6 qseqid qlen qstart qend sstrand sseqid slen sstart send nident length pident bitscore evalue' ${@:${START}} | blastPAFtoPAF
     eval ${BLAST} -subject ${1} -query ${2} -outfmt ${OUTFMT} ${@:${START}} | blastPAFtoPAF2
