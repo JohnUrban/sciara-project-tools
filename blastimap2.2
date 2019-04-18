@@ -39,12 +39,15 @@ blastimap2 subject/target query -bx [options] (search protein using translated q
 blastimap2 subject/target query -bp [options] (search protein w/ protein query)
 
 To add more format options (-outfmt) to final PAF file, use "-addfmt" in the following way(s):
-blastimap2 subject/target query [-tn|-tx|-bx|-bp] -addfmt \"extra outfmt words\"
+blastimap2 subject/target query [-tn|-tx|-bx|-bp] -addfmt \"extraOutfmtWord\"
+blastimap2 subject/target query [-tn|-tx|-bx|-bp] -addfmt \"extra outfmt words\\\"\"
+
+Pay careful attention to the latter case. For now, for some reason one need to add the extra \\\" when specifying more than 1 extra fmt option.
 
 Deprecated: blastimap2 subject/target query [options] | blastPAFtoPAF
 
 The minimum arguments are subject and query, both FASTA.
-If subject does not end in .fasta or .fa, it will be assumed to be a BLAST database.
+If subject is less than 3 letters long and/or does not end in .fasta, .fna, or .fa, it will be assumed to be a BLAST database.
 
 The commands run will either be:
 blastn -subject ${1} -query ${2} -outfmt '6 qseqid qlen qstart qend sstrand sseqid slen sstart send nident length pident bitscore' [options]
@@ -74,7 +77,7 @@ exit; fi
 function paf {
   S=$1
   Q=$2
-  if [ ${S: -6} == ".fasta" ] || [ ${S: -3} == ".fa" ] || [ ${S: -4} == ".fna" ]; then
+  if [ ${#S} -ge 3 ] && [ ${S: -6} == ".fasta" ] || [ ${S: -3} == ".fa" ] || [ ${S: -4} == ".fna" ]; then
     #${BLAST} -subject ${1} -query ${2} -outfmt '6 qseqid qlen qstart qend sstrand sseqid slen sstart send nident length pident bitscore evalue' ${@:3} | blastPAFtoPAF 
     #${BLAST} -subject ${1} -query ${2} -outfmt '6 qseqid qlen qstart qend sstrand sseqid slen sstart send nident length pident bitscore evalue' ${@:${START}} | blastPAFtoPAF
     eval ${BLAST} -subject ${1} -query ${2} -outfmt ${OUTFMT} ${@:${START}} | blastPAFtoPAF2
@@ -107,9 +110,10 @@ fi
 
 OUTFMT="\"6 qseqid qlen qstart qend sstrand sseqid slen sstart send nident length pident bitscore evalue"
 if  [ $# -gt 3 ] && [ $4 == "-addfmt" ]; then OUTFMT+=" ${5}" ; START=6;
-elif [ $# -gt 2 ] && [ $3 == "-addfmt" ]; then OUTFMT+=" ${4}" ; START=5;
+elif [ $# -gt 2 ] && [ $3 == "-addfmt" ]; then OUTFM+=" ${4}" ; START=5;
 fi
 OUTFMT+="\""
+##echo $OUTFMT
 
 if [ $# -gt 2 ] && [ $3 == "-a" ]; then 
   sam ${@}
