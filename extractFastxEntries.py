@@ -366,10 +366,13 @@ elif args.indexes:
     i = 0
     j = 0
     nidx = len(extract)
+    maxidx = max(extract) ## should be extract[-1]
     for record in SeqIO.parse(fastxFile, fastx):
         if j < nidx and i == extract[j]:
             SeqIO.write(record, out, fastx)
             j += 1
+        if i > maxidx: #added 2019-04-20, testing.
+            break
         i += 1
 
 elif args.head:
