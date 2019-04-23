@@ -3,14 +3,16 @@
 
 if [ $# -eq 0 ] || [ $# -ne 2 ]; then
   echo "Usage: 
-	convertRepeatMaskerGFF paf|bedpe filename
+	convertRepeatMaskerGFF paf|bedpe|bed filename
 	"
 exit
 fi
 
 
 if [ $1 == "paf" ]; then 
-  awk 'OFS="\t" {gsub(/"/,""); sub(/Motif:/,""); print $1,".",$4-1,$5,$7,$10,".",$11-1,$12,".",".",$6}' ${2}
+  grep -v ^# ${2} | awk 'OFS="\t" {gsub(/"/,""); sub(/Motif:/,""); print $1,".",$4-1,$5,$7,$10,".",$11-1,$12,".",".",$6}' 
 elif [ $1 == "bedpe" ]; then
-  awk 'OFS="\t" {gsub(/"/,""); sub(/Motif:/,""); print $1,$4-1,$5,$10,$11-1,$12,$3,$6,$7}' ${2}
+  grep -v ^# ${2} | awk 'OFS="\t" {gsub(/"/,""); sub(/Motif:/,""); print $1,$4-1,$5,$10,$11-1,$12,$3,$6,$7}'
+elif [ $1 == "bed" ]; then
+  grep -v ^# ${2} | awk 'OFS="\t" {gsub(/"/,""); sub(/Motif:/,""); print $1,$4-1,$5,$10":"$11-1"-"$12,$6,$7}'
 fi
