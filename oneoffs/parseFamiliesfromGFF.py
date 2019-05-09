@@ -24,8 +24,15 @@ d = {}
 
 
 with open(args.parents) as f:
-    parents = set([line.strip() for line in f.readlines()])
-    
+    parents = list(set([line.strip() for line in f.readlines()]))
+
+
+def is_in_parents(x):
+    for parent in parents:
+        if x.startswith(parent):
+            return True
+    return False
+
 with open(args.gff) as f:
     for line in f:
         if line:
@@ -39,10 +46,6 @@ with open(args.gff) as f:
                     except: #GO terms, etc sep by :
                         k,v = e.split(':')
                         d[k.strip('_')] = v
-                try:
-                    if d['Parent'] in parents:
-                        print '\t'.join(line)
-                except:
-                    if d['ID'] in parents:
-                        print '\t'.join(line)
+                if is_in_parents(d['ID']):
+                    print '\t'.join(line)
 
