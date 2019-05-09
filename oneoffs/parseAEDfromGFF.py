@@ -23,10 +23,14 @@ with open(args.gff) as f:
             line = line.strip().split('\t')
             if line[0][0] != '#' and len(line)>3:
                 if line[2] == 'mRNA':
-                    desc = line[8].split(';')
+                    desc = line[8].rstrip(';').split(';')
                     for e in desc:
-                        k,v = e.split('=')
-                        d[k.strip('_')] = v
+                        try:
+                            k,v = e.split('=')
+                            d[k.strip('_')] = v
+                        except: #GO terms, etc sep by :
+                            k,v = e.split(':')
+                            d[k.strip('_')] = v
                     out = [d['Parent'], d['ID'], d['AED'], d['eAED']]
                     print '\t'.join(out)
 
