@@ -77,7 +77,7 @@ with open(args.gff) as f:
                 altdesc = ';'.join(altdesc)
                 if is_in_parents(d['ID']):
                     if args.namechanger:
-                        line = line[:7] + [altdesc] + line[9:]
+                        line = line[:8] + [altdesc] + line[9:]
                         #pass #line = namechanger(line, d, args.namechanger)
                     print '\t'.join(line)
 
