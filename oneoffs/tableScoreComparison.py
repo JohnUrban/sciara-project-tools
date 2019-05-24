@@ -90,7 +90,7 @@ for name in list(union):
 
 print "Table 1 had", counts[0], "higher scoring shared elements."
 print "Table 2 had", counts[1], "higher scoring shared elements."
-print "Tables 1 and 2 had", counts[0], "equally scoring shared elements."
+print "Tables 1 and 2 had", counts["same"], "equally scoring shared elements."
 
 ## BELOW DOES NOT WORK WITH STDIN
 ##for table in args.table:
