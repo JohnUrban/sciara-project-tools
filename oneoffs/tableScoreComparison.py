@@ -74,6 +74,8 @@ t1 = set(tables[0].keys())
 t2 = set(tables[1].keys())
 union = t1.union(t2)
 print "Found", len(union), "elements in Tables 1 and 2."
+print "Table 1 had a total of", len(t1), "elements."
+print "Table 2 had a total of ", len(t2), "elements."
 print "Table 1 had", len(t1.difference(t2)), "unique elements."
 print "Table 2 had", len(t2.difference(t1)), "unique elements."
 print "Tables 1 and 2 shared", len(t1.intersection(t2)), "elements."
