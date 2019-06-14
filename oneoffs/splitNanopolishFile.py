@@ -34,18 +34,21 @@ try:
     ##
     with open(args.input) as f:
         for line in f:
-            splitline = line.strip().split()
-            linemodel = splitline[0]
-            linekmer = splitline[1]
-            if linemodel != model or linekmer != kmer:
-                close(outfile)
-                model = linemodel
-                kmer = linekmer
-                newfile = model + '.' + kmer + '.txt'
-                outfile = open(newfile, 'w')
-                outfile.write(line.strip())
-            else:
-                outfile.write(line.strip())
+            if line:
+                if line.startswith('#') or line.startswith('model'):
+                    continue
+                splitline = line.strip().split()
+                linemodel = splitline[0]
+                linekmer = splitline[1]
+                if linemodel != model or linekmer != kmer:
+                    close(outfile)
+                    model = linemodel
+                    kmer = linekmer
+                    newfile = model + '.' + kmer + '.txt'
+                    outfile = open(newfile, 'w')
+                    outfile.write(line.strip())
+                else:
+                    outfile.write(line.strip())
     close(outfile)
     
 
