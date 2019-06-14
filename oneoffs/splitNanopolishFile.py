@@ -46,9 +46,9 @@ try:
                     kmer = linekmer
                     newfile = model + '.' + kmer + '.txt'
                     outfile = open(newfile, 'w')
-                    outfile.write(line.strip())
+                    outfile.write(line)
                 else:
-                    outfile.write(line.strip())
+                    outfile.write(line)
     close(outfile)
     
 
