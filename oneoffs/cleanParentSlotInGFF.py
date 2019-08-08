@@ -94,6 +94,7 @@ def process_target_line(line):
     altdesc = []
     # Make kv dictionary
     d = {}
+    not_found = [] ## catch this error here
     for e in desc:
         try:
             k,v = e.split('=')
