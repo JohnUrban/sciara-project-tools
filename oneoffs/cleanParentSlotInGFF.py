@@ -81,6 +81,7 @@ def return_clean_parent(k, join, v):
 
 def process_target_line(line):
     # Split up description column.
+    end = ';' if line[8].endswith(';') else ''    
     desc = line[8].rstrip(';').split(';')
     altdesc = []
     # Make kv dictionary
@@ -100,7 +101,7 @@ def process_target_line(line):
             altdesc.append( e )
 
     # Return to string formatting
-    altdesc = ';'.join(altdesc)
+    altdesc = ';'.join(altdesc) + end
 
     # Update line
     line[8] = altdesc
@@ -112,6 +113,10 @@ IDs = set([])
 with open(args.gff) as f:
     for line in f:
         if line:
+            # Return commented lines (usually header) as is
+            if line.startswith('#'):
+                continue
+            
             line = line.strip().split('\t')
             if not_a_target_line(line):
                 continue
