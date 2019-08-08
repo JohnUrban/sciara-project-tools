@@ -24,6 +24,11 @@ parser.add_argument('--parents', '-p',
                    type= str, default=False, required=True,
                    help='''Path to parents.txt.''')
 
+parser.add_argument('--delim', '-d',
+                   type= str, default='-', 
+                   help='''Parent names for genes are exact matched. When looking for the gene name in parts like mRNA, the part is named genename-ETC.
+                        i.e. "genename" and "ETC" are separated by "-" as a delimiter. If you expect it to be different, use this option to change it.''')
+
 parser.add_argument('--namechanger','-n',
                     type= str, default='',
                     help='''Add given string to the front of all ID, Name, and Parent.''')
@@ -37,9 +42,16 @@ with open(args.parents) as f:
     parents = list(set([line.strip() for line in f.readlines()]))
 
 
-def is_in_parents(x):
+#OLD BUG - given parent AB, it will take anythingstarting with AB: AB, ABC, ABWTF, ABETC
+##def is_in_parents(x):
+##    for parent in parents:
+##        if x.startswith(parent):
+##            return True
+##    return False
+
+def is_in_parents(x, delim='-'):
     for parent in parents:
-        if x.startswith(parent):
+        if x == parent or x.startswith(parent+delim):
             return True
     return False
 
@@ -86,7 +98,7 @@ with open(args.gff) as f:
                     else:
                         altdesc.append( e )
                 altdesc = ';'.join(altdesc)
-                if is_in_parents(d['ID']):
+                if is_in_parents(d['ID'], args.delim):
                     if args.namechanger:
                         line = line[:8] + [altdesc] + line[9:]
                         #pass #line = namechanger(line, d, args.namechanger)
