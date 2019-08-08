@@ -45,6 +45,11 @@ parser.add_argument('--word', '-w',
                    type=str, default='maker', 
                    help='''What word to filter on in column2. Set to ALLWORDS if you want to ignore columns to and include everything.''')
 
+parser.add_argument('--notfound', '-N', 
+                   type=str, default=False, 
+                   help='''Provide this option with a filename to write names in Parent column not found.''')
+
+
 args = parser.parse_args()
 
 
@@ -72,12 +77,15 @@ def assert_is_a_target_line(line):
     
 def return_clean_parent(k, join, v):
     alt_v = []
+    not_found = []
     for sub_v in v.split(','):
         if sub_v in IDs:
             alt_v.append(sub_v)
+        else:
+            not_found.append(sub_v)
 
     new_v = ','.join(alt_v)
-    return k + join + new_v
+    return k + join + new_v, not_found
 
 def process_target_line(line):
     # Split up description column.
@@ -96,7 +104,8 @@ def process_target_line(line):
         d[k.strip('_')] = v
 
         if k == 'Parent':
-            altdesc.append( return_clean_parent(k, join, v) )
+            new_e, not_found = return_clean_parent(k, join, v)
+            altdesc.append( new_e )
         else:
             altdesc.append( e )
 
@@ -105,7 +114,7 @@ def process_target_line(line):
 
     # Update line
     line[8] = altdesc
-    return line
+    return line, not_found
         
 
 ## COLLECT IDs
@@ -136,6 +145,7 @@ with open(args.gff) as f:
                     
 ## RETURN WITH CLEANED PARENT SLOTS
 with open(args.gff) as f:
+    all_not_found = []
     for line in f:
         if line:
             # Return commented lines (usually header) as is
@@ -159,6 +169,12 @@ with open(args.gff) as f:
             #   if len(line)>3:
 
             # Process target line
-            line = process_target_line(line)
+            line, not_found = process_target_line(line)
+            all_not_found += not_found 
             print '\t'.join(line)
 
+
+if args.notfound:
+    with open(args.notfound, 'w') as fh:
+        fh.write( '\n'.join(all_not_found) + '\n' )
+        
