@@ -55,6 +55,13 @@ def is_in_parents(x):
 ##                    else:
 ##                        d[key] = v
 
+def return_alt_kv(k, join, prefix, v):
+    alt_v = []
+    for sub_v in v.split(','):
+        alt_v.append(prefix + sub_v)
+    new_v = ','.join(alt_v)
+    return k + join + new_v
+
 with open(args.gff) as f:
     for line in f:
         d = {}
@@ -74,7 +81,8 @@ with open(args.gff) as f:
                         #d[k.strip('_')] = v
                     d[k.strip('_')] = v
                     if k in ('ID','Name','Parent'):
-                        altdesc.append( k + join + args.namechanger + v )
+                        #OLD BUG: altdesc.append( k + join + args.namechanger + v )
+                        altdesc.append( return_alt_kv(k, join, args.namechanger, v) )
                     else:
                         altdesc.append( e )
                 altdesc = ';'.join(altdesc)
