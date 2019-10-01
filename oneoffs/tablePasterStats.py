@@ -87,7 +87,7 @@ for table in args.table:
     closetable(tablefile)
 
 # Convert to numpy arrays and return stats
-for key in lists.keys():
+for key in sorted(lists.keys()):
     lists[key] = np.array(lists[key])
     print '\t'.join([str(e) for e in getstats(key, lists[key])])
 
