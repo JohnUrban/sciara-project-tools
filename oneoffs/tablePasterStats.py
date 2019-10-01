@@ -12,6 +12,19 @@ Given set of tables that have shared or overlapping elements in column K,
 Use case:
     Two-column tables (name and count) for three RNA-seq replicates.
 
+Returns:
+    Name, mean, stdev, COV, Zscore_min, Zscore_median, Zscore_max, min, median, max.
+
+    If 3 tables are given as in the use case, the min/med/max will essentially be the 3 input values in order from lowest to highest.
+
+    COV = coefficent of variation = stdev/mean.
+    Note when mean = 0, stdev/1 is returned.
+
+    Zscores are (x-mean)/stdev.
+    Note when stdev = 0, (x-mean)/1 is returned.
+
+    COV and Zscores give you an idea of spread and outliers.
+    
     """, formatter_class= argparse.RawTextHelpFormatter)
 
 
@@ -48,7 +61,15 @@ else:
         return x.close()
 
 def getstats(name, vals):
-    return [name] + [np.mean(vals), np.std(vals, ddof=1), np.median(vals), np.min(vals), np.max(vals)]
+    mu = np.mean(vals)
+    sd = np.std(vals, ddof=1)
+    med = np.median(vals)
+    m = np.min(vals)
+    M = np.max(vals)
+    sd1 = 1 if sd == 0 else sd
+    mu1 = 1 if mu == 0 else mu
+    
+    return [name] + [mu, sd, sd/mu1, (m-mu)/sd1, (med-mu)/sd1, (M-mu)/sd1, m, med, M] 
 
 
 
