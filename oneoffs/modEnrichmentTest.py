@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.7
-import sys, os, argparse, pybedtools, scipy.stats
+import sys, os, argparse, pybedtools, scipy.stats, string, random
 from collections import defaultdict
 import numpy as np
 
@@ -95,6 +95,16 @@ parser.add_argument('--tableheader', '-H',
 args = parser.parse_args()
 
 
+
+
+
+
+
+def get_random_barcode(k=20):
+    return ''.join(random.choice(string.ascii_lowercase+string.ascii_uppercase+string.digits) for x in range(k))
+
+
+
 def get_sum_lengths(intervals):
     return sum([interval.length for interval in intervals])
 
@@ -139,11 +149,12 @@ def readFaCount(name, rm=True):
 
         if rm:
             os.system('rm '+name)
+            #pass
         return {'counts':counts, 'prcnts':prcnts}
 
 def faCount(fasta):
     
-    name = 'tmp.'+str(np.random.randint(10000,99999))+'.txt'
+    name = 'tmp-modEnrich.'+get_random_barcode()+'.txt'
     cmd = 'faCount -strands -dinuc -summary ' + fasta + ' > ' + name
     success = os.system(cmd)
     if success == 0:
@@ -153,7 +164,7 @@ def faCount(fasta):
 
 
 def faCountTarget(fasta, B):
-    fa = 'tmp.'+str(np.random.randint(10000,99999))+'.fasta'
+    fa = 'tmp-modEnrich.'+get_random_barcode()+'.fasta'
     B.sequence(fasta, fo=fa)
     counts = faCount(fa)
     os.system('rm '+fa)
