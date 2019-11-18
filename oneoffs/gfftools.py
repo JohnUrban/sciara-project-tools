@@ -588,7 +588,7 @@ class GFF(object):
         if not minimal:
             try:
                 q = np.quantile(x, p)
-                return [np.mean(x), np.std(x, ddof=1), np.min(x), np.max(x), 'Q:'] + [e for e in  q]
+                return [np.mean(x), np.std(x, ddof=1), np.min(x), np.max(x), np.median(x), 'Q:'] + [e for e in  q]
             except:
                 return None
         else:
