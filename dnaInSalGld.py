@@ -39,6 +39,9 @@ args = parser.parse_args()
 fullyRep = 1.0 - args.UR
 
 bpWeight = 1.07935e-12
+ntWeight = 0.5*bpWeight
+print "Nt weight", ntWeight, "ng"
+print "Bp weight", bpWeight, "ng"
 
 if args.fly == 'sciara':
     ngenomesPerCell = 2**13
@@ -111,4 +114,14 @@ if args.ngenomes:
 
         print "Amount of NS:", args.ngenomes * num_oris * num_ns_per_ori * ns_len * ntWeight * ns_prop_of_cc, "ng"
         print "Amount of NS - max but impossible:", args.ngenomes * num_oris * num_ns_per_ori * ns_len * ntWeight, "ng"
-        
+
+
+	n_forks = num_oris * 2
+	print
+	print "Assuming 100% S-phase cells (multiply by proportion in S-phase to get more realistic numbers):"
+	print "Okazaki fragment weight (assuming all forks going) = n_forks_per_genome * n_OF_per_fork * nt_weight * n_genome"
+	print "Using", args.ngenomes, "genomes (i.e.", 0.5*args.ngenomes, "diploid cells)."
+	for i in [0.1, 0.25, 0.5, 0.75,1,2,3,4]:
+		print "Max amount of Okazaki fragments assuming", i, "per fork:", n_forks * i * ntWeight * args.ngenomes, "ng"
+
+	
