@@ -164,7 +164,7 @@ def process_gff(gff, pfam):
         for line in f:
             if line:
                 if line.startswith('#'):
-                    print line
+                    print line.rstrip()
                 else:
                     line = line.strip().split('\t')
                     if len(line)>=9: # i.e. has descriptions column in col9
