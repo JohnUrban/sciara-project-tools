@@ -1,0 +1,6 @@
+Removes almost everything from std cmd -- all defaults:
+
+	--identify ${IDENTIFY} --methylFraction \
+        --pvalue ${PVALUE} --minCoverage 3 \
+        --methylMinCov 10 --identifyMinCov 5 -j ${THREADS} --maxAlignments 1000000 \
+        --ms_csv multisite.csv --bigwig ipd.bigWig

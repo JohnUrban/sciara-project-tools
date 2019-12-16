@@ -1,0 +1,22 @@
+- The only file that may need changes (in ultra-standard usage of this dir hierarchy for debugging):
+	- create-config.sh
+- Specifically - these variables have a high prob of needing manual editing:
+	- ASMFASTA
+		- Path to assembly under analysis
+		- Should end w/ .fasta
+	- KINETICSCRIPTS
+		- This informs where to look for the path to the default kinetics-contigs.sh script for the TOPKC variable
+
+- After editing create-config.sh, the only thing one should need to run in this directory is:
+	- run-REDO.sh
+- This will automatically run in this dir:
+	- create-config.sh
+	- run-kinetics-contig-nonKpipe-REDO.sh
+
+
+- The top-level debug analysis just runs ipdSummary w/ a single worker.
+	- typically TOPKC is the default kinetics-contigs.sh script
+
+- All subdirs do different things and are already AUTOMATED to collect the variables they need
+
+- When ready -- just launch run-all-debugs.sh

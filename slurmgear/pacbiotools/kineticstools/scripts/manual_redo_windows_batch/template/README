@@ -1,0 +1,85 @@
+- The only file that may need changes (in ultra-standard usage of this dir hierarchy for debugging):
+	- create-config.sh
+
+- Specifically - these variables have a high prob of needing manual editing:
+	- ASMFASTA
+		- Path to assembly under analysis
+		- Should end w/ .fasta
+	- KINETICSCRIPTS
+		- This informs where to look for the path to the default kinetics-contigs.sh script for the TOPKC variable
+	- REFWINDOWS
+		- What contig/coordinates to analyze
+
+SLURM and LINUX NOTE:
+- On the new system I work on, the QOS variable for --qos in sbatch (that is found in the majority of my slurm-based scripts) ia now assigned to the "--acount=" flag instead of "--qos="
+	- The old system was on CentOS6, slurm 15.08.9
+	- The new system on RedHat7, slurm 17.11.0
+	- I also have access to another system (memex): CentOS 7.5.1804, slurm 17.11.7
+
+
+WHAT IS THIS SCRIPT/DIR FOR ????
+- This is for running ipdSummary as a batch job w/ specified reference windows
+- It is sort of for a manual RE-DO of contigs that did not finish -- hang too long on a given window OR cause memory crash
+- Ultimately, below outlines how I plan to handle that.
+
+1. Run ipdSummary individually on all contigs (I assume you already did this).
+	- If you're not processing contigs separately in parallel (--refContigs), you should be doing that. 
+	- The majority of contigs (and genome) will finish without issue. 
+	- Most contigs will finish quickly, even a subset of the longest ones
+	- Some contigs will take much longer, but will easily finish withoin 24-48 hours
+		- These contigs contain positions where ipdSummary freezes/hangs for a long time, but moves on within a reasonable time-frame
+	- Some contigs will not finish b/c ipdSummary will hang/freeze at a certain window it is processing
+		- and the batch job time limit will run out 
+		- In some cases, it can consume a ton of memory in addition to taking a very long time. 
+			- if it consumes too much memory, it is canceled (by SLURM)
+	- Overall, I'd venture to guess that when ipdSummary "hangs" or "freezes" at a given position, the hang is not infinite (e.g. not an infinite loops)
+		- But can take a very long time -- and in the scenario where there are time/memory limits, it "never" finishes
+		- With enough resources and waiting, I tend to believe all the hangs would finish eventually -- but cannot say this definitively.
+	- The hanging/freezing issues tend to arise on a subset of the longest contigs -- but this may only reflect the higher probability of running into a problematic window. 
+	- The hangs can occur anywhere within the contigs: beginning, middle, end.
+	- I seem to have narrowed the "hanging" issue down to the step that tries to classify a base flagged as a "modified_base" as m4C,m5C,m6A
+		- one can blast right through the problematic window if one doesn't use the "--identify" option that instructs it to classify
+	- Rather than wait forever - here I outline a workaround
+		- Note that it is a work-around, but not a fix to the code, nor a final solution.
+		- The work around outlined here is a semi-solution to assess the majority of an assembly with the --identify flag (and problematic windows w/o it)
+			- Find the problem windows, and exclude them from those contigs
+			- Analyze the problem windows w/o the identify flag
+		- instead you will just get a list of positions that are likely to be a "modified_base"
+
+2. Figure out which contigs didnt finish
+	- Example of figuring out which didnt finish: 
+		- check-ipd-statuses.sh
+		- This makes assumptions on what the slurm/sbatch output file looks like and is named like
+		- Design something similarly that would discriminate finished from unfinished contigs
+	- NOTE:
+
+		-
+3. Figure out the problem window
+	- To see the exact window information of where ipdSummary is "hanging", make sure to specify "-v" a few times for verbosity. (( This could have been done already, or can do it now ))
+	- It is easier to interpret when -j 1. 
+	- Without verbosity, those most accurate clues would be in the kinetics.csv file. 
+	- ipdSummary by default processes 1000 bp at a time. 
+	- So, the most recent bases reported at the end of the CSV file will tell you which window was processed last. 
+	- The hang is in the subseqnt, yet unreported window.
+	- NOTE: 
+		- In the verbose output you will see that for a given 1000 bp, it adds 15 bp flanks to each side during processing. 
+		- For example, for the window 1000-2000, it looks at 958-2015. 
+		- The bases analyzed and reported on will only be 1000-2000 though. 
+		- I assume the 15 bp flanks are there b/c the modification detection process is looking at 15 bp to each side of a central base.
+
+4. Re-run the problem contig as normal, but excluding the problem window
+	- Instead of using --refContigs contigName, use --referenceWindows contigName:0-end1,contigName:start2-contigEnd. 
+	- In other words, provide 2 windows that leave the single problem window out. 
+	- You might encounter additional problematic windows this way 
+		-- and the work-around would simply be to provide N windows that exlude the N-1 problem windows.
+
+5. Salvaging some information for problem windows: 
+	- When the non-problem windows are done, and all problem windows are known -- you can salvage some base modification information from them by not using the --identify option. 
+	- As a result, for that window you will get a list of positions with a modified_base, but no identity (i.e. m5C, m4C, m6A). 
+	- As an alternative, it is possible that only one of those is causing the problem (e.g. m5C) and using --identify with the non-problematic subset would work as well.
+
+6. Combining GFF and CSV outputs
+	- After all windows are processed, the basemods.gff and kinetics.csv files can be merged through various linux operations (cat, grep, sort, awk).
+
+
+

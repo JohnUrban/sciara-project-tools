@@ -1,0 +1,39 @@
+- Where to run:
+	- Assumes you're in something like:	
+	- ~/pathto/DirContainingEachAsmDir/AsmBaseNameDir/debug_hierarchy/
+
+- USAGE:
+- Copy entire debug_hierarchy into your working dir, cd into it, make mods/edits needed, run
+	- bash run-all-contig-debugs.sh
+- One can use "run-all-contig-debugs.sh" to 
+	- create a subdir for each in a list of contigs 
+		- copied exactly from contig_template/
+	- run "run-all-debugs.sh" in each
+
+- MANUAL EDITING THAT MAY BE NEEDED:
+- Two points of order:
+	- 1. Edit contignames.txt in THIS DIR to have 1 contig name per line (example given: contig_20)
+	- 2. Since this script copies contig_template for every contig,
+		- one only needs to follow instructions of README in contig_template before running this script over many contigs
+		- The instruction in that README are re-iterated here as well
+
+INSTRUCTIONS FOR CONTIG_TEMPLATE DIR
+- The only file that may need changes (in ultra-standard usage of this dir hierarchy for debugging):
+	- create-config.sh
+- Specifically - these variables have a high prob of needing manual editing:
+	- ASMFASTA
+		- Path to assembly under analysis
+		- Should end w/ .fasta
+	- KINETICSCRIPTS
+		- This informs where to look for the path to the default kinetics-contigs.sh script for the TOPKC variable
+
+NOTE THIS IS DONE AUTOMATICALLY BY THE SCRIPT THAT ITERATES OVER CONTIGS
+	- After editing create-config.sh, the only thing one should need to run in this directory is:
+		- run-all-debugs.sh 
+	- This will automatically run in this dir:
+		- create-config.sh
+		- run-kinetics-contig-nonKpipe-debug.sh
+	- It will automatically go into each debug subdir and run:
+		- run-kinetics-contig-nonKpipe-debug-SUBDIRs.sh
+
+FOR MORE DETAILS ON CONTIG_TEMPLATE - SEE README THEREIN

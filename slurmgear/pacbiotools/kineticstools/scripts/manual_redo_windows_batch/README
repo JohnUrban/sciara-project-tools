@@ -1,0 +1,17 @@
+For an understanding of what this entire dir/subdir is about, read the README in template/ dir
+
+For a given contig, feel free to cp -r only the template/ dir to your working dir and follow instructions therein.
+
+Otherwise, for multiple contigs:
+- cp -r this dir into your working dir
+- Create a contig list file named names.txt in this dir
+
+- EDIT the REF variable in create-config-and-launch.sh inside template subdir -- add the absolute path to the reference/assembly
+	- Thus when this template directory is copied for all contigs, that variable is already in place.
+- EDIT any of the other variables in the file above that will be shared amongst all contigs to avoid having to do this independently
+
+- run: mk-all-contig-dirs.sh (in this dir)
+	- This will just make a contig dir for all in that file
+	- That is where the automation ends for this particular set up
+- Go into each contig dir and follow the instructions in the README therein
+

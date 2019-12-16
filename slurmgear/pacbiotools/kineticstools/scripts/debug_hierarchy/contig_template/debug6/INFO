@@ -1,0 +1,10 @@
+Removes from std cmd:
+	--methylFraction \
+        --pvalue ${PVALUE} --minCoverage 3 \
+        --methylMinCov 10 --identifyMinCov 5 -j ${THREADS} --maxAlignments 1000000 \
+        --ms_csv multisite.csv --bigwig ipd.bigWig 
+
+Adds:
+	--maxCoverage 30 
+
+Testing if limiting coverage could help make it through stalling.

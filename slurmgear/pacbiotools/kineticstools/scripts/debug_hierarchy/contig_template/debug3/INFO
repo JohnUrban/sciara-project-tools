@@ -1,0 +1,4 @@
+Removes from the std cmd:
+--pvalue ${PVALUE} --minCoverage 3 \
+        --methylMinCov 10 --identifyMinCov 5 --maxAlignments 1000000 \
+        --ms_csv multisite.csv --bigwig ipd.bigWig
