@@ -24,7 +24,7 @@ blastn -task megablast -query $Q -db $NT \
  -outfmt '6 qseqid staxids bitscore std sscinames sskingdoms stitle' \
  -culling_limit 5 \
  -num_threads $P \
- -evalue 1e-25 \
+ -evalue ${E} \
  -out ${BLASTDIR}/${BASE}.blastout
 
 date
