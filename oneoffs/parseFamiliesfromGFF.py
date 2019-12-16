@@ -32,6 +32,15 @@ parser.add_argument('--delim', '-d',
 parser.add_argument('--namechanger','-n',
                     type= str, default='',
                     help='''Add given string to the front of all ID, Name, and Parent.''')
+
+parser.add_argument('--use_sfx_tree','-T',
+                    type= str, default='',
+                    help='''Experimental: use suffix tree matching.''')
+
+parser.add_argument('--stree_end_char','-E',
+                    type= str, default='$',
+                    help='''Experimental: use suffix tree matching. This sets the end character. default = $. It should be something that does not come up otherwise in character set.''')
+
 args = parser.parse_args()
 
 
@@ -42,12 +51,48 @@ with open(args.parents) as f:
     parents = list(set([line.strip() for line in f.readlines()]))
 
 
+
+## Function to prune name down to original parent name - useful for the sfx tree approach -- or for both approaches really.
+def prune_x(x):
+    # The idea here was to anticipate the parts that follow the gene name
+    # It seems the names can be broken on -mRNA- for all gene parts to yield the gene name as element 0.
+    pass
+
+    
+if args.use_sfx_tree:
+    from suffix_trees import STree
+    # Add a $ at the end of each parents to prevent non-specific matching
+    # Need to also add $ to end of query when querying the tree
+    #   e.g. if parent = ABC and one sees AB, it would be found in stree,
+    #       but not if ABC$ was entered and one saw AB$
+    #   Note: $ can be made more specific if need be -- e.g. $$$ or 
+    #   e.g. if parent = 
+    sfxtree = STree.STree([e+'$' for e in parents])
+    def is_in_parents(x, endchar='$'):
+        x = prune_name(x)
+        
+        #stree returns first example found; use find_all to return list of all starts
+        #value is -1 if not found or empty list with find_all
+        ans = sfxtree.find( x+endchar ) 
+        
+        for parent in parents:
+            if x == parent or x.startswith(parent+delim):
+                return True
+        return False
+else:
+    def is_in_parents(x, delim='-'):
+        for parent in parents:
+            if x == parent or x.startswith(parent+delim):
+                return True
+        return False
+    
 #OLD BUG - given parent AB, it will take anythingstarting with AB: AB, ABC, ABWTF, ABETC
 ##def is_in_parents(x):
 ##    for parent in parents:
 ##        if x.startswith(parent):
 ##            return True
 ##    return False
+
 
 def is_in_parents(x, delim='-'):
     for parent in parents:
