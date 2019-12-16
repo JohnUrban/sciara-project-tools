@@ -22,3 +22,16 @@ enzymes['5p'] = '*'
 enzymes['3p'] = '*'
 
 enzymelookup = defaultdict(list) ## THIS IS FILLED OUT ON THE FLY - I've added this in anticipation of the Regex approach of searching a sequence in one pass
+
+
+## Dinucleotides
+enzymes['CG'] = 'CG'
+enzymes['AG'] = 'AG'
+enzymes['AGrc'] = 'CT'
+
+## Trinucleotides
+enzymes['GCG'] = 'GCG'
+enzymes['GCGrc'] = 'CGC'
+enzymes['GAG'] = 'GAG'
+enzymes['GAGrc'] = 'CTC'
+
