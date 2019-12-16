@@ -53,6 +53,19 @@ parser = argparse.ArgumentParser(description="""
     (iv) collect target names for re-marking as rmtigs
     (v) You may also want to note where rmtigs were integrated inside large contigs during a scaffolding step (as this may be a mis-assembly)
 
+
+
+
+    Recommended Alt Sort - for some merge operations, it makes sense to cluster query and targets as such:
+    sort -k1,1 -k6,6 -k3,3n -k8,8n
+    or
+    sort -k6,6 -k1,1 -k8,8n -k3,3n
+    .. and feed to presorted...
+    It may additionally make sense to sort by strand:
+    sort -k5,5 -k1,1 -k6,6 -k3,3n -k8,8n
+    or
+    sort -k5,5 -k6,6 -k1,1 -k8,8n -k3,3n
+
     """, formatter_class= argparse.RawTextHelpFormatter)
 
 
