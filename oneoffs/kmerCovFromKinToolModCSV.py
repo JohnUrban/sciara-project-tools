@@ -60,10 +60,11 @@ args = parser.parse_args()
 
 
 class ModCSV(object):
-    def __init__(self, fh, nlines, convert_to_zero_base=True):
+    def __init__(self, fh, nlines, convert_to_zero_base=True, debug=False):
         self.fh = fh
         self.nlines = nlines
         self.dict = {}
+        self.debug = debug
         self.reducePosBy = 1
         if not convert_to_zero_base:
             self.reducePosBy = 0
@@ -95,7 +96,10 @@ class ModCSV(object):
         except KeyError:
             self.dict[self.line['seqname']][self.line['strand']] = {}
         # This should now be set up
-        self.dict[self.line['seqname']][self.line['strand']][self.line['pos']] = (self.line['cov'], self.line['base'])
+        if self.debug:
+            self.dict[self.line['seqname']][self.line['strand']][self.line['pos']] = (self.line['cov'], self.line['base'])
+        else:
+            self.dict[self.line['seqname']][self.line['strand']][self.line['pos']] = self.line['cov']
             
     def _iterlines(self, f):
         try:
@@ -119,6 +123,7 @@ class KmerCov(object):
         #{contig:{kmer:{cov:num}}}
         self.fh = fh
         self.covbypos = covbypos #{contig:{strand:{pos:cov}}}
+        self.debug = covbypos.debug
         self.k = k
         self.p = p
         self.fastx = fastx
@@ -127,6 +132,12 @@ class KmerCov(object):
         self._parse_file()
 
     def print_table(self):
+        if self.debug:
+            self._debug_table()
+        else:
+            self._print_table()
+
+    def _print_table(self):
         for seqname in sorted(self.dict.keys()):
             for kmer in sorted(self.dict[seqname].keys()):
                 for cov in sorted(self.dict[seqname][kmer].keys()):
@@ -150,7 +161,11 @@ class KmerCov(object):
             # This needs to be self.pos + self.p
             try:
                 pos = abs(correction - (self.pos + self.p))
-                self.cov, self.base = self.covbypos.get(self.seqname, self.strand, pos)
+                if self.debug:
+                    self.cov, self.base = self.covbypos.get(self.seqname, self.strand, pos)
+                else:
+                    self.cov =  self.covbypos.get(self.seqname, self.strand, pos)
+                    self.base = '.'
                 #print self.kmer, self.base, self.p, self.pos, pos
             except: ## This was not a position found in ModCSV()
                 self.cov = 0
@@ -207,13 +222,13 @@ class KmerCov(object):
 
 
 def run(args):
-    modcsv = ModCSV(args.modcsv, args.nlines)
+    modcsv = ModCSV(args.modcsv, args.nlines, debug=args.debug_table)
     kmercov = KmerCov(fh=args.fasta, covbypos=modcsv, k=args.kmer, p=args.covpos, fastx='fasta')
-    
-    if args.debug_table:
-        kmercov._debug_table()
-    else:
-        kmercov.print_table()
+    kmercov.print_table()
+    #if args.debug_table:
+    #    kmercov._debug_table()
+    #else:
+    #    kmercov.print_table()
 
 
 
