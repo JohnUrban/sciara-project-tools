@@ -51,6 +51,10 @@ parser.add_argument('-p', '--covpos', type=int, required=True,
 parser.add_argument('-N', '--nlines', type=int, default=100000,
                     help = '''Read in this many lines from mod CSV to memory at a time... default 100000. Provide integer.''')
 
+parser.add_argument('-D', '--debug_table', action='store_true', default=False,
+                    help = '''Show a debug table to ensure you are counting kmers correctly.... This option is just for dev.''')
+
+
 args = parser.parse_args()
 
 
@@ -83,11 +87,11 @@ class ModCSV(object):
 
     def _add_to_dict(self):
         try:
-            self.dict[self.line['seqname']] #[self.line['strand']][self.line['pos']] = self.line['cov']
+            self.dict[self.line['seqname']] 
         except KeyError:
             self.dict[self.line['seqname']] = {}
         try:
-            self.dict[self.line['seqname']][self.line['strand']] #[self.line['pos']] = self.line['cov']
+            self.dict[self.line['seqname']][self.line['strand']] 
         except KeyError:
             self.dict[self.line['seqname']][self.line['strand']] = {}
         # This should now be set up
@@ -145,7 +149,9 @@ class KmerCov(object):
             self.kmer = seq[self.pos : self.pos + self.k]
             # This needs to be self.pos + self.p
             try:
-                self.cov, self.base = self.covbypos.get(self.seqname, self.strand, abs(correction-self.pos+self.p))
+                pos = abs(correction - (self.pos + self.p))
+                self.cov, self.base = self.covbypos.get(self.seqname, self.strand, pos)
+                #print self.kmer, self.base, self.p, self.pos, pos
             except: ## This was not a position found in ModCSV()
                 self.cov = 0
                 self.base = "."
@@ -203,8 +209,11 @@ class KmerCov(object):
 def run(args):
     modcsv = ModCSV(args.modcsv, args.nlines)
     kmercov = KmerCov(fh=args.fasta, covbypos=modcsv, k=args.kmer, p=args.covpos, fastx='fasta')
-    kmercov.print_table()
-    #kmercov._debug_table()
+    
+    if args.debug_table:
+        kmercov._debug_table()
+    else:
+        kmercov.print_table()
 
 
 
