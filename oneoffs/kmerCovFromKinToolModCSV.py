@@ -1,8 +1,9 @@
 #!/usr/bin/env python2.7
-import sys, argparse
+import sys, argparse, pickle, os, shutil
 from collections import defaultdict
 from itertools import islice, izip_longest
 from Bio import SeqIO
+import numpy.random as ran
 
 
 parser = argparse.ArgumentParser(description="""
@@ -54,37 +55,78 @@ parser.add_argument('-N', '--nlines', type=int, default=100000,
 parser.add_argument('-D', '--debug_table', action='store_true', default=False,
                     help = '''Show a debug table to ensure you are counting kmers correctly.... This option is just for dev.''')
 
+parser.add_argument('-Q', '--quiet', action='store_true', default=False,
+                    help = '''Silence verbosity.''')
 
+
+parser.add_argument('-L', '--lite', action='store_true', default=False,
+                    help = '''Make this as memory-efficient as possible.''')
+                    ## Can do by breaking up and pickling CSV data by sequence name
+                    ## instead of pickling... it could also just process the KmerCov for each contig separately
+                    ## except all seqs would need to be read in at once...
+                    ## or an initial step would be to put indiv seq files in the tmpdir
 args = parser.parse_args()
 
 
 
 class ModCSV(object):
-    def __init__(self, fh, nlines, convert_to_zero_base=True, debug=False):
+    def __init__(self, fh, nlines, convert_to_zero_base=True, debug=False, lite=False, tmpdir='tmpdir', runid=None, fasta=None, k=None, p=None, quiet=False, cleanupwhendone=False):
         self.fh = fh
         self.nlines = nlines
         self.dict = {}
         self.debug = debug
+        self.lite = lite
+        self.runid = str(runid) if runid is not None else str(ran.randint(1000000,9999999,1)[0])
+        self.tmpdir = 'tmpdir-'+self.runid
+        self.fasta = fasta
+        self.quiet = quiet
+        self.cleanupwhendone = cleanupwhendone
+        self.k = k
+        self.p = p
         self.reducePosBy = 1
+        self.processed = []
         if not convert_to_zero_base:
             self.reducePosBy = 0
+        self.currseq = None
+        if self.lite:
+            os.mkdir(self.tmpdir)
+        if self.fasta is not None:
+            self._parse_fasta()
         self._parse_file()
+            
 
     def get(self, seqname, strand, pos):
         return self.dict[seqname][strand][pos]
+
+    def clean(self):
+        shutil.rmtree(self.tmpdir)
+
+    def _reset_dict(self):
+        self.dict = {}
+        
+    def _parse_fasta(self):
+        for fa in SeqIO.parse(self.fasta, 'fasta'):
+            with open("{}/{}.fasta".format(self.tmpdir,str(fa.name)), 'w') as fh:
+                fh.write(">{}\n{}\n".format(str(fa.name), str(fa.seq)))
 
     def _parse_file(self):
         with open(self.fh) as f:
             self.header = f.next() ## burn this line off
             self._iterlines(f)
+            # Ensuring that next was run on the last sequence in lite mode at end of file (EOF)
+            self.line = dict(seqname="EOF")
+            self._attemptKmerCov()
+        if self.cleanupwhendone:
+            shutil.rmtree(self.tmpdir)
 
-    def _parse_line(self, line):
-        line = line.strip().split(',')
-        self.line = dict(seqname=line[0][1:-1],
-                         pos=int(line[1]) - self.reducePosBy,
-                         strand=int(line[2]),
-                         cov=int(line[9]),
-                         base=line[3])
+
+    def _parse_line(self):
+        self.line = self.line.strip().split(',')
+        self.line = dict(seqname=self.line[0][1:-1],
+                         pos=int(self.line[1]) - self.reducePosBy,
+                         strand=int(self.line[2]),
+                         cov=int(self.line[9]),
+                         base=self.line[3])
 
     def _add_to_dict(self):
         try:
@@ -106,11 +148,33 @@ class ModCSV(object):
             while f:
                 #for line in islice(f, self.nlines):
                 for next_n_lines in izip_longest(*[f] * self.nlines):
-                    for line in next_n_lines:
-                        self._parse_line(line)
+                    for self.line in next_n_lines:
+                        self._parse_line()
+                        self._attemptKmerCov()
                         self._add_to_dict()
+                        self.currseq = self.line['seqname']
+                                                  
+                                                                 
         except:
             pass
+
+    def _attemptKmerCov(self):
+        ## Before adding to dict, see if current sequence can be processed
+        if self.lite:
+            if self.currseq is not None and self.line['seqname'] != self.currseq:
+                print '{} {} {}'.format(self.line['seqname'], self.currseq, self.line['seqname']==self.currseq)
+                #seqname has changed, process what was self.currseq
+                assert self.currseq not in self.processed
+                kmercov = KmerCov(fh='{}/{}.fasta'.format(self.tmpdir, self.currseq),
+                                  covbypos=self,
+                                  k=self.k,
+                                  p=self.p,
+                                  fastx='fasta')
+                
+                kmercov.print_table()
+                sys.stderr.write('RunID {}: Finished {}....\n'.format(self.runid, self.currseq))
+                self._reset_dict()
+                self.processed.append(self.currseq)
         
                     
 
@@ -222,13 +286,26 @@ class KmerCov(object):
 
 
 def run(args):
-    modcsv = ModCSV(args.modcsv, args.nlines, debug=args.debug_table)
-    kmercov = KmerCov(fh=args.fasta, covbypos=modcsv, k=args.kmer, p=args.covpos, fastx='fasta')
-    kmercov.print_table()
-    #if args.debug_table:
-    #    kmercov._debug_table()
-    #else:
-    #    kmercov.print_table()
+    runid = str(ran.randint(1000000,9999999,1)[0])
+
+    if not args.lite:
+        if not args.quiet:
+            sys.stderr.write('RunID {}: ModCSV step....\n'.format(runid))
+        modcsv = ModCSV(fh=args.modcsv, nlines=args.nlines, debug=args.debug_table, lite=False, runid=runid)
+
+        if not args.quiet:
+            sys.stderr.write('RunID {}: KmerCov step....\n'.format(runid))
+        kmercov = KmerCov(fh=args.fasta, covbypos=modcsv, k=args.kmer, p=args.covpos, fastx='fasta')
+
+        if not args.quiet:
+            sys.stderr.write('RunID {}: Print step....\n'.format(runid))
+        kmercov.print_table()
+    else:
+        sys.stderr.write('RunID {}: Combined ModCSV+KmerCov steps....\n'.format(runid))
+        ModCSV(args.modcsv, args.nlines, debug=args.debug_table, lite=True,
+               runid=runid, fasta=args.fasta,
+               k=args.kmer, p=args.covpos,cleanupwhendone=True)
+
 
 
 
