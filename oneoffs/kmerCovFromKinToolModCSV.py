@@ -27,12 +27,24 @@ parser = argparse.ArgumentParser(description="""
     e.g.
     contig_1        AA      3       316
 
+    Example usage:
+    kmerCovFromKinToolModCSV.py -f ref.fasta -m mod.csv -k 1 -p 0 --lite
+    kmerCovFromKinToolModCSV.py -f ref.fasta -m mod.csv -k 3 -p 1
+    kmerCovFromKinToolModCSV.py -f ref.fasta -m mod.csv -k 2 -p 0 --lite --quiet
+
+
+    Planning notes:
     Two possible ways:
     I. a. Read in Fasta and index every dimer in a dictionary {contig:{strand:{pos:kmer}}}
        b. Read in CSV and use the contig_pos to grab kmer there to assign cov in new dict: {contig:{kmer:{cov:num}}}
 
     II. a. Read in CSV making dictionary of {contig:{strand:{pos:cov}}}
         b. Read in Fasta, using dict1 to assign cov to kmers {contig:{kmer:{cov:num}}}
+
+    Post-devel notes:
+    Ultimately, the non-lite option is more like II and the lite option does both steps simultaneously by splitting up the FA first.
+
+        
     """, formatter_class= argparse.RawTextHelpFormatter)
 
 
