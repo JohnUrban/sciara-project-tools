@@ -162,7 +162,7 @@ class ModCSV(object):
         ## Before adding to dict, see if current sequence can be processed
         if self.lite:
             if self.currseq is not None and self.line['seqname'] != self.currseq:
-                print '{} {} {}'.format(self.line['seqname'], self.currseq, self.line['seqname']==self.currseq)
+                ##print '{} {} {}'.format(self.line['seqname'], self.currseq, self.line['seqname']==self.currseq)
                 #seqname has changed, process what was self.currseq
                 assert self.currseq not in self.processed
                 kmercov = KmerCov(fh='{}/{}.fasta'.format(self.tmpdir, self.currseq),
