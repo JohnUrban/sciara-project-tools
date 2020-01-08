@@ -51,6 +51,8 @@ class NuPoP(object):
         self.nlines = len(self.lines)
         for line in self.lines:
             line = line.strip().split()
+            if line[0] == "-":
+                continue ## some older files had a bug with a position called "-"
             pos = int(line[0])
             self.pstart[pos] += float(line[1])
             self.nucocc[pos] += float(line[2])
