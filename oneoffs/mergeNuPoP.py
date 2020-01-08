@@ -21,6 +21,7 @@ parser.add_argument('nupop_hists', metavar='nupop_hists', nargs='+',
 
 #parser.add_argument('-n', '--nlines', type=int, required=True, help='''Number of lines a correct hist file should have....''')
 parser.add_argument('-c', '--getcounts', action='store_true', default=False, help='''Get counts column in newer NuPoP hists...''')
+parser.add_argument('-d', '--debug', action='store_true', default=False, help='''Debug...''')
 
 args = parser.parse_args()
 
@@ -29,7 +30,7 @@ args = parser.parse_args()
 
 class NuPoP(object):
     #"pos","pstart","occ","nl","aff"
-    def __init__(self, fh=None, getcounts=False):
+    def __init__(self, fh=None, getcounts=False, debug=False):
         self.fh = fh
         self.getcounts = getcounts
         self.pstart = defaultdict(float)
@@ -79,6 +80,8 @@ class NuPoP(object):
 
 nupopsum = NuPoP(fh=None, getcounts=args.getcounts)
 for hist in args.nupop_hists:
+    if args.debug:
+        print hist
     nupop = NuPoP(fh=hist, getcounts=args.getcounts)
     if nupop.haslines():
         nupopsum.add(nupop)
