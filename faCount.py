@@ -38,6 +38,11 @@ parser.add_argument('--outfile', default=None, type=str,
 
 parser.add_argument('--fastx_type', default='fasta', type=str,
                     help = '''Defaults to fasta. Can be fastq as well.''')
+
+parser.add_argument('--keyval', '-kv', default=False, action='store_true',
+                    help = '''Don't try to report on ALL possible kmers, only kmers present.
+                            This changes the output format to kmer:count style.
+                            This is especially useful when looking for a single long (>6bp) kmer analysis.''')
 args = parser.parse_args()
 
 
@@ -70,16 +75,25 @@ def getkmers(klist):
     return kmers
 
 
-def get_header(kmers):
-       return 'name\tlength\t' + '\t'.join([ '\t'.join(kmers[k]) for k in sorted(kmers.keys())])
+def get_header(kmers=None):
+    if kmers is None:
+        return 'name\tlength\tkmer:count'
+    else:
+        return 'name\tlength\t' + '\t'.join([ '\t'.join(kmers[k]) for k in sorted(kmers.keys())])
 
-def get_entry_str(name, kmers, kmerdict):
-    return '\t'.join([name,str(kmerdict['len'])]+[str(kmerdict[kmer]) for k in sorted(kmers.keys()) for kmer in kmers[k] ])
+def get_entry_str(name, kmers=None, kmerdict={}):
+    if kmers is None:
+        return '\t'.join([name,str(kmerdict['len'])]+[kmer+':'+str(kmerdict[kmer]) for kmer in kmerdict.keys()])
+    else:
+        return '\t'.join([name,str(kmerdict['len'])]+[str(kmerdict[kmer]) for k in sorted(kmers.keys()) for kmer in kmers[k] ])
 
 
 def kmercount_in_fastx(fhlist, fastx='fasta', klist=[1,2], rev_comp=False, outfile=None, globalonly=False):
     ## ESTABLISH kmers that will be reported
-    kmers = getkmers(klist)
+    if args.keyval:
+        kmers=None
+    else:
+        kmers = getkmers(klist)
 
     ## OPEN out connection
     fhout = open(args.outfile, 'w') if args.outfile is not None else sys.stdout
