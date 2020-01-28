@@ -1,6 +1,6 @@
 *.pyc
 pufferfish/test/
 qpcr/.Rhistory
-./devel/
-./oneoffs/del/
-./oneoffs/dev/
+devel/
+oneoffs/del/
+oneoffs/dev/
