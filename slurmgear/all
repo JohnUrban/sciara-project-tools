@@ -1,0 +1,17 @@
+./buscov3/scripts/auto-buscov3-new.sh
+./buscov3/scripts/buscov3-pipeline-new.sh
+./evalwrapper/run-evalwrapper-new.sh
+./longreadeval/scripts/auto-lrpipe-new.sh
+./longreadeval/scripts/longread-pipeline-new.sh
+./opticalmap/malignerautomation/scripts/auto-malign-new.sh
+./opticalmap/malignerautomation/scripts/maligner-pipeline-new.sh
+./peptideval/scripts/auto-pep-new.sh
+./peptideval/scripts/peptide-pipeline-new.sh
+./pilon/scripts/auto-pilon-new.sh
+./pilon/scripts/pilon-pipeline-new.sh
+./rnaseqeval/scripts/auto-rnaseqeval-new.sh
+./rnaseqeval/scripts/rnaseqeval-pipeline-new.sh
+./shortreadeval/scripts/auto-shortreadeval-new.sh
+./shortreadeval/scripts/eval.ARGS-new.sh
+./transcripteval/scripts/auto-trans-new.sh
+./transcripteval/scripts/trans-pipeline-new.sh
