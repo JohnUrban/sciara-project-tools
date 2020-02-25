@@ -13,4 +13,4 @@ bioRxiv 2020.02.24.963009.
 
 https://www.biorxiv.org/content/10.1101/2020.02.24.963009v1
 
-This paper contains the first description of Fast5Tools.
+This paper contains the first descriptions of Fast5Tools, Battery, and Lave.
