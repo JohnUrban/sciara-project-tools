@@ -27,6 +27,9 @@ parser.add_argument('-s','--subtract',
                    type=int, default=0, 
                    help='''Tell me the date it was this many days ago. ''')
 
+parser.add_argument('-M','--minimaloutput', 
+                   action='store_true', default=False, 
+                   help='''. ''')
 
 
 args = parser.parse_args()

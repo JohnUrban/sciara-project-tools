@@ -1,0 +1,18 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]; then
+echo "
+	Usage:
+	larvaeToColdRoom MatingDate(YYYY-MM-DD)
+
+	I've had success with putting late embryos in the cold room.
+	I imagine the cold room may even work on pupal stages.
+	Nonetheless, the timing Jacob originally worked out is 10-12 days post hatching.
+	This equates to 17-22 days post mating.
+	His method also requires a heavy feeding 12-24 hours prior to 4*C.
+	Thus, I provide the dates for 16-22 days post mating date here.
+"; exit; fi
+
+MAIN=$( dirname $0 )
+$MAIN/dateMath.py -d $1 -a 16
+$MAIN/dateMath.py -d $1 -a 22
