@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]; then
+echo "
+	Usage:
+	$0 MatingDate(YYYY-MM-DD)
+
+
+	Simply a wrapper for:
+	dateMath.py -S -d YYYY-MM-DD
+
+	If today is the mating date, could just do:
+	dateMath.py -S
+
+	Cold notes:
+	I've had success with putting late embryos in the cold room.
+	I imagine the cold room may even work on pupal stages.
+	Nonetheless, the timing Jacob originally worked out is 10-12 days post hatching.
+	This equates to 17-22 days post mating.
+	His method also requires a heavy feeding 12-24 hours prior to 4*C.
+	Thus, I provide the dates for 16-22 days post mating date here.
+"; exit; fi
+
+MAIN=$( dirname $0 )
+
+$MAIN/dateMath.py -S -d $1

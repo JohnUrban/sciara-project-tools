@@ -31,6 +31,14 @@ parser.add_argument('-M','--minimaloutput',
                    action='store_true', default=False, 
                    help='''. ''')
 
+parser.add_argument('-S','--sciaraInfo', 
+                   action='store_true', default=False, 
+                   help='''Given a mating date, calculates estimated dates for
+hatch/larval stage start, pupal stage start, adult stage start, approximate death dates, and cold room dates according to Jacob's method.
+Only uses one date to calculate these with the following priority --date > --basedate > nothing.
+In other words, --date or --basedate can be used, but using both is the same as using --date, and using neither specifies today's date.
+''')
+
 
 args = parser.parse_args()
 
@@ -49,29 +57,38 @@ def datemath(x, y):
     print "\tDifference between dates is", ans[0], ans[1], ans2[0], 'hours,', ans2[1], 'minutes,', ans2[2], 'seconds.'
     print "\tThat's roughly %f weeks or %f months or %f years." % (weeks, months, years)
 
-def add(d, args):
+def add(d, args, verbose=True):
     ans = d+dt.timedelta(days=args.add)
-    print "\tIn", args.add, "days from", d.strftime('%Y-%m-%d'), "it will be", ans.strftime('%Y-%m-%d')
-    
-def sub(d, args):
-    ans = d-dt.timedelta(days=args.subtract)
-    print "\tOn", args.subtract, "days before", d.strftime('%Y-%m-%d'), "it was", ans.strftime('%Y-%m-%d')
-    
+    if verbose:
+        print "\tIn", args.add, "days from", d.strftime('%Y-%m-%d'), "it will be", ans.strftime('%Y-%m-%d')
+    return ans
 
-def run(args):
+def sub(d, args, verbose=True):
+    ans = d-dt.timedelta(days=args.subtract)
+    if verbose:
+        print "\tOn", args.subtract, "days before", d.strftime('%Y-%m-%d'), "it was", ans.strftime('%Y-%m-%d')
+    return ans
+
+def strToDate(x):
+    l = [int(e) for e in x.strip().split('-')]
+    return dt.datetime(l[0], l[1], l[2], 0, 0, 0)
+        
+def default(args):
     print 
     now = dt.datetime.now()
     if args.basedate is None:
         args.basedate = now.strftime('%Y-%m-%d')
         base = now
     else:
-        basel = [int(e) for e in args.basedate.strip().split('-')]
-        base = dt.datetime(basel[0], basel[1], basel[2], 0, 0, 0)
+        #basel = [int(e) for e in args.basedate.strip().split('-')]
+        #base = dt.datetime(basel[0], basel[1], basel[2], 0, 0, 0)
+        base = strToDate(args.basedate)
     
     if args.date is not None:
         print "Given provided date and base date (today if not specified):"
-        datel = [int(e) for e in args.date.strip().split('-')]
-        date = dt.datetime(datel[0], datel[1], datel[2], 0, 0, 0)
+        #datel = [int(e) for e in args.date.strip().split('-')]
+        #date = dt.datetime(datel[0], datel[1], datel[2], 0, 0, 0)
+        date = strToDate(args.date)
         datemath(date, base)
         if args.add or args.subtract:
             print "Given provided date and days to add/sub:"
@@ -89,6 +106,58 @@ def run(args):
     if args.subtract > 0:
         sub(base, args)
     print
+
+
+def dateDecision(args):
+    if args.date is not None:
+        DATE = strToDate(args.date)
+    elif args.basedate is not None:
+        DATE = strToDate(args.basedate)
+    else:
+        DATE = dt.datetime.now()
+
+    return DATE
+
+
+def datemsg(msg, date0, date1):
+    print '\t'.join([str(e) for e in [msg, date0.strftime('%Y-%m-%d'), date1.strftime('%Y-%m-%d')]])
+
+def dadd(d, x):
+    return d+dt.timedelta(days=x)
+
+def sciara(args, hatch0=7, hatch1=10, larval0=7, larval1=31, pupal0=28, pupal1=36, adult0=35, adult1=43, cold0=16, cold1=22):
+    NOW=dt.datetime.now()
+    DATE = dateDecision(args)
+    datemsg('Today_Date',
+            NOW,
+            NOW)
+    datemsg('Mating_Date',
+            DATE,
+            DATE)
+    datemsg('Hatch_Date',
+            dadd(DATE, hatch0),
+            dadd(DATE, hatch1))
+    datemsg('Larval_stages',
+            dadd(DATE, larval0),
+            dadd(DATE, larval1))
+    datemsg('Pupal_stages',
+            dadd(DATE, pupal0),
+            dadd(DATE, pupal1))
+    datemsg('Adult_stages',
+            dadd(DATE, adult0),
+            dadd(DATE, adult1))
+    datemsg('Cold_room',
+            dadd(DATE, cold0),
+            dadd(DATE, cold1))
+
+
+
+
+def run(args):
+    if args.sciaraInfo:
+        sciara(args)
+    else:
+        default(args)
 
     
 
