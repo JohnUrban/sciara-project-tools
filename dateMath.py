@@ -119,36 +119,116 @@ def dateDecision(args):
     return DATE
 
 
-def datemsg(msg, date0, date1):
-    print '\t'.join([str(e) for e in [msg, date0.strftime('%Y-%m-%d'), date1.strftime('%Y-%m-%d')]])
+def datemsg(msg, date0, date1, days, duration, sfx=''):
+    print '\t'.join([str(e) for e in [msg, date0.strftime('%Y-%m-%d'), date1.strftime('%Y-%m-%d'), str(days)+sfx, str(duration)+sfx]])
 
 def dadd(d, x):
     return d+dt.timedelta(days=x)
 
-def sciara(args, hatch0=7, hatch1=10, larval0=7, larval1=31, pupal0=28, pupal1=36, adult0=35, adult1=43, cold0=16, cold1=22):
+#pre-24
+#ee-25
+#8-26
+#10-27
+#12-28
+#14-29
+#EE30
+#DJ31
+def sciara(args, hatch0=7, hatch1=10, larval0=7, larval1=31,
+           earlyLarval0=7, earlyLarval1=20, lateLarval0=21, lateLarval1=31,
+           eyespot0=22, eyespot1=25, pupal0=28, pupal1=36, adult0=35,
+           adult1=43, cold0=16, cold1=22, post0=8, post1=20):
     NOW=dt.datetime.now()
     DATE = dateDecision(args)
+    print '\t'.join(['Event/Stage', 'EarliestSeen', 'LatestSeen', 'DPM', 'Duration'])
     datemsg('Today_Date',
             NOW,
-            NOW)
+            NOW,
+            '-',
+            '-')
     datemsg('Mating_Date',
             DATE,
-            DATE)
+            DATE,
+            '-',
+            '-')
     datemsg('Hatch_Date',
             dadd(DATE, hatch0),
-            dadd(DATE, hatch1))
+            dadd(DATE, hatch1),
+            '-'.join(str(e) for e in [hatch0, hatch1]),
+            '-')
     datemsg('Larval_stages',
             dadd(DATE, larval0),
-            dadd(DATE, larval1))
+            dadd(DATE, larval1),
+            '-'.join(str(e) for e in [larval0, larval1]),
+            '21')
+
+    datemsg('Instar_1-3',
+            dadd(DATE, earlyLarval0),
+            dadd(DATE, earlyLarval1),
+            '-'.join(str(e) for e in [earlyLarval0, earlyLarval1]),
+            '14')
+    datemsg('Instar_4',
+            dadd(DATE, lateLarval0),
+            dadd(DATE, lateLarval1),
+            '-'.join(str(e) for e in [lateLarval0, lateLarval1]),
+            '7-10')
+    datemsg('Early_eyepot',
+            dadd(DATE, eyespot0),
+            dadd(DATE, eyespot1),
+            '-'.join(str(e) for e in [eyespot0, eyespot1]),
+            1)
+    datemsg('Eyespot_8x4',
+            dadd(DATE, eyespot0+1),
+            dadd(DATE, eyespot1+1),
+            '-'.join(str(e+1) for e in [eyespot0, eyespot1]),
+            1)
+    datemsg('Eyespot_10x5',
+            dadd(DATE, eyespot0+2),
+            dadd(DATE, eyespot1+2),
+            '-'.join(str(e+2) for e in [eyespot0, eyespot1]),
+            1)
+    datemsg('Eyespot_12x6',
+            dadd(DATE, eyespot0+3),
+            dadd(DATE, eyespot1+3),
+            '-'.join(str(e+3) for e in [eyespot0, eyespot1]),
+            1)
+    datemsg('Eyespot_14x7',
+            dadd(DATE, eyespot0+4),
+            dadd(DATE, eyespot1+4),
+            '-'.join(str(e+4) for e in [eyespot0, eyespot1]),
+            1)
+    datemsg('Edge_Eye',
+            dadd(DATE, eyespot0+5),
+            dadd(DATE, eyespot1+5),
+            '-'.join(str(e+5) for e in [eyespot0, eyespot1]),
+            1)
+    datemsg('Drop_Jaw',
+            dadd(DATE, eyespot0+6),
+            dadd(DATE, eyespot1+6),
+            '-'.join(str(e+6) for e in [eyespot0, eyespot1]),
+            1)
+    
     datemsg('Pupal_stages',
             dadd(DATE, pupal0),
-            dadd(DATE, pupal1))
+            dadd(DATE, pupal1),
+            '-'.join(str(e) for e in [pupal0, pupal1]),
+            5)
     datemsg('Adult_stages',
             dadd(DATE, adult0),
-            dadd(DATE, adult1))
+            dadd(DATE, adult1),
+            '-'.join(str(e) for e in [adult0, adult1]),
+            adult1-adult0+1)
+    
     datemsg('Cold_room',
             dadd(DATE, cold0),
-            dadd(DATE, cold1))
+            dadd(DATE, cold1),
+            '-'.join(str(e) for e in [cold0, cold1]),
+            cold1-cold0+1)
+    ## Adult stage if date given was date taken from cold room
+    datemsg('Adult_cold',
+            dadd(DATE, post0),
+            dadd(DATE, post1),
+            '-'.join(str(e) for e in [post0, post1]),
+            '8-20')
 
 
 
