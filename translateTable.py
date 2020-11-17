@@ -47,6 +47,9 @@ parser.add_argument('--output_delimiter', '-OD',
                    type=str, default="\t",
                    help='''Output delimiter in translated table1-- default = tab.''')
 
+parser.add_argument('--dict_delimiter', '-DD',
+                   type=str, default="\t",
+                   help='''Input delimiter in table2 -- default = tab.''')
 
 parser.add_argument('--force', '-F',
                    action='store_true', default=False,
@@ -77,7 +80,7 @@ transdict = {}
 
 with open(args.dict) as d:
     for line in d:
-        line = line.strip().split()
+        line = line.strip().split(args.dict_delimiter)
         if args.regexkeys:
             transdict[re.compile(line[kcol])] = line[vcol]
         else:
