@@ -2,6 +2,11 @@
 Tools I made while working with Sciara (Bradysia) coprophila (black fungus gnat) datasets and assemblies.
 
 
+NOTE:
+------------------------------------------
+This directory will no longer be updated, although may remain useful. I am slowly building sciaraTools2 with much of what is here, but updated for Python3:
+https://github.com/JohnUrban/sciaratools2
+
 
 If you find these tools useful for your own work, please cite the fungus fly genome preprint:
 -------------------------------------------
