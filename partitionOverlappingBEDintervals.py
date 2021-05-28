@@ -44,6 +44,14 @@ parser.add_argument('--sortedNames', '-S',
                     the names are sorted s.t. any time a set of names occurs in the column, the should specify the same permutation.
                     This makes it easier to computer sums of intersecting intervals with AWK, for example.''')
 
+parser.add_argument('--scoring',
+                   type=str, default='default',
+                   help='''How to report interval scores. Default is comma-sep lists. Optionally use min, max, sum, or mean.
+                   --maxScoreOnly and --minScoreOnly tell it to use max and min, respectively.
+                   Right now only min and max can be used with BED4/bedGraph input.
+                   All can be used with slice file input.''')
+
+
 args = parser.parse_args()
 
 
@@ -113,9 +121,14 @@ class BED4(object):
             self.close()
 
     
-def slice_and_dice(bed, maxScoreOnly=False, minScoreOnly=False):
+def slice_and_dice(bed, scoring='default'):
     #break_points = defaultdict(set)
     #curr_chr = None
+    maxScoreOnly = True if scoring == 'max' else False
+    minScoreOnly = True if scoring == 'min' else False
+    sumScore = True if scoring == 'sum' else False
+    meanScore = True if scoring == 'mean' else False
+    
     base_names = defaultdict(dict)
     base_scores = defaultdict(dict)
     for b in bed:
@@ -215,7 +228,11 @@ class SliceLine(object):
     def __str__(self):
         return '\t'.join(self.line)
 
-def slice3(slice_fh, maxScoreOnly=False, minScoreOnly=False, sortedNames=False):
+def slice3(slice_fh, scoring='default', sortedNames=False):
+    maxScoreOnly = True if scoring == 'max' else False
+    minScoreOnly = True if scoring == 'min' else False
+    sumScore = True if scoring == 'sum' else False
+    meanScore = True if scoring == 'mean' else False
     chrom = None
     #start = {}
     #end = {}
@@ -241,6 +258,12 @@ def slice3(slice_fh, maxScoreOnly=False, minScoreOnly=False, sortedNames=False):
                     idx = min(score, key=score.get)
                     names = name[idx]
                     scores = score[idx]
+                elif sumScore:
+                    names = ','.join([str(e) for e in sorted(list(set(name.values())))])
+                    scores = sum([float(e) for e in score.values()])
+                elif meanScore:
+                    names = ','.join([str(e) for e in sorted(list(set(name.values())))])
+                    scores = float(sum([float(e) for e in score.values()]))/len(score.values())
                 else:
                     #names = ','.join([str(e) for e in name.values()])
                     #scores = ','.join([str(e) for e in score.values()])
@@ -270,15 +293,21 @@ def slice3(slice_fh, maxScoreOnly=False, minScoreOnly=False, sortedNames=False):
 def main(args):
     assert not (args.maxScoreOnly and args.minScoreOnly)
     assert not (args.bedfile and args.slicefile)
+    if args.maxScoreOnly:
+        args.scoring = 'max'
+    elif args.minScoreOnly:
+        args.scoring = 'min'
+        
     if args.bedfile:
         # painfully slow for the moment
         # can have it create a slice file on the fly in the future...
         # for now I prefer just giving the slice file
         # That will be in the fxn slice2 above
-        for line in slice_and_dice(BED4(args.bedfile), maxScoreOnly=args.maxScoreOnly, minScoreOnly=args.minScoreOnly):
+        for line in slice_and_dice(BED4(args.bedfile), scoring=args.scoring):
             print line
+
     elif args.slicefile:
-        slice3(args.slicefile, maxScoreOnly=args.maxScoreOnly, minScoreOnly=args.minScoreOnly, sortedNames=args.sortedNames)
+        slice3(args.slicefile, scoring=args.scoring, sortedNames=args.sortedNames)
 
 
 ## EXECUTE:

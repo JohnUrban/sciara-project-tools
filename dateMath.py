@@ -136,7 +136,8 @@ def dadd(d, x):
 def sciara(args, hatch0=7, hatch1=10, larval0=7, larval1=31,
            earlyLarval0=7, earlyLarval1=20, lateLarval0=21, lateLarval1=31,
            eyespot0=22, eyespot1=25, pupal0=28, pupal1=36, adult0=35,
-           adult1=43, cold0=16, cold1=22, post0=8, post1=20):
+           adult1=43, cold0=16, cold1=24, post0=8, post1=20):
+    ## Cold used to be 16-22, but actually the stock I used was 16d and 24d old
     NOW=dt.datetime.now()
     DATE = dateDecision(args)
     print '\t'.join(['Event/Stage', 'EarliestSeen', 'LatestSeen', 'DPM', 'Duration'])
@@ -229,6 +230,11 @@ def sciara(args, hatch0=7, hatch1=10, larval0=7, larval1=31,
             dadd(DATE, post1),
             '-'.join(str(e) for e in [post0, post1]),
             '8-20')
+    datemsg('FeedDates',
+            dadd(DATE, hatch0),
+            dadd(DATE, eyespot1+5),
+            '-'.join(str(e) for e in [hatch0, eyespot1+5]),
+            '.') ## first expected hatch to last expected Edge Eye
 
 
 
